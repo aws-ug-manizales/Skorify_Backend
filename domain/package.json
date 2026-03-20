@@ -4,13 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-all",
+    "copy-package": "copyfiles  package.json dist/",
+    "copy-all": "copyfiles -u 1 dist/**/* ../server/libs/domain"
+  },
+  "devDependencies": {
+    "typescript": "5.7.2",
+    "@types/node": "^22.10.2",
+    "copyfiles": "^2.4.1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.22.0",
   "exports": {
-    "./core": "./core/index.js"
-  }
+    "./core": "./core/index.js",
+    "./match": "./features/match/index.js"
+  },
+  "files": [
+    "match"
+  ]
 }

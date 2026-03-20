@@ -4,7 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon",
+    "build": "tsc -p tsconfig.json && pnpm run copy-iraca && pnpm run copy-auth && pnpm run copy-libs && pnpm run copy-npmrc && pnpm run copy-package",
+    "copy-iraca": "copyfiles  src/iraca.config.json dist",
+    "copy-auth": "copyfiles -u 1 auth/**/* dist/auth",
+    "copy-libs": "copyfiles -u 1 libs/**/* dist/libs",
+    "copy-npmrc": "copyfiles .npmrc dist",
+    "copy-package": "copyfiles package.json dist",
+    "start:heroku": "node dist/src/index.js"
+  },
+  "dependencies": {
+    "@skorify/domain": "./libs/domain"
+  },
+  "devDependencies": {
+    "nodemon": "3.1.10",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3",
+    "copyfiles": "^2.4.1"
   },
   "keywords": [],
   "author": "",
