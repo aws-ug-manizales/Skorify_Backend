@@ -1,5 +1,5 @@
 import { GetMatchByIdParam, GetMatchByIdUsecase } from "@skorify/domain/match";
-import { DomainEvent } from "libs/domain/core/domain-event";
+import { DomainEvent } from "@skorify/domain/core";
 
 export class GetmatchByIdUsecaseImpl extends GetMatchByIdUsecase {
   call(param: GetMatchByIdParam): Promise<DomainEvent> {
