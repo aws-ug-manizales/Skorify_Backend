@@ -19,9 +19,13 @@
   "packageManager": "pnpm@10.22.0",
   "exports": {
     "./core": "./core/index.js",
-    "./match": "./features/match/index.js"
+    "./match": "./features/match/index.js",
+    "./user": "./features/user/index.js",
+    "./bet": "./features/bet/index.js"
   },
   "files": [
-    "match"
+    "match",
+    "user",
+    "bet"
   ]
 }

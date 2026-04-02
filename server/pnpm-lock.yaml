@@ -8,10 +8,19 @@ importers:
 
   .:
     dependencies:
+      '@scifamek-open-source/iraca':
+        specifier: 9.1.0
+        version: 9.1.0
+      '@scifamek-open-source/logger':
+        specifier: 1.1.2
+        version: 1.1.2
       '@skorify/domain':
         specifier: ./libs/domain
         version: link:libs/domain
     devDependencies:
+      '@types/node':
+        specifier: 22.5.0
+        version: 22.5.0
       copyfiles:
         specifier: ^2.4.1
         version: 2.4.1
@@ -20,7 +29,7 @@ importers:
         version: 3.1.10
       ts-node:
         specifier: 10.9.2
-        version: 10.9.2(@types/node@25.5.0)(typescript@5.8.3)
+        version: 10.9.2(@types/node@22.5.0)(typescript@5.8.3)
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -41,6 +50,12 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
+  '@scifamek-open-source/iraca@9.1.0':
+    resolution: {integrity: sha512-wROSk1qcGPockfNME+g2Eu3zrqHypTw2At/4CHQfcx4ZxJgH16O7bCilgbIqwIwAbYoKs0R/dO8xoIA6gpmLGw==}
+
+  '@scifamek-open-source/logger@1.1.2':
+    resolution: {integrity: sha512-4Yv2fG+iU/ykUeQlDzuYXnhlb+x2hCFxgTImop5GXqiWZSSR/WAh3sJOIP9eb4D86LIAsOYJ8Z0ubTT9Sx6hTQ==}
+
   '@tsconfig/node10@1.0.12':
     resolution: {integrity: sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==}
 
@@ -53,8 +68,8 @@ packages:
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
 
-  '@types/node@25.5.0':
-    resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
+  '@types/node@22.5.0':
+    resolution: {integrity: sha512-DkFrJOe+rfdHTqqMg0bSNlGlQ85hSoh2TPzZyhHsXnMtligRWpxUySiyw8FY14ITt24HVCiQPWxS3KO/QlGmWg==}
 
   acorn-walk@8.3.5:
     resolution: {integrity: sha512-HEHNfbars9v4pgpW6SO1KSPkfoS0xVOM/9UzkJltjlsHZmJasxg8aXkuZa7SMf8vKGIBhpUsPluQSqhJFCqebw==}
@@ -325,8 +340,8 @@ packages:
   undefsafe@2.0.5:
     resolution: {integrity: sha512-WxONCrssBM8TSPRqN5EmsjVrsv4A8X12J4ArBiiayv3DyyG3ZlIg6yysuuSYdZsVz3TKcTg2fd//Ujd4CHV1iA==}
 
-  undici-types@7.18.2:
-    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
+  undici-types@6.19.8:
+    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
   untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}
@@ -380,6 +395,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@scifamek-open-source/iraca@9.1.0': {}
+
+  '@scifamek-open-source/logger@1.1.2': {}
+
   '@tsconfig/node10@1.0.12': {}
 
   '@tsconfig/node12@1.0.11': {}
@@ -388,9 +407,9 @@ snapshots:
 
   '@tsconfig/node16@1.0.4': {}
 
-  '@types/node@25.5.0':
+  '@types/node@22.5.0':
     dependencies:
-      undici-types: 7.18.2
+      undici-types: 6.19.8
 
   acorn-walk@8.3.5:
     dependencies:
@@ -633,14 +652,14 @@ snapshots:
 
   touch@3.1.1: {}
 
-  ts-node@10.9.2(@types/node@25.5.0)(typescript@5.8.3):
+  ts-node@10.9.2(@types/node@22.5.0)(typescript@5.8.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.12
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 25.5.0
+      '@types/node': 22.5.0
       acorn: 8.16.0
       acorn-walk: 8.3.5
       arg: 4.1.3
@@ -655,7 +674,7 @@ snapshots:
 
   undefsafe@2.0.5: {}
 
-  undici-types@7.18.2: {}
+  undici-types@6.19.8: {}
 
   untildify@4.0.0: {}
 

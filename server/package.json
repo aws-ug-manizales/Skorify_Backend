@@ -15,9 +15,12 @@
     "start:heroku": "node dist/src/index.js"
   },
   "dependencies": {
-    "@skorify/domain": "./libs/domain"
+    "@skorify/domain": "./libs/domain",
+    "@scifamek-open-source/iraca": "9.1.0",
+    "@scifamek-open-source/logger": "1.1.2"
   },
   "devDependencies": {
+    "@types/node": "22.5.0",
     "nodemon": "3.1.10",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",

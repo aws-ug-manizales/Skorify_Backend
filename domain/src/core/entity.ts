@@ -1,3 +1,5 @@
+export type Id = `${string}-${string}-${string}-${string}-${string}`;
+
 export interface Entity {
-  id: `${string}`;
+  id: Id;
 }
