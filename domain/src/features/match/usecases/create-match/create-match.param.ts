@@ -1,5 +1,5 @@
 export interface CreateMatchParam {
-  name: string;
+  matchId: string;
   localTeam: string;
   awayTeam: string;
 }
