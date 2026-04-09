@@ -5,7 +5,7 @@ import {
 } from "@skorify/domain/match";
 import { DomainEvent } from "@skorify/domain/core";
 
-export class GetmatchByIdUsecaseImpl extends GetMatchByIdUsecase {
+export class GetMatchByIdUsecaseImpl extends GetMatchByIdUsecase {
   constructor() {
     super();
   }

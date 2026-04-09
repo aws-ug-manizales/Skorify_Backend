@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "rootDir": "./",
+    "module": "nodenext",
+    "types": ["node"],
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "outDir": "dist",
+    "sourceMap": false,
+    "strict": true,
+    "target": "es2017",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true
+  },
+  "compileOnSave": true,
+
+  "include": ["src/*", "src/**/*"],
+  "exclude": ["**/*.test.ts"]
+}

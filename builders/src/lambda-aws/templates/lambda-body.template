@@ -1,0 +1,44 @@
+// handler.ts
+// import { APIGatewayProxyEvent } from "aws-lambda";
+// import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
+import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
+import { generate } from "./helpers";
+
+{{IMPORTS}}
+
+export const handler = async (event: any) => {
+  const name = event.queryStringParameters?.name ?? "World";
+
+  const identifier = "{{IDENTIFIER}}";
+
+    const methodMapper: any = [
+  {
+    method: "get",
+    patterns: [/[\w]+/],
+  },
+];
+  const container = new IracaContainer();
+
+{{INJECTIONS}}
+
+  container.add({
+    abstraction: {{MAIN_USECASE}},
+    implementation: {{MAIN_USECASE_IMPL}},
+    dependencies: {{MAIN_USECASE_DEPENDENCIES}},
+  });
+
+  const instance = await container.getInstance<{{MAIN_USECASE}}>({{MAIN_USECASE}});
+  const param = {}
+  const usecaseResponse = await instance.call(param as any);
+  const response = {
+    meta: {
+      code: `${identifier}:${usecaseResponse.eventName}`,
+    },
+    data: usecaseResponse.payload 
+  };
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(response),
+  };
+};
