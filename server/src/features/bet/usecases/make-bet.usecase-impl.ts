@@ -8,7 +8,7 @@ import {
   GetUserByIdUsecase,
   GottenUserDomainEvent,
 } from "@skorify/domain/user";
-import { GetMatchByIdUsecase } from "@skorify/domain/match";
+import { GetMatchByIdUsecase, GottenMatchDomainEvent, MatchCannotBeBetedDomainEvent, MatchEntity } from "@skorify/domain/match";
 
 export class MakeBetUsecaseImpl extends MakeBetUsecase {
   constructor(
@@ -35,16 +35,17 @@ export class MakeBetUsecaseImpl extends MakeBetUsecase {
       matchId,
     });
 
-    if (matchDE.isNot(GottenUserDomainEvent)) {
+    if (matchDE.isNot(GottenMatchDomainEvent)) {
       return matchDE;
     }
 
-    const match = matchDE.payload;
+    const match = matchDE.payload as MatchEntity;
 
-    // 3. Validar si es posible hacer una apuesta (en tiempo, por estado)
-    // 4. Verificar si la competencia esta vigente ? Por definir
-    // 5. Verificar integridad de la apuesta
-    // 6. Ingreso a la persistencia apuesta de Dalia
+    if (!match.canBet()) {
+      return MatchCannotBeBetedDomainEvent();
+    }
+
+    // make bet
 
     return BasicDomainEvent();
   }
