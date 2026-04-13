@@ -5,13 +5,18 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-all",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "copy-package": "copyfiles  package.json dist/",
     "copy-all": "copyfiles -u 1 dist/**/* ../server/libs/domain"
   },
   "devDependencies": {
-    "typescript": "5.7.2",
     "@types/node": "^22.10.2",
-    "copyfiles": "^2.4.1"
+    "@types/jest": "^29.5.14",
+    "copyfiles": "^2.4.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "5.7.2"
   },
   "keywords": [],
   "author": "",
@@ -21,11 +26,11 @@
     "./core": "./core/index.js",
     "./match": "./features/match/index.js",
     "./user": "./features/user/index.js",
-    "./bet": "./features/bet/index.js"
+    "./prediction": "./features/prediction/index.js"
   },
   "files": [
     "match",
     "user",
-    "bet"
+    "prediction"
   ]
 }
