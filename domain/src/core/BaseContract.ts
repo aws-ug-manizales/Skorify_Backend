@@ -9,5 +9,6 @@ export abstract class BaseContract<T extends Entity> {
   abstract modifyById(id: string, entity: T): Promise<T | null>;
   abstract getAll(): Promise<T[]>;
   abstract getByIDs(ids: string[]): Promise<T[]>;
-  abstract filter(filters: T[]): Promise<T[]>;
+  //Definir como va a ser la implementacion de los filtros
+  //abstract filter(filters: T[]): Promise<T[]>;
 }
