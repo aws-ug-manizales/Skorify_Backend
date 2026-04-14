@@ -1,3 +1,3 @@
-export interface GetMatchByIdParam{
-    
+export interface GetMatchByIdParam {
+  matchId: string;
 }

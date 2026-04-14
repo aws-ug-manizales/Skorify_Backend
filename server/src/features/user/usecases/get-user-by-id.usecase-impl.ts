@@ -21,9 +21,6 @@ export class GetUserByIdUsecaseImpl extends GetUserByIdUsecase {
       return NotGottenUserDomainEvent();
     }
 
-    return GottenUserDomainEvent({
-      id: "7e6f6d92-e8bd-4aab-a027-66f4ec31ba8e",
-      name: "Bryan",
-    });
+    return GottenUserDomainEvent(userInDB);
   }
 }

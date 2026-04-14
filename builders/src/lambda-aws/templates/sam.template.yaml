@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  {{MAIN_USECASE}}Lambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs22.x
+      Handler: dist/index.handler
+      CodeUri: .
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /{{KEBAD_MAIN_USECASE}}
+            Method: get
