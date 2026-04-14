@@ -9,6 +9,16 @@ export abstract class BaseContract<T extends Entity> {
   abstract modifyById(id: string, entity: T): Promise<T | null>;
   abstract getAll(): Promise<T[]>;
   abstract getByIDs(ids: string[]): Promise<T[]>;
-  //Definir como va a ser la implementacion de los filtros
-  //abstract filter(filters: T[]): Promise<T[]>;
+  //Definir como va a ser la implementacion de los filtros en términos de la implementacion de los parametros de entrada, 
+  // se pueden definir filtros por entidad y que en cada contrato se definan los filtros que se van a usar
+  // por ejemplo:
+  /** 
+  type MatchFilters = {
+  localTeam?: string;
+  awayTeam?: string;
+  fromDate?: Date;
+  toDate?: Date;
+}
+**/
+  abstract filter(filters: any): Promise<T[]>;
 }
