@@ -1,6 +1,6 @@
-import { LambdaAWSBuilder } from "../lambda-aws";
+import { SingleLambdaAWSBuilder } from "../single-lambda-aws";
 
-export type ValidBuilderNames = "lambda";
+export type ValidBuilderNames = "single-lambda";
 export type BuilderNamesMapper = {
-  [index in ValidBuilderNames]: LambdaAWSBuilder;
+  [index in ValidBuilderNames]: SingleLambdaAWSBuilder;
 };
