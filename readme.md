@@ -191,3 +191,11 @@ cd domain
 pnpm i
 pnpm run build
 ```
+
+### Para los builder
+
+```shell
+cd builder
+pnpm i
+pnpm run sla
+```

@@ -272,7 +272,6 @@ ${resourcesYML.join("\n")}`,
           `\\b[^}]*\\}\\s*from\\s*["']([^"']+)["'];`,
       );
       const result = p.exec(impl);
-      console.log({ result });
       if (result) {
         const fromPath = result[1];
         imports.push(`import {${myClass}} from '${fromPath}';`);

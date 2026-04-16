@@ -6,7 +6,7 @@ import { join } from "node:path";
 
 async function main() {
   const args = process.argv;
-  const validWays: ValidBuilderNames[] = ["single-lambda"];
+  const validWays: ValidBuilderNames[] = ["single-lambda-aws"];
 
   const way = args[2];
   if (!validWays.includes(way as ValidBuilderNames)) {
@@ -18,10 +18,10 @@ async function main() {
     root,
     serverFolder: join(root, "..", "server"),
   };
-  const builders: BuilderNamesMapper = {
-    "single-lambda": new SingleLambdaAWSBuilder(),
+  const builders: Partial<BuilderNamesMapper> = {
+    "single-lambda-aws": new SingleLambdaAWSBuilder(),
   };
   const builder = builders[way as ValidBuilderNames];
-  await builder.build(config);
+  await builder?.build(config);
 }
 main();

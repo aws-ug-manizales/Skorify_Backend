@@ -1,7 +1,6 @@
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 export async function getUsecases(serverFolder: string) {
-  console.log("modules");
   const featuresFolder = join(serverFolder, "src", "features");
   const files = await readdir(featuresFolder, {
     recursive: true,
@@ -16,7 +15,7 @@ export async function getUsecases(serverFolder: string) {
       module: x[1],
 
       kebadUsecaseName: x[2],
-      usecaseName: kebabToPascal(x[2]) + 'Usecase',
+      usecaseName: kebabToPascal(x[2]) + "Usecase",
       path: join(featuresFolder, x[0]),
     }));
   return validFiles;

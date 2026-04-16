@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "pnpm ts-node src/index.ts",
-    "sl": "pnpm ts-node src/index.ts single-lambda",
+    "sla": "pnpm ts-node src/index.ts single-lambda-aws",
+    "mla": "pnpm ts-node src/index.ts module-lambda-aws",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {},
