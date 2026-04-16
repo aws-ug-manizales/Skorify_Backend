@@ -137,7 +137,7 @@ export class LambdaAWSBuilder extends Builder {
 
           if (ts.isClassDeclaration(classNode)) {
             const className = classNode.name?.text;
-            this.addImport(imports, usecasesConfig, className!);
+            this.addImport(imports, usecasesConfig, className!,source);
             replacedLambdaTemplate = replacedLambdaTemplate.replace(
               toToken("MAIN_USECASE_IMPL"),
               className!,
@@ -153,7 +153,7 @@ export class LambdaAWSBuilder extends Builder {
               const parent = parentClause.types[0];
               const usecaseAbstractionClass = parent.expression.getText();
 
-              this.addImport(imports, usecasesConfig, usecaseAbstractionClass);
+              this.addImport(imports, usecasesConfig, usecaseAbstractionClass,source);
 
               replacedLambdaTemplate = replacedLambdaTemplate.replace(
                 new RegExp(toToken("MAIN_USECASE"), "g"),
@@ -180,7 +180,7 @@ export class LambdaAWSBuilder extends Builder {
             const name = param.name.getText();
             const type = param.type?.getText() ?? "any";
             dependencies.push(type);
-            this.addImport(imports, usecasesConfig, type);
+            this.addImport(imports, usecasesConfig, type,source);
             injections.push(`
     container.add({
       abstraction: ${type},
@@ -214,7 +214,7 @@ export class LambdaAWSBuilder extends Builder {
       }
     }
   }
-  addImport(imports: string[], usecases: UsecasesInfo, myClass: string) {
+  addImport(imports: string[], usecases: UsecasesInfo, myClass: string, impl: string) {
     if (myClass.includes("UsecaseImpl")) {
       const empty = myClass.replace("Impl", "");
       const usecase = usecases.find((x) => x.usecaseName == empty);
@@ -229,6 +229,16 @@ export class LambdaAWSBuilder extends Builder {
       if (usecase) {
         imports.push(
           `import {${myClass}} from '@skorify/domain/${usecase.module}';`,
+        );
+      }
+    }else{
+      const p = new RegExp('import\\s*\\{[^}]*\\b' + myClass+ `\\b[^}]*\\}\\s*from\\s*["']([^"']+)["'];`)
+      const result = p.exec(impl)
+      console.log({result});
+      if(result){
+        const fromPath = result[1]
+          imports.push(
+          `import {${myClass}} from '${fromPath}';`,
         );
       }
     }
