@@ -1,7 +1,7 @@
 import { MatchEntity } from "./match.entity";
-import { BaseContract } from "../../core";
+import { PredictionEntity } from "../prediction/prediction.entity";
+import { BaseContract } from "@/core";
 
 export abstract class MatchContract extends BaseContract<MatchEntity> {
-    abstract getById(id: string): Promise<MatchEntity | null>;
-    abstract save(match: MatchEntity): Promise<MatchEntity | null>;
+  abstract getPredictionsByMatchId(matchId: string): Promise<PredictionEntity[] | null>;
 }

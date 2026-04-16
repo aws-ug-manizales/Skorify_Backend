@@ -1,4 +1,4 @@
-export interface MakeBetParam {
+export interface MakePredictionParam {
   userId: string;
   matchId: string;
   awayTeamScore: number;
