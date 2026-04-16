@@ -4,6 +4,11 @@ import { pathToFileURL } from "node:url";
 import * as ts from "typescript";
 import { mkdir, statfs, readFile, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
+import {
+  getMethodToUse,
+  MassiveRegisterConfiguration,
+} from "@scifamek-open-source/iraca/web-api";
+import { generalMethodMapper } from "@skorify/domain/core";
 type UsecaseInfo = {
   module: string;
   usecaseName: string;
@@ -18,12 +23,13 @@ type Templates = {
   samTemplate: string;
   helpersTemplate: string;
 };
-export class LambdaAWSBuilder extends Builder {
+export class SingleLambdaAWSBuilder extends Builder {
   distFolder = "dist";
   async build(config: BuilderConfiguration): Promise<void> {
     const usecases = await getUsecases(config.serverFolder);
 
-    const templatesFolder = join(config.root, "src", "lambda-aws", "templates");
+    const myFolder = "single-lambda-aws";
+    const templatesFolder = join(config.root, "src", myFolder, "templates");
     const sourceCodeTemplate = await readFile(
       join(templatesFolder, "./lambda-body.template"),
       "utf-8",
@@ -73,7 +79,17 @@ export class LambdaAWSBuilder extends Builder {
 
       promises.push(promise);
     }
-    await Promise.all(promises);
+    const resourcesYML = await Promise.all(promises);
+
+    await writeFile(
+      join(fullDistFolder, `template.yaml`),
+      `AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+
+${resourcesYML.join("\n")}`,
+    );
   }
 
   async createModuleFolders(usecases: UsecasesInfo, fullDistFolder: string) {
@@ -91,7 +107,7 @@ export class LambdaAWSBuilder extends Builder {
     usecaseConfig: UsecaseInfo,
     templates: Templates,
     fullDistFolder: string,
-  ) {
+  ): Promise<string> {
     const {
       packageTemplate,
       sourceCodeTemplate,
@@ -99,6 +115,8 @@ export class LambdaAWSBuilder extends Builder {
       helpersTemplate,
       samTemplate,
     } = templates;
+    let myYamlTemplate = samTemplate;
+
     const source = await readFile(usecaseConfig.path, "utf-8");
 
     const injections: string[] = [];
@@ -137,7 +155,7 @@ export class LambdaAWSBuilder extends Builder {
 
           if (ts.isClassDeclaration(classNode)) {
             const className = classNode.name?.text;
-            this.addImport(imports, usecasesConfig, className!,source);
+            this.addImport(imports, usecasesConfig, className!, source);
             replacedLambdaTemplate = replacedLambdaTemplate.replace(
               toToken("MAIN_USECASE_IMPL"),
               className!,
@@ -153,25 +171,35 @@ export class LambdaAWSBuilder extends Builder {
               const parent = parentClause.types[0];
               const usecaseAbstractionClass = parent.expression.getText();
 
-              this.addImport(imports, usecasesConfig, usecaseAbstractionClass,source);
+              this.addImport(
+                imports,
+                usecasesConfig,
+                usecaseAbstractionClass,
+                source,
+              );
 
               replacedLambdaTemplate = replacedLambdaTemplate.replace(
                 new RegExp(toToken("MAIN_USECASE"), "g"),
                 usecaseAbstractionClass,
               );
 
-              await writeFile(
-                join(usecaseFolder, `template.yaml`),
-                samTemplate
-                  .replace(
-                    new RegExp(toToken("MAIN_USECASE"), "g"),
-                    usecaseAbstractionClass.replace("Usecase", ""),
-                  )
-                  .replace(
-                    new RegExp(toToken("KEBAD_MAIN_USECASE"), "g"),
-                    usecaseConfig.kebadUsecaseName,
+              myYamlTemplate = samTemplate
+                .replace(
+                  new RegExp(toToken("MAIN_USECASE"), "g"),
+                  usecaseAbstractionClass.replace("Usecase", ""),
+                )
+                .replace(
+                  new RegExp(toToken("KEBAD_MAIN_USECASE"), "g"),
+                  `${usecaseConfig.module}/${usecaseConfig.kebadUsecaseName}`,
+                )
+                .replace(
+                  new RegExp(toToken("METHOD"), "g"),
+                  getMethodToUse(
+                    generalMethodMapper as MassiveRegisterConfiguration["methodMapper"],
+                    usecaseConfig.usecaseName,
+                    "get",
                   ),
-              );
+                );
             }
           }
 
@@ -180,7 +208,7 @@ export class LambdaAWSBuilder extends Builder {
             const name = param.name.getText();
             const type = param.type?.getText() ?? "any";
             dependencies.push(type);
-            this.addImport(imports, usecasesConfig, type,source);
+            this.addImport(imports, usecasesConfig, type, source);
             injections.push(`
     container.add({
       abstraction: ${type},
@@ -213,8 +241,14 @@ export class LambdaAWSBuilder extends Builder {
         }
       }
     }
+    return myYamlTemplate;
   }
-  addImport(imports: string[], usecases: UsecasesInfo, myClass: string, impl: string) {
+  addImport(
+    imports: string[],
+    usecases: UsecasesInfo,
+    myClass: string,
+    impl: string,
+  ) {
     if (myClass.includes("UsecaseImpl")) {
       const empty = myClass.replace("Impl", "");
       const usecase = usecases.find((x) => x.usecaseName == empty);
@@ -231,15 +265,17 @@ export class LambdaAWSBuilder extends Builder {
           `import {${myClass}} from '@skorify/domain/${usecase.module}';`,
         );
       }
-    }else{
-      const p = new RegExp('import\\s*\\{[^}]*\\b' + myClass+ `\\b[^}]*\\}\\s*from\\s*["']([^"']+)["'];`)
-      const result = p.exec(impl)
-      console.log({result});
-      if(result){
-        const fromPath = result[1]
-          imports.push(
-          `import {${myClass}} from '${fromPath}';`,
-        );
+    } else {
+      const p = new RegExp(
+        "import\\s*\\{[^}]*\\b" +
+          myClass +
+          `\\b[^}]*\\}\\s*from\\s*["']([^"']+)["'];`,
+      );
+      const result = p.exec(impl);
+      console.log({ result });
+      if (result) {
+        const fromPath = result[1];
+        imports.push(`import {${myClass}} from '${fromPath}';`);
       }
     }
   }

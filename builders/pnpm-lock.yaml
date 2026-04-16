@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      '@scifamek-open-source/iraca':
+        specifier: 9.2.0
+        version: 9.2.0
+      '@skorify/domain':
+        specifier: ../domain/dist
+        version: link:../domain/dist
       '@types/node':
         specifier: 22.5.0
         version: 22.5.0
@@ -33,6 +39,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@scifamek-open-source/iraca@9.2.0':
+    resolution: {integrity: sha512-YUyAT5+lfq6+/ARc1TlewTQsm2fR3iZZGNxjaodciX7nDpFJVyu85qtGQvfEaxKJoJT9+KxtMw+Vl4qmz6JHBA==}
 
   '@tsconfig/node10@1.0.12':
     resolution: {integrity: sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==}
@@ -114,6 +123,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@scifamek-open-source/iraca@9.2.0': {}
 
   '@tsconfig/node10@1.0.12': {}
 

@@ -1,15 +1,15 @@
 import { exit } from "node:process";
 import { BuilderNamesMapper, ValidBuilderNames } from "./general/models";
-import { LambdaAWSBuilder } from "./lambda-aws";
+import { SingleLambdaAWSBuilder } from "./single-lambda-aws";
 import { BuilderConfiguration } from "./general/builder";
 import { join } from "node:path";
 
 async function main() {
   const args = process.argv;
-  const validWays = ["lambda"];
+  const validWays: ValidBuilderNames[] = ["single-lambda"];
 
   const way = args[2];
-  if (!validWays.includes(way)) {
+  if (!validWays.includes(way as ValidBuilderNames)) {
     exit(1);
   }
 
@@ -19,7 +19,7 @@ async function main() {
     serverFolder: join(root, "..", "server"),
   };
   const builders: BuilderNamesMapper = {
-    lambda: new LambdaAWSBuilder(),
+    "single-lambda": new SingleLambdaAWSBuilder(),
   };
   const builder = builders[way as ValidBuilderNames];
   await builder.build(config);
