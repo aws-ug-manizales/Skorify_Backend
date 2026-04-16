@@ -6,10 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "pnpm ts-node src/index.ts",
+    "sl": "pnpm ts-node src/index.ts single-lambda",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {},
   "devDependencies": {
+    "@scifamek-open-source/iraca": "9.2.0",
+    "@skorify/domain": "../domain/dist",
     "@types/node": "22.5.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3"
