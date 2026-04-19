@@ -6,10 +6,11 @@ export class MatchEntity extends Entity {
   date: Date;
   awayTeamScore: number;
   localTeamScore: number;
+  status: string;
   
   private timeToCloseInMinutes: number;
 
-  private constructor(id: Id, awayTeamId: string, localTeamId: string, date: Date) {
+  private constructor(id: Id, awayTeamId: string, localTeamId: string, date: Date, status: string) {
     super(id);
     this.awayTeamId = awayTeamId;
     this.localTeamId = localTeamId;
@@ -17,10 +18,11 @@ export class MatchEntity extends Entity {
     this.timeToCloseInMinutes = 10;
     this.awayTeamScore = 0;
     this.localTeamScore = 0;
+    this.status = status;
   }
 
-  static build(params: { id: Id, awayTeamId: string; localTeamId: string; date: Date }): MatchEntity {
-    return new MatchEntity(params.id, params.awayTeamId, params.localTeamId, params.date);
+  static build(params: { id: Id, awayTeamId: string; localTeamId: string; date: Date, status: string }): MatchEntity {
+    return new MatchEntity(params.id, params.awayTeamId, params.localTeamId, params.date, params.status);
   }
 
   public canBet(): boolean {
