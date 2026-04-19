@@ -1,16 +1,23 @@
 import { Entity, Id } from "../../core/entity";
 
+export enum MatchStatus {
+  Scheduled = "scheduled",
+  InProgress = "in_progress",
+  Finished = "finished",
+  Cancelled = "cancelled",
+}
+
 export class MatchEntity extends Entity {
   awayTeamId: string;
   localTeamId: string;
   date: Date;
   awayTeamScore: number;
   localTeamScore: number;
-  status: string;
+  status: MatchStatus;
   
   private timeToCloseInMinutes: number;
 
-  private constructor(id: Id, awayTeamId: string, localTeamId: string, date: Date, status: string) {
+  private constructor(id: Id, awayTeamId: string, localTeamId: string, date: Date, status: MatchStatus) {
     super(id);
     this.awayTeamId = awayTeamId;
     this.localTeamId = localTeamId;
@@ -21,8 +28,14 @@ export class MatchEntity extends Entity {
     this.status = status;
   }
 
-  static build(params: { id: Id, awayTeamId: string; localTeamId: string; date: Date, status: string }): MatchEntity {
-    return new MatchEntity(params.id, params.awayTeamId, params.localTeamId, params.date, params.status);
+  static build(params: { id: Id; awayTeamId: string; localTeamId: string; date: Date; status?: MatchStatus }): MatchEntity {
+    return new MatchEntity(
+      params.id,
+      params.awayTeamId,
+      params.localTeamId,
+      params.date,
+      params.status ?? MatchStatus.Scheduled,
+    );
   }
 
   public canBet(): boolean {
@@ -33,6 +46,13 @@ export class MatchEntity extends Entity {
     return true;
   }
 
+  public canEdit(): boolean {
+    return this.status !== MatchStatus.InProgress;
+  }
+
+  public canChangeTeams(hasPredictions: boolean): boolean {
+    return !hasPredictions;
+  }
 
   public isMatchClose(): boolean {
     return this.date.getTime() - Date.now() < this.timeToCloseInMinutes * 60 * 1000;

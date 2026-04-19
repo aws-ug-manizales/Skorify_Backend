@@ -8,7 +8,7 @@ export class UserEntity extends Entity {
     this.name = name;
   }
   
-  build(params: { name: string }): UserEntity {
-    return new UserEntity(this.id, params.name);
+  static build(params: { id: Id; name: string }): UserEntity {
+    return new UserEntity(params.id, params.name);
   }
 }

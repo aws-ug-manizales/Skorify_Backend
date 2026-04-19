@@ -6,6 +6,7 @@ import {
   GottenUserDomainEvent,
   NotGottenUserDomainEvent,
   UserContract,
+  UserEntity,
 } from "@skorify/domain/user";
 
 export class CreateUserUsecaseImpl extends CreateUserUsecase {
@@ -16,7 +17,8 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
   async call(param: CreateUserParam): Promise<DomainEvent> {
     const { name } = param;
 
-    const userInDB = await this.userContract.save({ id: crypto.randomUUID(), name });
+    const userEntity = UserEntity.build({ id: crypto.randomUUID(), name });
+    const userInDB = await this.userContract.save(userEntity);
 
     if (!userInDB) {
       return NotGottenUserDomainEvent();
