@@ -3,7 +3,7 @@
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs22.x
-      Handler: dist/index.handler
+      Handler: {{KEBAD_MAIN_USECASE}}/index.handler
       CodeUri: .
       Events:
         Api:
