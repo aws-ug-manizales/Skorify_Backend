@@ -1,0 +1,37 @@
+{
+  "providers": [
+    {
+      "token": "FOOTBALL_DATA_API_TOKEN",
+      "useValue": "c917afa1702e4b2c9902076b4119e9ea"
+    },
+    {
+      "token": "FootballDataRepository",
+      "useClass": "./features/match/infrastructure/match.football-data-repository:FootballDataRepository",
+      "inject": ["FOOTBALL_DATA_API_TOKEN"]
+    },
+    {
+      "token": "GetFutureMatchesUsecase",
+      "useClass": "./features/match/usecases/get-future-matches.usecase-impl:GetFutureMatchesUsecaseImpl",
+      "inject": ["FootballDataRepository"]
+    },
+    {
+      "token": "GetMatchByIdUsecase",
+      "useClass": "./features/match/usecases/get-match-by-id.usecase-impl:GetMatchByIdUsecaseImpl",
+      "inject": ["FootballDataRepository"]
+    }
+  ],
+  "controllers": [
+    {
+      "token": "MatchController",
+      "useClass": "./features/match/infrastructure/controller:MatchController"
+    },
+    {
+      "token": "BetController",
+      "useClass": "./features/bet/infrastructure/controller:BetController"
+    },
+    {
+      "token": "UserController",
+      "useClass": "./features/user/infrastructure/controller:UserController"
+    }
+  ]
+}
