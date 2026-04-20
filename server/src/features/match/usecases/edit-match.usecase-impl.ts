@@ -5,7 +5,9 @@ import {
   MatchDoesNotExistDomainEvent,
   MatchCannotBeEditedDomainEvent,
   MatchCannotChangeTeamsDomainEvent,
+  MatchCannotBeSavedDomainEvent,
   MatchEditedDomainEvent,
+  MatchStatus,
 } from "@skorify/domain/match";
 import { DomainEvent } from "@skorify/domain/core";
 
@@ -19,10 +21,8 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
       matchId,
       awayTeamId,
       localTeamId,
-      initialTime,
+      date,
       status,
-      awayTeamScore,
-      localTeamScore,
     } = param;
 
     // 1. Validar que el partido existe
@@ -35,6 +35,11 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
     // 2. Validar que se puede editar (no está en curso)
     if (!matchInDB.canEdit()) {
       return MatchCannotBeEditedDomainEvent(matchInDB);
+    }
+
+    // 2.5. Validar que no se intenta cerrar el partido (cambiar a Finished)
+    if (status === MatchStatus.Finished) {
+      return MatchCannotBeEditedDomainEvent(matchInDB); // O crear un evento específico, pero por ahora reutilizar
     }
 
     // 3. Validar cambios de equipos
@@ -56,12 +61,14 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
     // 4. Aplicar cambios
     matchInDB.awayTeamId = awayTeamId;
     matchInDB.localTeamId = localTeamId;
-    matchInDB.date = initialTime;
+    matchInDB.date = date;
     matchInDB.status = status;
-    matchInDB.setScores(awayTeamScore, localTeamScore);
 
     // 5. Persistir cambios
-    await this.matchContract.save(matchInDB);
+    const savedMatch = await this.matchContract.save(matchInDB);
+    if (!savedMatch) {
+      return MatchCannotBeSavedDomainEvent(matchInDB);
+    }
 
     // 6. Retornar evento de éxito
     return MatchEditedDomainEvent(matchInDB);

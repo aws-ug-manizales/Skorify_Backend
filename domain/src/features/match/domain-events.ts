@@ -25,3 +25,7 @@ export const MatchEditedDomainEvent = DomainEventKind<MatchEntity>(
   "MatchEditedDomainEvent",
 );
 
+export const MatchCannotBeSavedDomainEvent = DomainEventKind<MatchEntity>(
+  "MatchCannotBeSavedDomainEvent",
+);
+

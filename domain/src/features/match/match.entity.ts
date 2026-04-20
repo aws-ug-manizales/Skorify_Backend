@@ -1,6 +1,7 @@
 import { Entity, Id } from "../../core/entity";
 
 export enum MatchStatus {
+  Draft = "draft",
   Scheduled = "scheduled",
   InProgress = "in_progress",
   Finished = "finished",
@@ -47,7 +48,7 @@ export class MatchEntity extends Entity {
   }
 
   public canEdit(): boolean {
-    return this.status !== MatchStatus.InProgress;
+    return this.status === MatchStatus.Draft || this.status === MatchStatus.Scheduled;
   }
 
   public canChangeTeams(hasPredictions: boolean): boolean {

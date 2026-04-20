@@ -4,8 +4,6 @@ export interface EditMatchParam {
   matchId: string;
   awayTeamId: string;
   localTeamId: string;
-  initialTime: Date;
+  date: Date;
   status: MatchStatus;
-  awayTeamScore: number;
-  localTeamScore: number;
 }
