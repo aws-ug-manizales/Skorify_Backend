@@ -1,8 +1,8 @@
 import {
   BasicDomainEvent,
-  MakeBetParam,
-  MakeBetUsecase,
-} from "@skorify/domain/bet";
+  MakePredictionParam,
+  MakePredictionUsecase,
+} from "@skorify/domain/prediction";
 import { DomainEvent } from "@skorify/domain/core";
 import {
   GetUserByIdUsecase,
@@ -10,7 +10,7 @@ import {
 } from "@skorify/domain/user";
 import { GetMatchByIdUsecase, GottenMatchDomainEvent, MatchCannotBeBetedDomainEvent, MatchEntity } from "@skorify/domain/match";
 
-export class MakeBetUsecaseImpl extends MakeBetUsecase {
+export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
   constructor(
     private getUserByIdUsecase: GetUserByIdUsecase,
     private getMatchByIdUsecase: GetMatchByIdUsecase,
@@ -18,9 +18,8 @@ export class MakeBetUsecaseImpl extends MakeBetUsecase {
     super();
   }
 
-  async call(param: MakeBetParam): Promise<DomainEvent> {
-    console.log(param);
-    const { awayTeamScore, localTeamScore, matchId, userId } = param;
+  async call(param: MakePredictionParam): Promise<DomainEvent> {
+    const { matchId, userId } = param;
 
     // 1. Validación de que dalia exista
     const userDE = await this.getUserByIdUsecase.call({

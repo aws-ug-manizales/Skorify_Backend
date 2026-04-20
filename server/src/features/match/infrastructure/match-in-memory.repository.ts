@@ -1,15 +1,20 @@
 import { MatchContract, MatchEntity } from "@skorify/domain/match";
+import { PredictionEntity } from "@skorify/domain/prediction";
+import { PredictionInMemoryRepository } from "src/features/prediction/prediction-in-memory.repository";
 
-const match = new MatchEntity(
-  "3feb69ea-d146-4964-a007-233eb36dac82",
-  "Colombia",
-  "Portugal",
-  new Date()
-);
+const match = MatchEntity.build({
+  id: "3feb69ea-d146-4964-a007-233eb36dac82",
+  localTeamId: "local-team-id",
+  awayTeamId: "away-team-id",
+  date: new Date("2027-10-15T15:00:00Z"),
+});
+
+
 export class MatchInMemoryRepository extends MatchContract {
   matches: MatchEntity[] = [
     match
   ];
+ 
   constructor() {
     super();
   }
@@ -29,5 +34,9 @@ export class MatchInMemoryRepository extends MatchContract {
     }
     this.matches.push(match);
     return Promise.resolve(match);
+  }
+
+  async getPredictionsByMatchId(matchId: string): Promise<PredictionEntity[] | null> {
+    return PredictionInMemoryRepository.predictions.filter((p) => p.matchId === matchId);
   }
 }
