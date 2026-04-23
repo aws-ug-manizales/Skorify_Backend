@@ -48,12 +48,12 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
       matchInDB.localTeamId !== localTeamId;
 
     if (teamsChanged) {
-      // Obtener predicciones existentes
-      const predictions =
-        await this.matchContract.getPredictionsByMatchId(matchId);
+      // Validar si existen predicciones para este match
+      const hasPredictions =
+        await this.matchContract.hasPredictionsForMatchId(matchId);
 
       // Si hay predicciones y se intenta cambiar equipos, no permitir
-      if (predictions && predictions.length > 0) {
+      if (hasPredictions) {
         return MatchCannotChangeTeamsDomainEvent(matchInDB);
       }
     }

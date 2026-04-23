@@ -63,7 +63,11 @@ export class MatchInMemoryRepository extends MatchContract {
     return this.matches;
   }
 
-  async getPredictionsByMatchId(matchId: string): Promise<PredictionEntity[] | null> {
-    return PredictionInMemoryRepository.predictions.filter((p) => p.matchId === matchId);
-  }
+   async getPredictionsByMatchId(matchId: string): Promise<PredictionEntity[] | null> {
+     return PredictionInMemoryRepository.predictions.filter((p) => p.matchId === matchId);
+   }
+
+   async hasPredictionsForMatchId(matchId: string): Promise<boolean> {
+     return PredictionInMemoryRepository.predictions.some((p) => p.matchId === matchId);
+   }
 }

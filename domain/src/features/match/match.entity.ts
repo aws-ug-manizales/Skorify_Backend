@@ -35,7 +35,7 @@ export class MatchEntity extends Entity {
       params.awayTeamId,
       params.localTeamId,
       params.date,
-      params.status ?? MatchStatus.Scheduled,
+      params.status ?? MatchStatus.Draft,
     );
   }
 
