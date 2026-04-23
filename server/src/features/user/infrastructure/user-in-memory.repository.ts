@@ -3,10 +3,11 @@ import { UserContract, UserEntity } from "@skorify/domain/user";
 
 export class UserInMemoryRepository extends UserContract {
   users: UserEntity[] = [
-    {
+    UserEntity.build({
       id: "3feb69ea-d146-4964-a007-233eb36dac82",
       name: "Bryan Arroyave",
-    },
+      isActive: true,
+    }),
   ];
   constructor() {
     super();
