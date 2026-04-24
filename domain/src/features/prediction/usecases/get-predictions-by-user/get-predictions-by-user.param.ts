@@ -1,6 +1,6 @@
 import { Id } from '../../../../core';
 
-export interface GetPredictionByUserParam {
+export interface GetPredictionsByUserParam {
 	userId: Id;
 	tournamentInstanceId: Id;
 }
