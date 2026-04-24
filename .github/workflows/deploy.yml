@@ -49,10 +49,10 @@ jobs:
           cd server
           pnpm install --frozen-lockfile
 
-      - name: BUILD
-        run: |
-          cd server
-          pnpm run build
+      # - name: BUILD
+      #   run: |
+      #     cd server
+      #     pnpm run build
 
 
       - name: GENERATE LOGS
