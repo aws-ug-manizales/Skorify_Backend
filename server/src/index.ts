@@ -1,7 +1,7 @@
 import { runIraca } from "@scifamek-open-source/iraca/web-api";
 import { Logger } from "@scifamek-open-source/logger";
 import { join } from "node:path";
-
+import { middleware } from "./middleware";
 
 async function main() {
   const loggerFolder = "logs";
@@ -10,8 +10,10 @@ async function main() {
 
   const { container, controllers, server } = await runIraca({
     dirname: __dirname,
+    enabledHandler: middleware,
     port: 9898,
     initServerLogger,
+
     loggerConfiguration: {
       logger: runtimeLogger,
     },
