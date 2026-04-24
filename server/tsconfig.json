@@ -7,7 +7,7 @@
     "noImplicitReturns": false,
     "noUnusedLocals": false,
     "outDir": "dist",
-    "sourceMap": false,
+    "sourceMap": true,
     "strict": true,
     "target": "es2017",
     "experimentalDecorators": true,
@@ -16,6 +16,6 @@
   },
   "compileOnSave": true,
 
-  "include": ["src", "src/index.ts", "../domain/src/features/user/get-user-by-id"],
+  "include": ["src", "src/index.ts", "../domain/src/features/**.*"],
   "exclude": ["src/**/*.test.ts"]
 }

@@ -27,6 +27,21 @@ const prediction2 = PredictionEntity.build({
 });
 
 export class PredictionInMemoryRepository extends PredictionContract {
+  deleteById(id: string): Promise<PredictionEntity | null> {
+    throw new Error("Method not implemented.");
+  }
+  modifyById(id: string, entity: PredictionEntity): Promise<PredictionEntity | null> {
+    throw new Error("Method not implemented.");
+  }
+  getAll(): Promise<PredictionEntity[]> {
+    throw new Error("Method not implemented.");
+  }
+  getByIDs(ids: string[]): Promise<PredictionEntity[]> {
+    throw new Error("Method not implemented.");
+  }
+  filter(filters: any): Promise<PredictionEntity[]> {
+    throw new Error("Method not implemented.");
+  }
 
   static predictions: PredictionEntity[] = [
     prediction,

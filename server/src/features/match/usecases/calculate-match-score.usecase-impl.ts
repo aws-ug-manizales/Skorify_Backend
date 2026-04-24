@@ -7,11 +7,12 @@ import {
   MatchEntity
 } from "@skorify/domain/match";
 import { DomainEvent } from "@skorify/domain/core";
-import { PredictionContract, PredictionEntity } from "@skorify/domain/prediction";
+import { PredictionEntity, UpdatePredictionScoreUsecase } from "@skorify/domain/prediction";
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
+    private updatePredictionScoreUsecase: UpdatePredictionScoreUsecase
   ) {
     super();
   }
@@ -49,14 +50,19 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
       const scoreResult = result;
       console.log({
-        predictionId: prediction.id, 
-        prediction: `${prediction.awayTeamScore}:${prediction.localTeamScore}`, 
-        matchResult: `${match.awayTeamScore}:${match.localTeamScore}`, 
-        scoreResult: scoreResult.total, 
-        breakdown: scoreResult.breakdown 
+        predictionId: prediction.id,
+        prediction: `${prediction.awayTeamScore}:${prediction.localTeamScore}`,
+        matchResult: `${match.awayTeamScore}:${match.localTeamScore}`,
+        scoreResult: scoreResult.total,
+        breakdown: scoreResult.breakdown
       });
 
-      // await this.predictionContract.save(prediction);
+      await this.updatePredictionScoreUsecase.call({
+        predictionId: prediction.id,
+        score: scoreResult.total,
+        isExactScore: prediction.isExactScore
+      });
+      //TODO: Verificar si debe aumentar la racha o resetear
 
     }
   }

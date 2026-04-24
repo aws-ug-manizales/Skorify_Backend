@@ -1,6 +1,6 @@
 import { MatchContract, MatchEntity } from "@skorify/domain/match";
 import { PredictionEntity } from "@skorify/domain/prediction";
-import { PredictionInMemoryRepository } from "src/features/prediction/prediction-in-memory.repository";
+import { PredictionInMemoryRepository } from "src/features/prediction/infrastructure/prediction-in-memory.repository";
 
 const match = MatchEntity.build({
   id: "3feb69ea-d146-4964-a007-233eb36dac82",
@@ -11,6 +11,21 @@ const match = MatchEntity.build({
 
 
 export class MatchInMemoryRepository extends MatchContract {
+  deleteById(id: string): Promise<MatchEntity | null> {
+    throw new Error("Method not implemented.");
+  }
+  modifyById(id: string, entity: MatchEntity): Promise<MatchEntity | null> {
+    throw new Error("Method not implemented.");
+  }
+  getAll(): Promise<MatchEntity[]> {
+    throw new Error("Method not implemented.");
+  }
+  getByIDs(ids: string[]): Promise<MatchEntity[]> {
+    throw new Error("Method not implemented.");
+  }
+  filter(filters: any): Promise<MatchEntity[]> {
+    throw new Error("Method not implemented.");
+  }
   matches: MatchEntity[] = [
     match
   ];
