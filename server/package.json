@@ -16,16 +16,18 @@
   },
   "dependencies": {
     "@skorify/domain": "./libs/domain",
+    "@skorify/shared": "./libs/shared",
     "@scifamek-open-source/iraca": "9.2.0",
-    "@scifamek-open-source/logger": "1.1.2"
+    "@scifamek-open-source/logger": "1.1.2",
+    "skorifydata": "github:aws-ug-manizales/Skorify_Data#v.1.1.1"
   },
   "devDependencies": {
     "@types/node": "22.5.0",
+    "copyfiles": "^2.4.1",
     "nodemon": "3.1.10",
     "ts-node": "10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "5.8.3",
-    "copyfiles": "^2.4.1"
+    "typescript": "5.8.3"
   },
   "keywords": [],
   "author": "",

@@ -3,6 +3,7 @@ import {
   CreateUserParam,
   CreateUserUsecase,
   UserContract,
+  UserEntity,
 } from "@skorify/domain/user";
 import {
   BasicDomainEvent,

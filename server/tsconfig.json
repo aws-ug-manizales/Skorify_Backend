@@ -15,7 +15,6 @@
     "declaration": true
   },
   "compileOnSave": true,
-
-  "include": ["src", "src/index.ts", "../domain/src/features/**.*"],
+  "include": ["src", "src/index.ts"],
   "exclude": ["src/**/*.test.ts"]
 }

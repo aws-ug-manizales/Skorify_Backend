@@ -8,11 +8,14 @@ import {
 } from "@skorify/domain/match";
 import { DomainEvent } from "@skorify/domain/core";
 import { PredictionEntity, UpdatePredictionScoreUsecase } from "@skorify/domain/prediction";
+import { UserContract, GetUserByIdUsecase, GottenUserDomainEvent } from "@skorify/domain/user";
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
-    private updatePredictionScoreUsecase: UpdatePredictionScoreUsecase
+    private updatePredictionScoreUsecase: UpdatePredictionScoreUsecase,
+    private userContract: UserContract,
+    private getUserByIdUsecase: GetUserByIdUsecase
   ) {
     super();
   }
@@ -44,9 +47,9 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
   private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]): Promise<void> {
 
-    for (const prediction of predictions) {
-      const result = prediction.calculateScore(match.awayTeamScore, match.localTeamScore);
 
+await Promise.all(predictions.map(async (prediction) => {
+      const result = prediction.calculateScore(match.awayTeamScore, match.localTeamScore);
 
       const scoreResult = result;
       console.log({
@@ -62,10 +65,19 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
         score: scoreResult.total,
         isExactScore: prediction.isExactScore
       });
-      //TODO: Verificar si debe aumentar la racha o resetear
 
-    }
+      // Lógica de racha (streak)
+      const userDE = await this.getUserByIdUsecase.call({ userId: prediction.userId });
+      if (userDE.is(GottenUserDomainEvent)) {
+        const user = userDE.payload as any; // Cast a any temporalmente por falta de propiedad streak en el dominio
+        const currentStreak = user.streak || 0;
+        const newStreak = prediction.isExactScore ? currentStreak + 1 : 0;
+
+        await this.userContract.modifyById(user.id, {
+          ...user,
+          streak: newStreak
+        } as any);
+      }
+    }));
   }
 }
-
-
