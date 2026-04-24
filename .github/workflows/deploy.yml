@@ -64,6 +64,13 @@ jobs:
           cd server
           timeout 10s pnpm run start:dev || true
 
+      - name: READ LOGS
+        id: file
+        run: |
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          cat server/logs/init-server.log >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: SEND MAIL TO FRONT
         uses: dawidd6/action-send-mail@v3
         with:
@@ -72,10 +79,9 @@ jobs:
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
           subject: Resultado del workflow
-          to: scifamek@gmail.com
+          to: ${{vars.FRONT_EMAIL}}
           from: Mi App <${{ secrets.EMAIL_USER }}>
-          body: |
-            El workflow terminó correctamente
+          body: ${{ steps.file.outputs.BODY }}
 
 
 
