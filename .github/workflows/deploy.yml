@@ -12,6 +12,9 @@ name: Build Server
 
   workflow_dispatch:
 
+env:
+  SKO_PREDICTION_EDITING_WINDOW: ${{ vars.SKO_PREDICTION_EDITING_WINDOW }}
+
 jobs:
   BUILD_AND_TEST:
     runs-on: ubuntu-latest
