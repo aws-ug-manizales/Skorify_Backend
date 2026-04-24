@@ -1,5 +1,5 @@
 import { MatchEntity } from "@skorify/domain/match";
-import { MatchRepository } from "../features/match/infrastructure/match.repository";
+import { MatchRepository } from "../src/repositories/match.repository";
 
 async function testMatchRepository() {
   const repo = new MatchRepository();

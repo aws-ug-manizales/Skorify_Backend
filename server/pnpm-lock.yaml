@@ -17,6 +17,9 @@ importers:
       '@skorify/domain':
         specifier: ./libs/domain
         version: link:libs/domain
+      '@skorify/shared':
+        specifier: ./libs/shared
+        version: link:libs/shared
     devDependencies:
       '@types/node':
         specifier: 22.5.0

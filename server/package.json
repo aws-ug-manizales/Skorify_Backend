@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@skorify/domain": "./libs/domain",
+    "@skorify/shared": "./libs/shared",
     "@scifamek-open-source/iraca": "9.2.0",
     "@scifamek-open-source/logger": "1.1.2"
   },
