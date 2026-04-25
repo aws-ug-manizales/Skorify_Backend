@@ -46,7 +46,7 @@ jobs:
         run: |
           cd domain
           pnpm i --no-frozen-lockfile
-          pnpm run build-pipeline
+          pnpm run build
 
       - name: Delay 10 segundos
         run: sleep 1
