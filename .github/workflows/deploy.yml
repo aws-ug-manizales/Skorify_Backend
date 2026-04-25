@@ -46,7 +46,8 @@ jobs:
           cd domain
           pnpm i --no-frozen-lockfile
           pnpm run build
-
+      - name: Delay 10 segundos
+        run: sleep 10
       - name: BUILD SHARED
         run: |
           cd shared
