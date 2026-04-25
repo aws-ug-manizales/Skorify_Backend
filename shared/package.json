@@ -9,7 +9,7 @@
     "copy-all": "copyfiles -u 1 dist/**/* ../server/libs/shared"
   },
   "dependencies": {
-    "@skorify/domain": "libs/domain"
+    "@skorify/domain": "./libs/domain"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
