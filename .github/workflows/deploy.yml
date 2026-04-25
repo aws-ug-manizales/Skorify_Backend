@@ -50,6 +50,9 @@ jobs:
       - name: BUILD SHARED
         run: |
           cd shared
+          ls
+          cd lib
+          ls
           pnpm i --no-frozen-lockfile
           pnpm run build
 
