@@ -9,8 +9,10 @@ import {
   MassiveRegisterConfiguration,
 } from "@scifamek-open-source/iraca/web-api";
 import { generalMethodMapper } from "@skorify/domain/core";
+import { exec } from "node:child_process";
 type UsecaseInfo = {
   module: string;
+  modulePascal: string;
   usecaseName: string;
   kebadUsecaseName: string;
   path: string;
@@ -22,8 +24,10 @@ type Templates = {
   tsconfigTemplate: string;
   samTemplate: string;
   helpersTemplate: string;
+  repositoryTemplate: string;
 };
 export class SingleLambdaAWSBuilder extends Builder {
+  generatedFolder = "generated";
   distFolder = "dist";
   async build(config: BuilderConfiguration): Promise<void> {
     const usecases = await getUsecases(config.serverFolder);
@@ -50,9 +54,22 @@ export class SingleLambdaAWSBuilder extends Builder {
       join(templatesFolder, "./helpers.ts"),
       "utf-8",
     );
+    const repositoryTemplate = await readFile(
+      join(templatesFolder, "./base.repository.ts"),
+      "utf-8",
+    );
 
+    const fullGeneratedFolder = join(config.root, this.generatedFolder);
     const fullDistFolder = join(config.root, this.distFolder);
+    const existsGenerated = await existsFile(fullGeneratedFolder);
     const exists = await existsFile(fullDistFolder);
+    if (!existsGenerated) {
+      // await rm(fullDistFolder, {
+      //   force: true,
+      //   recursive: true,
+      // });
+      await mkdir(fullGeneratedFolder);
+    }
     if (!exists) {
       // await rm(fullDistFolder, {
       //   force: true,
@@ -61,6 +78,7 @@ export class SingleLambdaAWSBuilder extends Builder {
       await mkdir(fullDistFolder);
     }
 
+    await this.createModuleFolders(usecases, fullGeneratedFolder);
     await this.createModuleFolders(usecases, fullDistFolder);
     const promises = [];
     for (const usecaseConfig of usecases) {
@@ -73,7 +91,9 @@ export class SingleLambdaAWSBuilder extends Builder {
           tsconfigTemplate,
           samTemplate,
           helpersTemplate,
+          repositoryTemplate,
         },
+        fullGeneratedFolder,
         fullDistFolder,
       );
 
@@ -106,6 +126,7 @@ ${resourcesYML.join("\n")}`,
     usecasesConfig: UsecasesInfo,
     usecaseConfig: UsecaseInfo,
     templates: Templates,
+    fullGeneratedFolder: string,
     fullDistFolder: string,
   ): Promise<string> {
     const {
@@ -114,13 +135,14 @@ ${resourcesYML.join("\n")}`,
       tsconfigTemplate,
       helpersTemplate,
       samTemplate,
+      repositoryTemplate,
     } = templates;
     let myYamlTemplate = samTemplate;
 
     const source = await readFile(usecaseConfig.path, "utf-8");
 
     const injections: string[] = [];
-    const moduleFolder = join(fullDistFolder, usecaseConfig.module);
+    const moduleFolder = join(fullGeneratedFolder, usecaseConfig.module);
 
     const usecaseFolder = join(moduleFolder, usecaseConfig.kebadUsecaseName);
     const existsUsecaseFolder = await existsFile(usecaseFolder);
@@ -132,9 +154,18 @@ ${resourcesYML.join("\n")}`,
       join(usecaseFolder, `${usecaseConfig.kebadUsecaseName}.usecase-impl.ts`),
       source,
     );
-    await writeFile(join(usecaseFolder, `package.json`), packageTemplate);
+    await writeFile(
+      join(usecaseFolder, `package.json`),
+      packageTemplate
+        .replace(toToken("MODULE"), usecaseConfig.module)
+        .replace(toToken("USECASE"), usecaseConfig.kebadUsecaseName),
+    );
     await writeFile(join(usecaseFolder, `tsconfig.json`), tsconfigTemplate);
     await writeFile(join(usecaseFolder, `helpers.ts`), helpersTemplate);
+    await writeFile(
+      join(usecaseFolder, `${usecaseConfig.module}.repository.ts`),
+      repositoryTemplate.replace(toToken("ENTITY"), usecaseConfig.modulePascal),
+    );
 
     let imports: string[] = [];
     const sourceFile = ts.createSourceFile(
@@ -192,6 +223,7 @@ ${resourcesYML.join("\n")}`,
                   new RegExp(toToken("KEBAD_MAIN_USECASE"), "g"),
                   `${usecaseConfig.module}/${usecaseConfig.kebadUsecaseName}`,
                 )
+
                 .replace(
                   new RegExp(toToken("METHOD"), "g"),
                   getMethodToUse(
@@ -209,15 +241,24 @@ ${resourcesYML.join("\n")}`,
             const type = param.type?.getText() ?? "any";
             dependencies.push(type);
             this.addImport(imports, usecasesConfig, type, source);
-            injections.push(`
-    container.add({
-      abstraction: ${type},
-      implementation: generate({
-        dependencyName: "${type}",
-        methodMapper
-      }),
-    });
-              `);
+            if (type.includes("Usecase")) {
+              injections.push(`
+      container.add({
+        abstraction: ${type},
+        implementation: generate({
+          dependencyName: "${type}",
+          methodMapper
+        }),
+      });
+                `);
+            } else if (type.includes("Contract")) {
+              injections.push(`
+      container.add({
+        abstraction: ${type},
+        implementation: ${usecaseConfig.modulePascal}Repository
+      });
+                `);
+            }
           });
 
           replacedLambdaTemplate = replacedLambdaTemplate.replace(
@@ -230,6 +271,19 @@ ${resourcesYML.join("\n")}`,
           );
 
           replacedLambdaTemplate = replacedLambdaTemplate.replace(
+            new RegExp(toToken("IDENTIFIER"), "g"),
+            `${usecaseConfig.modulePascal}`,
+          );
+          replacedLambdaTemplate = replacedLambdaTemplate.replace(
+            new RegExp(toToken("MODULE_PASCAL"), "g"),
+            `${usecaseConfig.modulePascal}`,
+          );
+          replacedLambdaTemplate = replacedLambdaTemplate.replace(
+            new RegExp(toToken("MODULE"), "g"),
+            `${usecaseConfig.module}`,
+          );
+
+          replacedLambdaTemplate = replacedLambdaTemplate.replace(
             toToken("MAIN_USECASE_DEPENDENCIES"),
             `[${dependencies.join(",")}]`,
           );
@@ -238,6 +292,13 @@ ${resourcesYML.join("\n")}`,
             join(usecaseFolder, `index.ts`),
             replacedLambdaTemplate,
           );
+
+          const n = new Promise<void>((resolve, reject) => {
+            exec(`cd ${usecaseFolder} && pnpm run build `, () => {
+              resolve();
+            });
+          });
+          await n;
         }
       }
     }

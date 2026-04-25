@@ -3,6 +3,7 @@
 // import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
 import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
 import { generate } from "./helpers";
+import { {{MODULE_PASCAL}}Repository } from "./{{MODULE}}.repository";
 
 {{IMPORTS}}
 

@@ -6,4 +6,8 @@ export class Entity {
   constructor(id: Id) {
     this.id = id;
   }
+
+  public getId(): Id {
+    return this.id;
+  }
 }

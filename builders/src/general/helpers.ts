@@ -13,6 +13,7 @@ export async function getUsecases(serverFolder: string) {
     .filter((x) => x !== null)
     .map((x: RegExpExecArray) => ({
       module: x[1],
+      modulePascal: kebabToPascal(x[1]),
 
       kebadUsecaseName: x[2],
       usecaseName: kebabToPascal(x[2]) + "Usecase",

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npx esbuild index.ts  --bundle  --platform=node --target=node22 --outfile=dist/index.js"
+    "build": "npx esbuild index.ts  --bundle  --platform=node --target=node22 --outfile=../../../dist/{{MODULE}}/{{USECASE}}/index.js",
+    "copy-template": "copyfiles template.yaml ./dist"
 
   },
   "dependencies": {
@@ -13,6 +14,7 @@
     "@aws-sdk/client-lambda": "^3.600.0"
   },
   "devDependencies": {
+    "copyfiles": "^2.4.1",
     "@types/node": "22.5.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",

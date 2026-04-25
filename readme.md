@@ -198,4 +198,12 @@ pnpm run build
 cd builder
 pnpm i
 pnpm run sla
+
+```
+Luego para ejecutar lo que compiló, debemos ir a la carpeta dist, y allí encontraremos el archivo "template.yaml". Con ese archivo podemos levantar SAM usando el siguiente comando
+
+**Deben tener instaldo SAM**
+
+```shell
+sam local start-api
 ```
