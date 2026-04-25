@@ -5,11 +5,14 @@ import {
   TournamentInstanceContract,
   TournamentInstanceEntity,
   TournamentInstanceWithSameNameDomainEvent,
+  TournamentInstanceSavedDomainEvent,
+  TournamentInstanceNotSavedDomainEvent,
 } from "@skorify/domain/tournament-instance";
 import { DomainEvent } from "@skorify/domain/core";
 import {
   GetTournamentByIdUsecase,
   GottenTournamentDomainEvent,
+  TournamentNotSavedDomainEvent,
 } from "@skorify/domain/tournament";
 
 export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanceUsecase {
@@ -52,10 +55,9 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       await this.tournamentInstanceContract.save(tournamentInstance);
 
     if (!saved) {
-      //malo
+      return TournamentInstanceNotSavedDomainEvent();
     }
 
-    //bien
-    return EntityNotInstanciableDomainEvent();
+    return TournamentInstanceSavedDomainEvent();
   }
 }
