@@ -47,6 +47,12 @@ jobs:
           pnpm i --no-frozen-lockfile
           pnpm run build
 
+      - name: BUILD SHARED
+        run: |
+          cd shared
+          pnpm i --no-frozen-lockfile
+          pnpm run build
+
       - name: INSTALL
         run: |
           cd server
