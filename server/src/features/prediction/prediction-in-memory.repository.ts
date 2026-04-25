@@ -37,25 +37,29 @@ export class PredictionInMemoryRepository extends PredictionContract {
     super();
   }
 
-  async getById(id: string): Promise<PredictionEntity | null> {
-    const response = PredictionInMemoryRepository.predictions.find((p) => p.id == id);
+   async getById(id: string): Promise<PredictionEntity | null> {
+     const response = PredictionInMemoryRepository.predictions.find((p) => p.id == id);
 
-    if (!response) {
-      return null;
-    }
-    return response;
-  }
-  save(pred: PredictionEntity): Promise<PredictionEntity | null> {
-    const predictionExists = PredictionInMemoryRepository.predictions.find((p) => p.id == pred.id);
-    if (predictionExists) {
-      // remove and update
-      PredictionInMemoryRepository.predictions = PredictionInMemoryRepository.predictions.filter((p) => p.id != pred.id);
-      PredictionInMemoryRepository.predictions.push(pred);
-      return Promise.resolve(pred);
-    }
-    PredictionInMemoryRepository.predictions.push(pred);
-    return Promise.resolve(pred);
-  }
+     if (!response) {
+       return null;
+     }
+     return response;
+   }
+   save(pred: PredictionEntity): Promise<PredictionEntity | null> {
+     const predictionExists = PredictionInMemoryRepository.predictions.find((p) => p.id == pred.id);
+     if (predictionExists) {
+       // remove and update
+       PredictionInMemoryRepository.predictions = PredictionInMemoryRepository.predictions.filter((p) => p.id != pred.id);
+       PredictionInMemoryRepository.predictions.push(pred);
+       return Promise.resolve(pred);
+     }
+     PredictionInMemoryRepository.predictions.push(pred);
+     return Promise.resolve(pred);
+   }
+
+   async getByMatchId(matchId: string): Promise<PredictionEntity[]> {
+     return PredictionInMemoryRepository.predictions.filter((p) => p.matchId === matchId);
+   }
 
 
 }

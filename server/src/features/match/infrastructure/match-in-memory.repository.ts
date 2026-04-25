@@ -1,11 +1,9 @@
 import { MatchContract, MatchEntity } from "@skorify/domain/match";
-import { PredictionEntity } from "@skorify/domain/prediction";
-import { PredictionInMemoryRepository } from "src/features/prediction/prediction-in-memory.repository";
 
 const match = MatchEntity.build({
   id: "3feb69ea-d146-4964-a007-233eb36dac82",
-  localTeamId: "local-team-id",
-  awayTeamId: "away-team-id",
+  localTeamId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  awayTeamId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
   date: new Date("2027-10-15T15:00:00Z"),
 });
 
@@ -59,15 +57,7 @@ export class MatchInMemoryRepository extends MatchContract {
     return this.matches.filter((m) => ids.includes(m.id));
   }
 
-  async filter(filters: any): Promise<MatchEntity[]> {
-    return this.matches;
-  }
-
-   async getPredictionsByMatchId(matchId: string): Promise<PredictionEntity[] | null> {
-     return PredictionInMemoryRepository.predictions.filter((p) => p.matchId === matchId);
+   async filter(filters: any): Promise<MatchEntity[]> {
+     return this.matches;
    }
-
-   async hasPredictionsForMatchId(matchId: string): Promise<boolean> {
-     return PredictionInMemoryRepository.predictions.some((p) => p.matchId === matchId);
-   }
-}
+ }

@@ -1,9 +1,11 @@
-import { MatchStatus } from "../../match.entity";
+import { Id } from "../../../../core/entity";
+import { MatchStatus } from "../../match.state";
+
 
 export interface EditMatchParam {
-  matchId: string;
-  awayTeamId: string;
-  localTeamId: string;
+  matchId: Id;
+  awayTeamId: Id;
+  localTeamId: Id;
   date: Date;
   status: MatchStatus;
 }

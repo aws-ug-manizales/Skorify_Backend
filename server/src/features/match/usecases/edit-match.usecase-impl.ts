@@ -9,10 +9,14 @@ import {
   MatchEditedDomainEvent,
   MatchStatus,
 } from "@skorify/domain/match";
+import { PredictionContract } from "@skorify/domain/prediction";
 import { DomainEvent } from "@skorify/domain/core";
 
 export class EditMatchUsecaseImpl extends EditMatchUsecase {
-  constructor(private matchContract: MatchContract) {
+  constructor(
+    private matchContract: MatchContract,
+    private predictionContract: PredictionContract,
+  ) {
     super();
   }
 
@@ -39,7 +43,7 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
 
     // 2.5. Validar que no se intenta cerrar el partido (cambiar a Finished)
     if (status === MatchStatus.Finished) {
-      return MatchCannotBeEditedDomainEvent(matchInDB); // O crear un evento específico, pero por ahora reutilizar
+      return MatchCannotBeEditedDomainEvent(matchInDB);
     }
 
     // 3. Validar cambios de equipos
@@ -48,9 +52,9 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
       matchInDB.localTeamId !== localTeamId;
 
     if (teamsChanged) {
-      // Validar si existen predicciones para este match
-      const hasPredictions =
-        await this.matchContract.hasPredictionsForMatchId(matchId);
+      // Obtener predicciones desde el contrato de predicciones (equipo de datos)
+      const predictions = await this.predictionContract.getByMatchId(matchId);
+      const hasPredictions = predictions.length > 0;
 
       // Si hay predicciones y se intenta cambiar equipos, no permitir
       if (hasPredictions) {

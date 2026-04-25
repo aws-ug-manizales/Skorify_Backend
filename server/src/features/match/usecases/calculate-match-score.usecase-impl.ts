@@ -6,12 +6,13 @@ import {
   MatchContract,
   MatchEntity
 } from "@skorify/domain/match";
-import { DomainEvent } from "@skorify/domain/core";
 import { PredictionContract, PredictionEntity } from "@skorify/domain/prediction";
+import { DomainEvent } from "@skorify/domain/core";
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
+    private predictionContract: PredictionContract,
   ) {
     super();
   }
@@ -32,7 +33,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
 
     match.setScores(4, 2);
-    const predictions = await this.matchContract.getPredictionsByMatchId(matchId);
+    const predictions = await this.predictionContract.getByMatchId(matchId);
 
     if (predictions && predictions.length > 0) {
       await this.calculateScores(match, predictions);
