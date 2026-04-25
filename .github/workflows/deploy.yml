@@ -50,11 +50,10 @@ jobs:
       - name: BUILD SHARED
         run: |
           cd shared
-          ls
+          pnpm i --force
           echo "Libs"
           cd libs
           ls
-          pnpm i --no-frozen-lockfile
           pnpm run build
 
       - name: INSTALL
