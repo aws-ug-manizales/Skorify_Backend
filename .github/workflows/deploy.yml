@@ -65,6 +65,7 @@ jobs:
           timeout 10s pnpm run start:dev || true
 
       - name: READ LOGS
+        if: ${{ github.ref == 'refs/heads/development' && ( github.event_name == 'workflow_dispatch' || ( github.event.action == 'closed' && github.event_name == 'pull_request') ) }}
         id: file
         run: |
           echo "BODY<<EOF" >> $GITHUB_OUTPUT
