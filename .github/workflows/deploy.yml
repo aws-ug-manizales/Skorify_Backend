@@ -3,6 +3,7 @@ name: Build Server
   push:
     branches:
       - feature/**
+      - development
 
   pull_request:
     types: [closed, opened, edited]
@@ -46,8 +47,10 @@ jobs:
           cd domain
           pnpm i --no-frozen-lockfile
           pnpm run build
+
       - name: Delay 10 segundos
-        run: sleep 10
+        run: sleep 1
+
       - name: BUILD SHARED
         run: |
           cd shared
@@ -69,7 +72,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/development' && ( github.event_name == 'workflow_dispatch' || ( github.event.action == 'closed' && github.event_name == 'pull_request') ) }}
         run: |
           cd server
-          timeout 10s pnpm run start:dev || true
+          timeout 5s pnpm run start:dev || true
 
       - name: READ LOGS
         if: ${{ github.ref == 'refs/heads/development' && ( github.event_name == 'workflow_dispatch' || ( github.event.action == 'closed' && github.event_name == 'pull_request') ) }}
