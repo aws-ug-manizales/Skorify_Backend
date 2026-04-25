@@ -54,7 +54,7 @@ jobs:
       - name: BUILD SHARED
         run: |
           cd shared
-          pnpm i --no-frozen-lockfile
+          pnpm i --force
           pnpm run build
 
       - name: INSTALL
