@@ -1,18 +1,31 @@
 import { RunIracaConfig } from "@scifamek-open-source/iraca/web-api";
-import { MatchContract } from "@skorify/domain/match";
+import { MatchContract, MatchEntity } from "@skorify/domain/match";
 import {
   JsonDataSource,
   MatchRepository,
   UserRepository,
   PredictionRepository,
+  TournamentRepository,
+  TournamentInstanceRepository,
 } from "@skorify/shared";
 import { UserContract, UserEntity } from "@skorify/domain/user";
-import { PredictionContract } from "@skorify/domain/prediction";
+import {
+  PredictionContract,
+  PredictionEntity,
+} from "@skorify/domain/prediction";
+import {
+  TournamentContract,
+  TournamentEntity,
+} from "@skorify/domain/tournament";
+import {
+  TournamentInstanceContract,
+  TournamentInstanceEntity,
+} from "@skorify/domain/tournament-instance";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
   {
     id: "MatchDatasource",
-    value: new JsonDataSource<UserEntity>("matches.json"),
+    value: new JsonDataSource<MatchEntity>("matches.json"),
   },
   {
     id: "UserDatasource",
@@ -20,8 +33,18 @@ export const extraDependencies: RunIracaConfig["extraDependencies"] = [
   },
   {
     id: "PredictionDatasource",
-    value: new JsonDataSource<UserEntity>("predictions.json"),
+    value: new JsonDataSource<PredictionEntity>("predictions.json"),
   },
+
+  {
+    id: "TournamentDatasource",
+    value: new JsonDataSource<TournamentEntity>("tournaments.json"),
+  },
+  {
+    id: "TournamentInstanceDatasource",
+    value: new JsonDataSource<TournamentEntity>("tournament-intances.json"),
+  },
+
   {
     abstraction: MatchContract,
     implementation: MatchRepository,
@@ -36,5 +59,15 @@ export const extraDependencies: RunIracaConfig["extraDependencies"] = [
     abstraction: PredictionContract,
     implementation: PredictionRepository,
     dependencies: ["PredictionDatasource"],
+  },
+  {
+    abstraction: TournamentContract,
+    implementation: TournamentRepository,
+    dependencies: ["TournamentDatasource"],
+  },
+  {
+    abstraction: TournamentInstanceContract,
+    implementation: TournamentInstanceRepository,
+    dependencies: ["TournamentInstanceDatasource"],
   },
 ];

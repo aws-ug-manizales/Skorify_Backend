@@ -27,7 +27,9 @@
     "./core": "./core/index.js",
     "./match": "./features/match/index.js",
     "./user": "./features/user/index.js",
-    "./prediction": "./features/prediction/index.js"
+    "./prediction": "./features/prediction/index.js",
+    "./tournament": "./features/tournament/index.js",
+    "./tournament-instance": "./features/tournament-instance/index.js"
   },
   "files": [
     "match",
