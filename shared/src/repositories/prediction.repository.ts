@@ -5,9 +5,4 @@ export class PredictionRepository extends BaseRepository<PredictionEntity> {
   constructor(ds: DataSource<PredictionEntity>) {
     super(ds);
   }
-
-  async getByMatchId(matchId: string): Promise<PredictionEntity[]> {
-    const all = await this.getAll();
-    return all.filter((p) => p.matchId === matchId);
-  }
 }

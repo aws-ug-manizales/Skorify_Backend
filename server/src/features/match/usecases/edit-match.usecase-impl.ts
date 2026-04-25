@@ -52,8 +52,8 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
       matchInDB.localTeamId !== localTeamId;
 
     if (teamsChanged) {
-      // Obtener predicciones desde el contrato de predicciones (equipo de datos)
-      const predictions = await this.predictionContract.getByMatchId(matchId);
+      // Obtener predicciones usando filter genérico (equipo de datos)
+      const predictions = await this.predictionContract.filter({ matchId });
       const hasPredictions = predictions.length > 0;
 
       // Si hay predicciones y se intenta cambiar equipos, no permitir

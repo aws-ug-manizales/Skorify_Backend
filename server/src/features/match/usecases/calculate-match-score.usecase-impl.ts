@@ -33,7 +33,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
 
     match.setScores(4, 2);
-    const predictions = await this.predictionContract.getByMatchId(matchId);
+    const predictions = await this.predictionContract.filter({ matchId });
 
     if (predictions && predictions.length > 0) {
       await this.calculateScores(match, predictions);
