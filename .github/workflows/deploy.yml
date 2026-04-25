@@ -54,6 +54,7 @@ jobs:
           echo "Libs"
           cd libs
           ls
+          cd ..
           pnpm run build
 
       - name: INSTALL
