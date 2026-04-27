@@ -1,43 +1,82 @@
 import { Entity, Id } from "../../core/entity";
 
-export class MatchEntity extends Entity {
+export type MatchStatus = "scheduled" | "in_progress" | "finished";
+export type MatchStage = "group" | "finals";
+
+export interface MatchBuildParams {
+  id: Id;
+  homeTeamId: string;
   awayTeamId: string;
-  localTeamId: string;
-  date: Date;
-  awayTeamScore: number;
-  localTeamScore: number;
-  
+  tournamentId: string;
+  kickOff: Date;
+  homeGoals?: number | null;
+  awayGoals?: number | null;
+  status?: MatchStatus;
+  stage?: MatchStage;
+  venue?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date | null;
+}
+
+export class MatchEntity extends Entity {
+  homeTeamId: string;
+  awayTeamId: string;
+  tournamentId: string;
+  kickOff: Date;
+  homeGoals: number | null;
+  awayGoals: number | null;
+  status: MatchStatus;
+  stage: MatchStage;
+  venue: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+
   private timeToCloseInMinutes: number;
 
-  private constructor(id: Id, awayTeamId: string, localTeamId: string, date: Date) {
-    super(id);
-    this.awayTeamId = awayTeamId;
-    this.localTeamId = localTeamId;
-    this.date = date;
+  private constructor(params: MatchBuildParams) {
+    super(params.id);
+    this.homeTeamId = params.homeTeamId;
+    this.awayTeamId = params.awayTeamId;
+    this.tournamentId = params.tournamentId;
+    this.kickOff = params.kickOff;
+    this.homeGoals = params.homeGoals ?? null;
+    this.awayGoals = params.awayGoals ?? null;
+    this.status = params.status ?? "scheduled";
+    this.stage = params.stage ?? "group";
+    this.venue = params.venue ?? null;
+    this.createdAt = params.createdAt ?? new Date();
+    this.updatedAt = params.updatedAt ?? null;
     this.timeToCloseInMinutes = 10;
-    this.awayTeamScore = 0;
-    this.localTeamScore = 0;
   }
 
-  static build(params: { id: Id, awayTeamId: string; localTeamId: string; date: Date }): MatchEntity {
-    return new MatchEntity(params.id, params.awayTeamId, params.localTeamId, params.date);
+  static build(params: MatchBuildParams): MatchEntity {
+    return new MatchEntity(params);
   }
 
   public canBet(): boolean {
-    // TODO: Implement business logic to determine if betting is allowed
-    // 1. Validar si es posible hacer una apuesta (en tiempo, por estado)
-    // 2. Verificar si la competencia esta vigente ? Por definir
-    // 3. Verificar integridad de la apuesta
-    return true;
+    if (this.status !== "scheduled") {
+      return false;
+    }
+    return !this.isMatchClose();
   }
-
 
   public isMatchClose(): boolean {
-    return this.date.getTime() - Date.now() < this.timeToCloseInMinutes * 60 * 1000;
+    return this.kickOff.getTime() - Date.now() < this.timeToCloseInMinutes * 60 * 1000;
   }
-  
-  public setScores(awayTeamScore: number, localTeamScore: number): void {
-    this.awayTeamScore = awayTeamScore;
-    this.localTeamScore = localTeamScore;
+
+  public setScores(homeGoals: number, awayGoals: number): void {
+    this.homeGoals = homeGoals;
+    this.awayGoals = awayGoals;
+  }
+
+  public start(): void {
+    this.status = "in_progress";
+    this.updatedAt = new Date();
+  }
+
+  public finish(homeGoals: number, awayGoals: number): void {
+    this.setScores(homeGoals, awayGoals);
+    this.status = "finished";
+    this.updatedAt = new Date();
   }
 }
