@@ -2,7 +2,7 @@ import { Entity, Id } from "../../core/entity";
 
 export interface  MatchAttributes {
   id: Id;
-  tournamentInstanceId: Id;
+  tournamentId: Id;
   awayTeamId: Id;
   localTeamId: Id;
   date: Date;
@@ -10,6 +10,7 @@ export interface  MatchAttributes {
 }
 
 export class MatchEntity extends Entity {
+  tournamentId: Id;
   awayTeamId: Id;
   localTeamId: Id;
   date: Date;
@@ -20,8 +21,9 @@ export class MatchEntity extends Entity {
   private timeToCloseInMinutes: number;
 
   private constructor(attributes: MatchAttributes) {
-    const { id, awayTeamId, localTeamId, date, status } = attributes;
+    const { id, tournamentId, awayTeamId, localTeamId, date, status } = attributes;
     super(id);
+    this.tournamentId = tournamentId;
     this.awayTeamId = awayTeamId;
     this.localTeamId = localTeamId;
     this.date = date;

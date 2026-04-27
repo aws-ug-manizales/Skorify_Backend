@@ -11,44 +11,44 @@ import {
   MatchAlreadyExistsInSameTournamentStageDomainEvent,
 } from "@skorify/domain/match";
 import {
-  GetTournamentInstanceByIdUsecase,
-  GottenTournamentInstanceDomainEvent,
-} from "@skorify/domain/tournament-instance";
-import {
+  GetTournamentByIdUsecase,
+  GottenTournamentDomainEvent,
+} from "@skorify/domain/tournament";
+/* import {
   GetTeamByIdUsecase,
   GottenTeamDomainEvent,
-} from "@skorify/domain/team";
+} from "@skorify/domain/team"; */
 import { DomainEvent } from "@skorify/domain/core";
 
 export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   constructor(
     private matchContract: MatchContract,
-    private getTournamentInstanceByIdUsecase: GetTournamentInstanceByIdUsecase,
-    private getTeamByIdUsecase: GetTeamByIdUsecase,
-  ) {
+    private getTournamentByIdUsecase: GetTournamentByIdUsecase,
+    //private getTeamByIdUsecase: GetTeamByIdUsecase,
+  ) { 
     super();
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { awayTeamId, localTeamId, date, status, tournamentInstanceId } = param;
+    const { awayTeamId, localTeamId, date, status, tournamentId } = param;
 
     // Verify if the tournament instance exists. 
-    const tournamentInstanceDE = await this.getTournamentInstanceByIdUsecase.call({
-      tournamentInstanceId,
+    const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({
+      tournamentId,
     });
 
-    if (tournamentInstanceDE.isNot(GottenTournamentInstanceDomainEvent)) {
+    if (tournamentInstanceDE.isNot(GottenTournamentDomainEvent)) {
         return tournamentInstanceDE;
       }
     
     const existingMatches = await this.matchContract.filter({
-      tournamentInstanceId,
+      tournamentId,
       awayTeamId,
       localTeamId,
     });
     
     const existingMatchesInverted = await this.matchContract.filter({
-      tournamentInstanceId,
+      tournamentId,
       awayTeamId: localTeamId,
       localTeamId: awayTeamId,
     }); 
@@ -65,7 +65,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     // Create a new match entity using the provided parameters. 
     const match = MatchEntity.build({
       id: crypto.randomUUID(),
-      tournamentInstanceId,
+      tournamentId,
       awayTeamId,
       localTeamId,
       date,

@@ -1,7 +1,7 @@
 import { Id } from "../../../../core";
 
 export interface CreateMatchParam {
-  tournamentInstanceId: Id;
+  tournamentId: Id;
   awayTeamId: Id;
   localTeamId: Id;
   date: Date;
