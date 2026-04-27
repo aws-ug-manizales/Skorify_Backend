@@ -1,55 +1,69 @@
 import { Entity, Id } from "../../core/entity";
-
-export interface  MatchAttributes {
-  id: Id;
-  tournamentId: Id;
-  awayTeamId: Id;
-  localTeamId: Id;
-  date: Date;
-  status: "draft" | "scheduled" | "finished";
-}
+import { matchStateCollection, MatchState, MatchStatus } from "./match.state";
 
 export class MatchEntity extends Entity {
-  tournamentId: Id;
   awayTeamId: Id;
   localTeamId: Id;
   date: Date;
   status: "draft" | "scheduled" | "finished";
   awayTeamScore: number;
   localTeamScore: number;
-  
-  private timeToCloseInMinutes: number;
+  private _status: MatchStatus;
+  private _state: MatchState;
+  private _timeToCloseInMinutes: number;
 
-  private constructor(attributes: MatchAttributes) {
-    const { id, tournamentId, awayTeamId, localTeamId, date, status } = attributes;
+  private constructor(id: Id, awayTeamId: Id, localTeamId: Id, date: Date, status: MatchStatus) {
     super(id);
     this.tournamentId = tournamentId;
     this.awayTeamId = awayTeamId;
     this.localTeamId = localTeamId;
     this.date = date;
-    this.status = status;
-    this.timeToCloseInMinutes = 10;
+    this._timeToCloseInMinutes = 10;
     this.awayTeamScore = 0;
     this.localTeamScore = 0;
+    this._status = status;
+    this._state = matchStateCollection[status];
   }
 
-  static build(params: MatchAttributes): MatchEntity | null {
-    return new MatchEntity(params);
+  static build(params: { id: Id; awayTeamId: Id; localTeamId: Id; date: Date; status?: MatchStatus }): MatchEntity {
+    return new MatchEntity(
+      params.id,
+      params.awayTeamId,
+      params.localTeamId,
+      params.date,
+      params.status ?? MatchStatus.Draft,
+    );
+  }
+
+  get status(): MatchStatus {
+    return this._status;
+  }
+
+  set status(value: MatchStatus) {
+    this._status = value;
+    this._state = matchStateCollection[value];
+  }
+
+  get timeToCloseInMinutes(): number {
+    return this._timeToCloseInMinutes;
   }
 
   public canBet(): boolean {
-    // TODO: Implement business logic to determine if betting is allowed
-    // 1. Validar si es posible hacer una apuesta (en tiempo, por estado)
-    // 2. Verificar si la competencia esta vigente ? Por definir
-    // 3. Verificar integridad de la apuesta
-    return true;
+    return this._state.canBet(this);
   }
 
+  public canEdit(): boolean {
+    return this._state.canEdit(this);
+  }
+
+  public canChangeTeams(hasPredictions: boolean): boolean {
+    return this._state.canChangeTeams(this, hasPredictions);
+  }
 
   public isMatchClose(): boolean {
-    return this.date.getTime() - Date.now() < this.timeToCloseInMinutes * 60 * 1000;
+    return this._state.isMatchClose(this);
   }
-  
+
   public setScores(awayTeamScore: number, localTeamScore: number): void {
     this.awayTeamScore = awayTeamScore;
     this.localTeamScore = localTeamScore;

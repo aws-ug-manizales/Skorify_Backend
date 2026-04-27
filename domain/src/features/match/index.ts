@@ -1,7 +1,6 @@
 // Export the entity
 export { MatchEntity } from "./match.entity";
-
-// Export domain events and contract
+export { MatchStatus } from "./match.state";
 export * from "./domain-events";
 
 export { MatchContract } from "./match.contract";
@@ -15,3 +14,5 @@ export { CreateMatchUsecase } from "./usecases/create-match/create-match.usecase
 
 export { CalculateMatchScoreParam } from "./usecases/calculateMatchScore/calculate-match-score.param";
 export { CalculateMatchScoreUsecase } from "./usecases/calculateMatchScore/calculate-match-score.usecase";
+export { EditMatchParam } from "./usecases/edit-match/edit-match.params";
+export { EditMatchUsecase } from "./usecases/edit-match/edit-match.usecase";
