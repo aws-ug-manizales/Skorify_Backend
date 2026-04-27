@@ -11,8 +11,8 @@ export const MatchAlreadyExistsInSameTournamentStageDomainEvent = DomainEventKin
   "MatchAlreadyExistsInSameTournamentStageDomainEvent",
 );
 
-export const InvalidMatchStatusOnCreateDomainEvent = DomainEventKind(
-  "InvalidMatchStatusOnCreateDomainEvent",
+export const matchdoesNotExistDomainEvent = DomainEventKind(
+  "MatchDoesNotExistDomainEvent",
 );
 
 // Domain events related to saving a match

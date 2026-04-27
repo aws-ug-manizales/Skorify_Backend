@@ -1,11 +1,9 @@
+import type { CreateMatchParam } from "@skorify/domain/match";
 import {
-  CreateMatchParam,
   CreateMatchUsecase,
   MatchContract,
   MatchEntity,
-  //Domain events
   EntityNotInstanciableDomainEvent,
-  InvalidMatchStatusOnCreateDomainEvent,
   MatchNotSavedDomainEvent,
   MatchSavedDomainEvent,
   MatchAlreadyExistsInSameTournamentStageDomainEvent,
@@ -14,23 +12,18 @@ import {
   GetTournamentByIdUsecase,
   GottenTournamentDomainEvent,
 } from "@skorify/domain/tournament";
-/* import {
-  GetTeamByIdUsecase,
-  GottenTeamDomainEvent,
-} from "@skorify/domain/team"; */
-import { DomainEvent } from "@skorify/domain/core";
+import type { DomainEvent } from "@skorify/domain/core";
 
 export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   constructor(
     private matchContract: MatchContract,
     private getTournamentByIdUsecase: GetTournamentByIdUsecase,
-    //private getTeamByIdUsecase: GetTeamByIdUsecase,
   ) { 
     super();
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { awayTeamId, localTeamId, date, status, tournamentId } = param;
+    const { awayTeamId, localTeamId, date, tournamentId } = param;
 
     // Verify if the tournament instance exists. 
     const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({
@@ -58,10 +51,6 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       return MatchAlreadyExistsInSameTournamentStageDomainEvent();
     }
 
-    //verify if the status is either "draft" or "scheduled". If it's not, return a domain event indicating that the match status is invalid for creation.
-    if (status !== "draft" && status !== "scheduled") {
-      return InvalidMatchStatusOnCreateDomainEvent();
-    }
     // Create a new match entity using the provided parameters. 
     const match = MatchEntity.build({
       id: crypto.randomUUID(),
@@ -69,7 +58,6 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       awayTeamId,
       localTeamId,
       date,
-      status,
     });
     
     //The entity can't be instatiated for any reason.

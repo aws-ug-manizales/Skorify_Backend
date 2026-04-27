@@ -2,17 +2,17 @@ import { Entity, Id } from "../../core/entity";
 import { matchStateCollection, MatchState, MatchStatus } from "./match.state";
 
 export class MatchEntity extends Entity {
+  tournamentId: Id;
   awayTeamId: Id;
   localTeamId: Id;
   date: Date;
-  status: "draft" | "scheduled" | "finished";
   awayTeamScore: number;
   localTeamScore: number;
   private _status: MatchStatus;
   private _state: MatchState;
-  private _timeToCloseInMinutes: number;
+  private _timeToCloseInMinutes: number;  
 
-  private constructor(id: Id, awayTeamId: Id, localTeamId: Id, date: Date, status: MatchStatus) {
+  private constructor(id: Id, awayTeamId: Id, localTeamId: Id, date: Date, status: MatchStatus, tournamentId: Id) {
     super(id);
     this.tournamentId = tournamentId;
     this.awayTeamId = awayTeamId;
@@ -25,13 +25,14 @@ export class MatchEntity extends Entity {
     this._state = matchStateCollection[status];
   }
 
-  static build(params: { id: Id; awayTeamId: Id; localTeamId: Id; date: Date; status?: MatchStatus }): MatchEntity {
+  static build(params: { id: Id; awayTeamId: Id; localTeamId: Id; date: Date; status?: MatchStatus; tournamentId: Id }): MatchEntity {
     return new MatchEntity(
       params.id,
       params.awayTeamId,
       params.localTeamId,
       params.date,
       params.status ?? MatchStatus.Draft,
+      params.tournamentId
     );
   }
 
