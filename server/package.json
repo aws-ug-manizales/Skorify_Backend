@@ -17,8 +17,10 @@
   "dependencies": {
     "@skorify/domain": "../domain/dist",
     "@skorify/shared": "../shared/dist",
+    "skorifydata": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta",
     "@scifamek-open-source/iraca": "9.2.0",
-    "@scifamek-open-source/logger": "1.1.2"
+    "@scifamek-open-source/logger": "1.1.2",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@types/node": "22.5.0",
