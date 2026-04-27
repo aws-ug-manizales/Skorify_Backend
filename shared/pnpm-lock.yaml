@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@skorify/domain':
-        specifier: ./libs/domain
-        version: link:libs/domain
+        specifier: ../domain/dist
+        version: link:../domain/dist
     devDependencies:
       '@types/jest':
         specifier: ^29.5.14
