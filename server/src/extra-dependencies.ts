@@ -2,6 +2,7 @@ import { RunIracaConfig } from "@scifamek-open-source/iraca/web-api";
 import { MatchContract, MatchEntity } from "@skorify/domain/match";
 import {
   JsonDataSource,
+  PostgresMatchDataSource,
   MatchRepository,
   UserRepository,
   PredictionRepository,
@@ -21,12 +22,21 @@ import {
   TournamentInstanceContract,
   TournamentInstanceEntity,
 } from "@skorify/domain/tournament-instance";
+import { dbClient } from "./config/database.config";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
+  // DBClient instance for direct database access
+  {
+    id: "DBClient",
+    value: dbClient,
+  },
+
+  // DataSources
   {
     id: "MatchDatasource",
-    value: new JsonDataSource<MatchEntity>("matches.json"),
+    value: new PostgresMatchDataSource(dbClient),
   },
+  // Keeping JSON for entities not yet migrated to PostgreSQL
   {
     id: "UserDatasource",
     value: new JsonDataSource<UserEntity>("users.json"),
@@ -35,7 +45,6 @@ export const extraDependencies: RunIracaConfig["extraDependencies"] = [
     id: "PredictionDatasource",
     value: new JsonDataSource<PredictionEntity>("predictions.json"),
   },
-
   {
     id: "TournamentDatasource",
     value: new JsonDataSource<TournamentEntity>("tournaments.json"),
@@ -45,6 +54,7 @@ export const extraDependencies: RunIracaConfig["extraDependencies"] = [
     value: new JsonDataSource<TournamentEntity>("tournament-intances.json"),
   },
 
+  // Repositories
   {
     abstraction: MatchContract,
     implementation: MatchRepository,
