@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "nodemon",
+    "build:deps": "pnpm --dir ../domain install --frozen-lockfile && pnpm --dir ../shared install --frozen-lockfile && pnpm --dir ../domain build && pnpm --dir ../shared build",
+    "start:dev": "export SKO_PREDICTION_EDITING_WINDOW=${SKO_PREDICTION_EDITING_WINDOW:-60} && pnpm run build:deps && nodemon",
     "build": "tsc -p tsconfig.json && pnpm run copy-iraca && pnpm run copy-auth && pnpm run copy-libs && pnpm run copy-npmrc && pnpm run copy-package",
     "copy-iraca": "copyfiles  src/iraca.config.json dist",
     "copy-auth": "copyfiles -u 1 auth/**/* dist/auth",
