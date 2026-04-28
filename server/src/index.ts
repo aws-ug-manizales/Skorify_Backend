@@ -3,16 +3,19 @@ import { Logger } from "@scifamek-open-source/logger";
 import { join } from "node:path";
 import { middleware } from "./middleware";
 import { extraDependencies } from "./extra-dependencies";
+import { onLoadIraca } from "./config/on-load-iraca";
+import { DBClient } from "@skorify/data";
 
 async function main() {
   const loggerFolder = "logs";
   const initServerLogger = new Logger(join(loggerFolder, "init-server.log"));
   const runtimeLogger = new Logger(join(loggerFolder, "runtime.log"));
 
-  const { container, controllers, server } = await runIraca({
+  const { container } = await runIraca({
     dirname: __dirname,
     extraDependencies,
     enabledHandler: middleware,
+    onLoadIraca,
     port: 9898,
     initServerLogger,
 
@@ -20,6 +23,13 @@ async function main() {
       logger: runtimeLogger,
     },
   });
+
+  // Graceful shutdown
+  // process.on("SIGTERM", async () => {
+  //   const dbClient = await container.getInstance<DBClient>("DBClient");
+  //   await dbClient.disconnect();
+  //   process.exit(0);
+  // });
 }
 
 main();

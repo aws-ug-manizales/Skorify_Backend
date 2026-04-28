@@ -4,13 +4,13 @@ import { MatchStatus } from "../../src/features/match/match.state";
 describe("MatchEntity edit rules", () => {
   const matchId = "11111111-2222-3333-4444-555555555555";
   const awayTeamId = "aaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-  const localTeamId = "fffffff-aaaa-bbbb-cccc-dddddddddddd";
+  const homeTeamId = "fffffff-aaaa-bbbb-cccc-dddddddddddd";
 
   it("should not allow editing when the match is in progress", () => {
     const match = MatchEntity.build({
       id: matchId,
       awayTeamId: awayTeamId,
-      localTeamId: localTeamId,
+      homeTeamId: homeTeamId,
       date: new Date("2027-10-15T15:00:00Z"),
       status: MatchStatus.InProgress,
     });
@@ -22,7 +22,7 @@ describe("MatchEntity edit rules", () => {
     const match = MatchEntity.build({
       id: matchId,
       awayTeamId: awayTeamId,
-      localTeamId: localTeamId,
+      homeTeamId: homeTeamId,
       date: new Date("2027-10-15T15:00:00Z"),
       status: MatchStatus.Scheduled,
     });
@@ -34,7 +34,7 @@ describe("MatchEntity edit rules", () => {
     const match = MatchEntity.build({
       id: matchId,
       awayTeamId: awayTeamId,
-      localTeamId: localTeamId,
+      homeTeamId: homeTeamId,
       date: new Date("2027-10-15T15:00:00Z"),
       status: MatchStatus.Scheduled,
     });
@@ -46,7 +46,7 @@ describe("MatchEntity edit rules", () => {
     const match = MatchEntity.build({
       id: matchId,
       awayTeamId: awayTeamId,
-      localTeamId: localTeamId,
+      homeTeamId: homeTeamId,
       date: new Date("2027-10-15T15:00:00Z"),
       status: MatchStatus.Scheduled,
     });

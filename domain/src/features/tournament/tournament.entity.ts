@@ -16,7 +16,7 @@ export class TournamentEntity extends Entity {
 
   private constructor(attributes: TournamentAttributes) {
     const { id, name, startDate, endDate, token } = attributes;
-    super(id);
+    super(id, new Date());
     this.name = name;
     this.startDate = startDate;
     this.endDate = endDate;

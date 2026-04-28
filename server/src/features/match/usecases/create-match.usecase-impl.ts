@@ -3,7 +3,7 @@ import {
   CreateMatchUsecase,
   MatchDoesNotExistDomainEvent,
   GottenMatchDomainEvent,
-  MatchContract
+  MatchContract,
 } from "@skorify/domain/match";
 import { DomainEvent } from "@skorify/domain/core";
 
@@ -13,9 +13,9 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { matchId } = param;
+    const {} = param;
 
-    const matchInDB = await this.matchContract.getById(matchId);
+    const matchInDB = await this.matchContract.getById("matchId");
 
     if (!matchInDB) {
       return MatchDoesNotExistDomainEvent();

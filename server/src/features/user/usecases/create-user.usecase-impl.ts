@@ -14,11 +14,14 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
   }
 
   async call(param: CreateUserParam): Promise<DomainEvent> {
-    const { name } = param;
+    const { name, email } = param;
 
     const user = UserEntity.build({
       id: crypto.randomUUID(),
       name,
+      email,
+      notificationToken: "",
+      createdAt: new Date(),
     });
     const userInDB = await this.userContract.save(user);
 

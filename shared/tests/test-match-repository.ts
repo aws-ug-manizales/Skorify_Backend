@@ -9,7 +9,7 @@ async function testMatchRepository() {
   // 1. Crear un match
   const match1 = MatchEntity.build({
     id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    localTeamId: "team-col-0001-aaaa-bbbb-cccccccccccc",
+    homeTeamId: "team-col-0001-aaaa-bbbb-cccccccccccc",
     awayTeamId: "team-bra-0002-dddd-eeee-ffffffffffff",
     date: new Date("2026-06-15T20:00:00Z"),
   });
@@ -21,7 +21,7 @@ async function testMatchRepository() {
   // 2. Crear otro match
   const match2 = MatchEntity.build({
     id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-    localTeamId: "team-arg-0003-ffff-gggg-hhhhhhhhhhhh",
+    homeTeamId: "team-arg-0003-ffff-gggg-hhhhhhhhhhhh",
     awayTeamId: "team-per-0004-iiii-jjjj-kkkkkkkkkkkk",
     date: new Date("2026-06-16T18:00:00Z"),
   });
@@ -50,7 +50,7 @@ async function testMatchRepository() {
   console.log("\n6. MODIFY BY ID - Modificando a1b2c3d4-e5f6-7890-abcd-ef1234567890...");
   const modified = await repo.modifyById("a1b2c3d4-e5f6-7890-abcd-ef1234567890", {
     ...match1,
-    localTeamId: "team-colombia-updated",
+    homeTeamId: "team-colombia-updated",
   } as MatchEntity);
   console.log("   Resultado:", modified);
 

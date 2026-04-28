@@ -5,7 +5,7 @@ import { MatchStatus } from "../../match.state";
 export interface EditMatchParam {
   matchId: Id;
   awayTeamId: Id;
-  localTeamId: Id;
+  homeTeamId: Id;
   date: Date;
   status: MatchStatus;
 }
