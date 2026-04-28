@@ -1,82 +1,87 @@
 import { Entity, Id } from "../../core/entity";
+import { matchStateCollection, MatchState, MatchStatus } from "./match.state";
 
-export type MatchStatus = "scheduled" | "in_progress" | "finished";
 export type MatchStage = "group" | "finals";
 
-export interface MatchBuildParams {
+export interface MatchAttributes {
   id: Id;
-  homeTeamId: string;
-  awayTeamId: string;
-  tournamentId: string;
+  homeTeamId: Id;
+  awayTeamId: Id;
+  tournamentId: Id;
   kickOff: Date;
-  homeGoals?: number | null;
-  awayGoals?: number | null;
+  homeTeamScore?: number;
+  awayTeamScore?: number;
   status?: MatchStatus;
   stage?: MatchStage;
   venue?: string | null;
-  createdAt?: Date;
-  updatedAt?: Date | null;
+  createdAt: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export class MatchEntity extends Entity {
-  homeTeamId: string;
-  awayTeamId: string;
-  tournamentId: string;
+  awayTeamId: Id;
+  homeTeamId: Id;
   kickOff: Date;
-  homeGoals: number | null;
-  awayGoals: number | null;
-  status: MatchStatus;
-  stage: MatchStage;
-  venue: string | null;
-  createdAt: Date;
-  updatedAt: Date | null;
+  tournamentId: Id;
+  awayTeamScore?: number;
+  homeTeamScore?: number;
+  stage?: MatchStage;
+  private _status: MatchStatus;
+  private _state: MatchState;
+  private _timeToCloseInMinutes: number;
 
-  private timeToCloseInMinutes: number;
-
-  private constructor(params: MatchBuildParams) {
-    super(params.id);
-    this.homeTeamId = params.homeTeamId;
-    this.awayTeamId = params.awayTeamId;
-    this.tournamentId = params.tournamentId;
-    this.kickOff = params.kickOff;
-    this.homeGoals = params.homeGoals ?? null;
-    this.awayGoals = params.awayGoals ?? null;
-    this.status = params.status ?? "scheduled";
-    this.stage = params.stage ?? "group";
-    this.venue = params.venue ?? null;
-    this.createdAt = params.createdAt ?? new Date();
-    this.updatedAt = params.updatedAt ?? null;
-    this.timeToCloseInMinutes = 10;
+  private constructor(attributes: MatchAttributes) {
+    super(attributes.id, new Date());
+    this.awayTeamId = attributes.awayTeamId;
+    this.homeTeamId = attributes.homeTeamId;
+    this.kickOff = attributes.kickOff;
+    this.tournamentId = attributes.tournamentId;
+    this._timeToCloseInMinutes = 10;
+    this.awayTeamScore = 0;
+    this.homeTeamScore = 0;
+    this._status = attributes.status!;
+    this._state = matchStateCollection[attributes.status!];
   }
 
-  static build(params: MatchBuildParams): MatchEntity {
-    return new MatchEntity(params);
+  static build(params: MatchAttributes): MatchEntity {
+    return new MatchEntity({
+      ...params,
+      status: params.status ?? MatchStatus.Draft,
+    });
+  }
+
+  get status(): MatchStatus {
+    return this._status;
+  }
+
+  set status(value: MatchStatus) {
+    this._status = value;
+    this._state = matchStateCollection[value];
+  }
+
+  get timeToCloseInMinutes(): number {
+    return this._timeToCloseInMinutes;
   }
 
   public canBet(): boolean {
-    if (this.status !== "scheduled") {
-      return false;
-    }
-    return !this.isMatchClose();
+    return this._state.canBet(this);
+  }
+
+  public canEdit(): boolean {
+    return this._state.canEdit(this);
+  }
+
+  public canChangeTeams(hasPredictions: boolean): boolean {
+    return this._state.canChangeTeams(this, hasPredictions);
   }
 
   public isMatchClose(): boolean {
-    return this.kickOff.getTime() - Date.now() < this.timeToCloseInMinutes * 60 * 1000;
+    return this._state.isMatchClose(this);
   }
 
-  public setScores(homeGoals: number, awayGoals: number): void {
-    this.homeGoals = homeGoals;
-    this.awayGoals = awayGoals;
-  }
-
-  public start(): void {
-    this.status = "in_progress";
-    this.updatedAt = new Date();
-  }
-
-  public finish(homeGoals: number, awayGoals: number): void {
-    this.setScores(homeGoals, awayGoals);
-    this.status = "finished";
-    this.updatedAt = new Date();
+  public setScores(awayTeamScore: number, localTeamScore: number): void {
+    this.awayTeamScore = awayTeamScore;
+    this.homeTeamScore = localTeamScore;
   }
 }
