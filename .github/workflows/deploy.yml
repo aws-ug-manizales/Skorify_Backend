@@ -1,0 +1,82 @@
+name: Build Server
+"on":
+  push:
+    branches:
+      - feature/**
+
+  pull_request:
+    types: [closed, opened, edited]
+    branches:
+      - development
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  BUILD_AND_TEST:
+    runs-on: ubuntu-latest
+    steps:
+      - name: NAME
+        run: |
+          echo 'github.ref ${{ github.ref }}'
+          echo 'github.event ${{ toJson(github.event) }}'
+          echo 'github.event_name ${{ github.event_name }}'
+          echo 'github.event.pull_request ${{ github.event.pull_request }}'
+          echo 'github.event.pull_request.action ${{ github.event.pull_request.action }}'
+
+      - name: CHECKOUT
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SETUP NODE
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: INSTALL PNPM
+        run: |
+          npm install -g pnpm
+
+      - name: BUILD DOMAIN
+        run: |
+          cd domain
+          pnpm i --no-frozen-lockfile
+          pnpm run build
+
+      - name: INSTALL
+        run: |
+          cd server
+          pnpm install --frozen-lockfile
+
+      - name: BUILD
+        run: |
+          cd server
+          pnpm run build
+
+
+      - name: GENERATE LOGS
+        if: ${{ github.ref == 'refs/heads/development' && ( github.event_name == 'workflow_dispatch' || ( github.event.action == 'closed' && github.event_name == 'pull_request') ) }}
+        run: |
+          cd server
+          timeout 10s pnpm run start:dev
+
+      - name: SEND MAIL TO FRONT
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: Resultado del workflow
+          to: scifamek@gmail.com
+          from: Mi App <${{ secrets.EMAIL_USER }}>
+          body: |
+            El workflow terminó correctamente
+
+
+
+
+
+
+
