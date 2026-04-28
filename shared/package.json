@@ -2,8 +2,8 @@
   "name": "@skorify/shared",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "build": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-all",
     "copy-package": "copyfiles  package.json dist/",

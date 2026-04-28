@@ -8,3 +8,11 @@ export const NotGottenUserDomainEvent = DomainEventKind(
 export const GottenUserDomainEvent = DomainEventKind<UserEntity>(
   "GottenUserDomainEvent",
 );
+
+export const NotificationTokenAssignedDomainEvent = DomainEventKind<UserEntity>(
+  "NotificationTokenAssignedDomainEvent",
+);
+
+export const NotificationTokenAssignmentFailedDomainEvent = DomainEventKind(
+  "NotificationTokenAssignmentFailedDomainEvent",
+);
