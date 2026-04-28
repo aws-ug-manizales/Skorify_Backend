@@ -1,12 +1,14 @@
 {
   "exclude": ["node_modules", "dist", "*.js"],
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "libs/domain/**/*.d.ts"],
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
+    "paths": {
+      "@skorify/domain/*": ["libs/domain/*"]
+    },
     "outDir": "./dist",
     "declarationDir": "./dist",
-    "paths": {},
     "types": ["node"],
     "target": "es2024",
     "lib": ["ES2020"],

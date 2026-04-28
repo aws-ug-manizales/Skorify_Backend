@@ -1,7 +1,5 @@
 import { PredictionEntity } from "./prediction.entity";
+import { BaseContract } from "../../core";
 
-export abstract class PredictionContract {
-  abstract getById(id: string): Promise<PredictionEntity | null>;
-  abstract save(prediction: PredictionEntity): Promise<PredictionEntity | null>;
-  abstract filter(filters: any): Promise<PredictionEntity[]>;
+export abstract class PredictionContract extends BaseContract<PredictionEntity> {
 }

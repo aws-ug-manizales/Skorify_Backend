@@ -9,6 +9,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "copy-package": "copyfiles  package.json dist/",
+    "copy-all": "rm -rf ../server/libs/domain/* && cp -r dist/* ../server/libs/domain/",
     "copy-to-server": "copyfiles -u 1 dist/**/* ../server/libs/domain",
     "copy-to-shared": "copyfiles -u 1 dist/**/* ../shared/libs/domain",
     "copy-to-server-pipeline": "copyfiles -u 1 dist/**/* ../../../server/libs/domain",
