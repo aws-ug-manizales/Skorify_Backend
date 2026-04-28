@@ -25,11 +25,11 @@ async function main() {
   });
 
   // Graceful shutdown
-  process.on("SIGTERM", async () => {
-    const dbClient = await container.getInstance<DBClient>("DBClient");
-    await dbClient.disconnect();
-    process.exit(0);
-  });
+  // process.on("SIGTERM", async () => {
+  //   const dbClient = await container.getInstance<DBClient>("DBClient");
+  //   await dbClient.disconnect();
+  //   process.exit(0);
+  // });
 }
 
 main();

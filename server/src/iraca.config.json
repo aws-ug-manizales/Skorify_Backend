@@ -3,7 +3,7 @@
   "database!": {
     "host": "${SKO_DB_HOST}",
     "port": "${SKO_DB_PORT}",
-    "user": "${SKO_DB_USER}",
+    "username": "${SKO_DB_USER}",
     "password": "${SKO_DB_PASSWORD}",
     "name": "${SKO_DB_NAME}",
     "logging": "${SKO_DB_LOGGING}"

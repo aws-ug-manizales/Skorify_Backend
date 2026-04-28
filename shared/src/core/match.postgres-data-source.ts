@@ -3,7 +3,7 @@ import { DataSource } from "./data-source.interface";
 import { DBClient, Match } from "@skorify/data";
 import { Id } from "@skorify/domain/core";
 
-export class PostgresMatchDataSource implements DataSource<MatchEntity> {
+export class MatchPostgresDataSource implements DataSource<MatchEntity> {
   constructor(private dbClient: DBClient) {}
 
   async read(): Promise<MatchEntity[]> {

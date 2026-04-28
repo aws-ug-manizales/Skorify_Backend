@@ -13,7 +13,6 @@ import { UserContract, UserEntity } from "@skorify/domain/user";
 import {
   JsonDataSource,
   MatchRepository,
-  PostgresMatchDataSource,
   PredictionRepository,
   TournamentInstanceRepository,
   TournamentRepository,
@@ -21,23 +20,6 @@ import {
 } from "@skorify/shared";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
-  {
-    id: "UserDatasource",
-    value: new JsonDataSource<UserEntity>("users.json"),
-  },
-  {
-    id: "PredictionDatasource",
-    value: new JsonDataSource<PredictionEntity>("predictions.json"),
-  },
-  {
-    id: "TournamentDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournaments.json"),
-  },
-  {
-    id: "TournamentInstanceDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournament-intances.json"),
-  },
-
   // Repositories
   {
     abstraction: MatchContract,
