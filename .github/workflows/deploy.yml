@@ -3,6 +3,7 @@ name: Build Server
   push:
     branches:
       - feature/**
+      - development
 
   pull_request:
     types: [closed, opened, edited]
@@ -11,6 +12,9 @@ name: Build Server
       - main
 
   workflow_dispatch:
+
+env:
+  SKO_PREDICTION_EDITING_WINDOW: ${{ vars.SKO_PREDICTION_EDITING_WINDOW }}
 
 jobs:
   BUILD_AND_TEST:
@@ -44,22 +48,39 @@ jobs:
           pnpm i --no-frozen-lockfile
           pnpm run build
 
+      - name: Delay 10 segundos
+        run: sleep 1
+
+      - name: BUILD SHARED
+        run: |
+          cd shared
+          pnpm i --no-frozen-lockfile
+          pnpm run build
+
       - name: INSTALL
         run: |
           cd server
           pnpm install --frozen-lockfile
 
-      - name: BUILD
-        run: |
-          cd server
-          pnpm run build
+      # - name: BUILD
+      #   run: |
+      #     cd server
+      #     pnpm run build
 
 
       - name: GENERATE LOGS
         if: ${{ github.ref == 'refs/heads/development' && ( github.event_name == 'workflow_dispatch' || ( github.event.action == 'closed' && github.event_name == 'pull_request') ) }}
         run: |
           cd server
-          timeout 10s pnpm run start:dev
+          timeout 5s pnpm run start:dev || true
+
+      - name: READ LOGS
+        if: ${{ github.ref == 'refs/heads/development' && ( github.event_name == 'workflow_dispatch' || ( github.event.action == 'closed' && github.event_name == 'pull_request') ) }}
+        id: file
+        run: |
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          cat server/logs/init-server.log >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: SEND MAIL TO FRONT
         uses: dawidd6/action-send-mail@v3
@@ -69,10 +90,9 @@ jobs:
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
           subject: Resultado del workflow
-          to: scifamek@gmail.com
+          to: ${{vars.FRONT_EMAIL}}
           from: Mi App <${{ secrets.EMAIL_USER }}>
-          body: |
-            El workflow terminó correctamente
+          body: ${{ steps.file.outputs.BODY }}
 
 
 

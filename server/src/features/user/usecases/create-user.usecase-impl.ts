@@ -16,22 +16,16 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
   async call(param: CreateUserParam): Promise<DomainEvent> {
     const { name } = param;
 
-    const userInDB = await this.userContract.save(
-      UserEntity.build({
-        id: crypto.randomUUID(),
-        name,
-        isActive: true,
-      }),
-    );
+    const user = UserEntity.build({
+      id: crypto.randomUUID(),
+      name,
+    });
+    const userInDB = await this.userContract.save(user);
 
     if (!userInDB) {
       return NotGottenUserDomainEvent();
     }
 
-    return GottenUserDomainEvent({
-      id: userInDB.id,
-      name: userInDB.name,
-      isActive: userInDB.isActive,
-    });
+    return GottenUserDomainEvent(user);
   }
 }
