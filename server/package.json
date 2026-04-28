@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:deps": "pnpm --dir ../domain install --frozen-lockfile && pnpm --dir ../shared install --frozen-lockfile && pnpm --dir ../domain build && pnpm --dir ../shared build",
-    "start:dev": "export SKO_PREDICTION_EDITING_WINDOW=${SKO_PREDICTION_EDITING_WINDOW:-60} && pnpm run build:deps && nodemon",
+    "start:dev": "pnpm run build:deps && cross-env SKO_PREDICTION_EDITING_WINDOW=60 nodemon",
     "build": "tsc -p tsconfig.json && pnpm run copy-iraca && pnpm run copy-auth && pnpm run copy-libs && pnpm run copy-npmrc && pnpm run copy-package",
     "copy-iraca": "copyfiles  src/iraca.config.json dist",
     "copy-auth": "copyfiles -u 1 auth/**/* dist/auth",
@@ -26,7 +26,8 @@
     "nodemon": "3.1.10",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
-    "copyfiles": "^2.4.1"
+    "copyfiles": "^2.4.1",
+    "cross-env": "^7.0.3"
   },
   "keywords": [],
   "author": "",
