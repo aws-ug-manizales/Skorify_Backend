@@ -8,12 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@skorify/data':
+        specifier: github:aws-ug-manizales/Skorify_Data#v1.1.0-beta
+        version: skorifydata@https://codeload.github.com/aws-ug-manizales/Skorify_Data/tar.gz/886d6f4aed5b97a4f531ffb35f7b6461d3a821f8
       '@skorify/domain':
         specifier: ../domain/dist
         version: link:../domain/dist
-      skorifydata:
-        specifier: github:aws-ug-manizales/Skorify_Data#v1.1.0-beta
-        version: https://codeload.github.com/aws-ug-manizales/Skorify_Data/tar.gz/886d6f4aed5b97a4f531ffb35f7b6461d3a821f8
     devDependencies:
       '@types/jest':
         specifier: ^29.5.14

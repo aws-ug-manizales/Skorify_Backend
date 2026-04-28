@@ -10,7 +10,7 @@ export class UserEntity extends Entity {
 
   private constructor(attributes: UserAttributes) {
     const { id, name } = attributes;
-    super(id);
+    super(id, new Date());
     this.name = name;
   }
 

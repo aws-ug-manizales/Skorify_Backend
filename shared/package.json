@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@skorify/domain": "../domain/dist",
-    "skorifydata": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta"
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

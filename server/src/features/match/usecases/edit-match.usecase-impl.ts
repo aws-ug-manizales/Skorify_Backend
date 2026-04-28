@@ -21,13 +21,7 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
   }
 
   async call(param: EditMatchParam): Promise<DomainEvent> {
-    const {
-      matchId,
-      awayTeamId,
-      localTeamId,
-      date,
-      status,
-    } = param;
+    const { matchId, awayTeamId, homeTeamId, date, status } = param;
 
     // 1. Validar que el partido existe
     const matchInDB = await this.matchContract.getById(matchId);
@@ -49,7 +43,7 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
     // 3. Validar cambios de equipos
     const teamsChanged =
       matchInDB.awayTeamId !== awayTeamId ||
-      matchInDB.localTeamId !== localTeamId;
+      matchInDB.homeTeamId !== homeTeamId;
 
     if (teamsChanged) {
       // Obtener predicciones usando filter genérico (equipo de datos)
@@ -64,8 +58,8 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
 
     // 4. Aplicar cambios
     matchInDB.awayTeamId = awayTeamId;
-    matchInDB.localTeamId = localTeamId;
-    matchInDB.date = date;
+    matchInDB.homeTeamId = homeTeamId;
+    matchInDB.kickOff = date;
     matchInDB.status = status;
 
     // 5. Persistir cambios

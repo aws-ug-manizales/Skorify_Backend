@@ -14,18 +14,15 @@ importers:
       '@scifamek-open-source/logger':
         specifier: 1.1.2
         version: 1.1.2
+      '@skorify/data':
+        specifier: github:aws-ug-manizales/Skorify_Data#v1.1.0-beta
+        version: skorifydata@https://codeload.github.com/aws-ug-manizales/Skorify_Data/tar.gz/886d6f4aed5b97a4f531ffb35f7b6461d3a821f8(ts-node@10.9.2(@types/node@22.5.0)(typescript@5.8.3))
       '@skorify/domain':
         specifier: ../domain/dist
         version: link:../domain/dist
       '@skorify/shared':
         specifier: ../shared/dist
         version: link:../shared/dist
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.6.1
-      skorifydata:
-        specifier: github:aws-ug-manizales/Skorify_Data#v1.1.0-beta
-        version: https://codeload.github.com/aws-ug-manizales/Skorify_Data/tar.gz/886d6f4aed5b97a4f531ffb35f7b6461d3a821f8(ts-node@10.9.2(@types/node@22.5.0)(typescript@5.8.3))
     devDependencies:
       '@types/node':
         specifier: 22.5.0
