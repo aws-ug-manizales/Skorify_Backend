@@ -7,3 +7,5 @@ export { GetUserByIdParam } from "./usecases/get-user-by-id/get-user-by-id.param
 export { GetUserByIdUsecase } from "./usecases/get-user-by-id/get-user-by-id.usecase";
 export { CreateUserParam } from "./usecases/create-user/create-user.param";
 export { CreateUserUsecase } from "./usecases/create-user/create-user.usecase";
+export { RegisterNotificationTokenParam } from "./usecases/register-notification-token/register-notification-token.param";
+export { RegisterNotificationTokenUsecase } from "./usecases/register-notification-token/register-notification-token.usecase";
