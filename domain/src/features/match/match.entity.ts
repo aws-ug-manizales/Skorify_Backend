@@ -1,39 +1,54 @@
 import { Entity, Id } from "../../core/entity";
 import { matchStateCollection, MatchState, MatchStatus } from "./match.state";
 
+export type MatchStage = "group" | "finals";
+
+export interface MatchAttributes {
+  id: Id;
+  homeTeamId: Id;
+  awayTeamId: Id;
+  tournamentId: Id;
+  kickOff: Date;
+  homeTeamScore?: number;
+  awayTeamScore?: number;
+  status?: MatchStatus;
+  stage?: MatchStage;
+  venue?: string | null;
+  createdAt: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
+}
+
 export class MatchEntity extends Entity {
   tournamentId: Id;
   awayTeamId: Id;
-  localTeamId: Id;
-  date: Date;
-  awayTeamScore: number;
-  localTeamScore: number;
+  homeTeamId: Id;
+  kickOff: Date;
+  awayTeamScore?: number;
+  homeTeamScore?: number;
+  stage?: MatchStage;
   private _status: MatchStatus;
   private _state: MatchState;
   private _timeToCloseInMinutes: number;  
 
-  private constructor(id: Id, awayTeamId: Id, localTeamId: Id, date: Date, status: MatchStatus, tournamentId: Id) {
-    super(id);
-    this.tournamentId = tournamentId;
-    this.awayTeamId = awayTeamId;
-    this.localTeamId = localTeamId;
-    this.date = date;
+  private constructor(attributes: MatchAttributes) {
+    super(attributes.id, new Date());
+    this.awayTeamId = attributes.awayTeamId;
+    this.homeTeamId = attributes.homeTeamId;
+    this.kickOff = attributes.kickOff;
+    this.tournamentId = attributes.tournamentId;
     this._timeToCloseInMinutes = 10;
     this.awayTeamScore = 0;
-    this.localTeamScore = 0;
-    this._status = status;
-    this._state = matchStateCollection[status];
+    this.homeTeamScore = 0;
+    this._status = attributes.status!;
+    this._state = matchStateCollection[attributes.status!];
   }
 
-  static build(params: { id: Id; awayTeamId: Id; localTeamId: Id; date: Date; status?: MatchStatus; tournamentId: Id }): MatchEntity {
-    return new MatchEntity(
-      params.id,
-      params.awayTeamId,
-      params.localTeamId,
-      params.date,
-      params.status ?? MatchStatus.Draft,
-      params.tournamentId
-    );
+  static build(params: MatchAttributes): MatchEntity {
+    return new MatchEntity({
+      ...params,
+      status: params.status ?? MatchStatus.Draft,
+    });
   }
 
   get status(): MatchStatus {
@@ -67,6 +82,6 @@ export class MatchEntity extends Entity {
 
   public setScores(awayTeamScore: number, localTeamScore: number): void {
     this.awayTeamScore = awayTeamScore;
-    this.localTeamScore = localTeamScore;
+    this.homeTeamScore = localTeamScore;
   }
 }

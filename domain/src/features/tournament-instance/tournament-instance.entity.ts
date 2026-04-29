@@ -12,7 +12,7 @@ export class TournamentInstanceEntity extends Entity {
 
   private constructor(attributes: TournamentInstanceAttributes) {
     const { id, name, state } = attributes;
-    super(id);
+    super(id, new Date());
     this.name = name;
     this.state = state;
   }

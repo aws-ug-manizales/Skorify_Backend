@@ -1,14 +1,5 @@
 import { RunIracaConfig } from "@scifamek-open-source/iraca/web-api";
-import { MatchContract, MatchEntity } from "@skorify/domain/match";
-import {
-  JsonDataSource,
-  MatchRepository,
-  UserRepository,
-  PredictionRepository,
-  TournamentRepository,
-  TournamentInstanceRepository,
-} from "@skorify/shared";
-import { UserContract, UserEntity } from "@skorify/domain/user";
+import { MatchContract } from "@skorify/domain/match";
 import {
   PredictionContract,
   PredictionEntity,
@@ -17,34 +8,19 @@ import {
   TournamentContract,
   TournamentEntity,
 } from "@skorify/domain/tournament";
+import { TournamentInstanceContract } from "@skorify/domain/tournament-instance";
+import { UserContract, UserEntity } from "@skorify/domain/user";
 import {
-  TournamentInstanceContract,
-  TournamentInstanceEntity,
-} from "@skorify/domain/tournament-instance";
+  JsonDataSource,
+  MatchRepository,
+  PredictionRepository,
+  TournamentInstanceRepository,
+  TournamentRepository,
+  UserRepository,
+} from "@skorify/shared";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
-  {
-    id: "MatchDatasource",
-    value: new JsonDataSource<MatchEntity>("matches.json"),
-  },
-  {
-    id: "UserDatasource",
-    value: new JsonDataSource<UserEntity>("users.json"),
-  },
-  {
-    id: "PredictionDatasource",
-    value: new JsonDataSource<PredictionEntity>("predictions.json"),
-  },
-
-  {
-    id: "TournamentDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournaments.json"),
-  },
-  {
-    id: "TournamentInstanceDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournament-intances.json"),
-  },
-
+  // Repositories
   {
     abstraction: MatchContract,
     implementation: MatchRepository,

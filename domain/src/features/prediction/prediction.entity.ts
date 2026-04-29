@@ -1,5 +1,8 @@
 import { Entity, Id } from "../../core/entity";
-import { PredictionScoreResult, PredictionScoreRuleset } from "./scoreRules/prediction-score.ruleset";
+import {
+  PredictionScoreResult,
+  PredictionScoreRuleset,
+} from "./scoreRules/prediction-score.ruleset";
 
 export class PredictionEntity extends Entity {
   userId: Id;
@@ -8,8 +11,14 @@ export class PredictionEntity extends Entity {
   localTeamScore: number;
   score: number;
 
-  private constructor(id: Id, userId: Id, matchId: Id, awayTeamScore: number, localTeamScore: number) {
-    super(id);
+  private constructor(
+    id: Id,
+    userId: Id,
+    matchId: Id,
+    awayTeamScore: number,
+    localTeamScore: number,
+  ) {
+    super(id, new Date());
     this.userId = userId;
     this.matchId = matchId;
     this.awayTeamScore = awayTeamScore;
@@ -17,11 +26,26 @@ export class PredictionEntity extends Entity {
     this.score = 0;
   }
 
-  static build(params: { id: Id; userId: Id; matchId: Id; awayTeamScore: number; localTeamScore: number }): PredictionEntity {
-    return new PredictionEntity(params.id, params.userId, params.matchId, params.awayTeamScore, params.localTeamScore);
+  static build(params: {
+    id: Id;
+    userId: Id;
+    matchId: Id;
+    awayTeamScore: number;
+    localTeamScore: number;
+  }): PredictionEntity {
+    return new PredictionEntity(
+      params.id,
+      params.userId,
+      params.matchId,
+      params.awayTeamScore,
+      params.localTeamScore,
+    );
   }
 
-  calculateScore(awayTeamScore: number, localTeamScore: number): PredictionScoreResult {
+  calculateScore(
+    awayTeamScore: number,
+    localTeamScore: number,
+  ): PredictionScoreResult {
     const ruleset = PredictionScoreRuleset.default();
 
     const result = ruleset.calculateWithBreakdown({
@@ -39,5 +63,4 @@ export class PredictionEntity extends Entity {
 
     return result;
   }
-
 }

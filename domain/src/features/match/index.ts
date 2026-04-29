@@ -1,14 +1,21 @@
-// Export the entity
-export { MatchEntity } from "./match.entity";
-export { MatchStatus } from "./match.state";
+export { MatchEntity, MatchStage } from "./match.entity";
+export {
+  CancelledState,
+  DraftState,
+  FinishedState,
+  InProgressState,
+  MatchState,
+  MatchStatus,
+  ScheduledState,
+  matchStateCollection,
+} from "./match.state";
+
 export * from "./domain-events";
 
 export { MatchContract } from "./match.contract";
 
-// Export use case parameters and use cases
 export { GetMatchByIdParam } from "./usecases/get-match-by-id/get-match-by-id.param";
 export { GetMatchByIdUsecase } from "./usecases/get-match-by-id/get-match-by-id.usecase";
-
 export { CreateMatchParam } from "./usecases/create-match/create-match.param";
 export { CreateMatchUsecase } from "./usecases/create-match/create-match.usecase";
 
