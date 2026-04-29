@@ -23,6 +23,9 @@ importers:
       '@skorify/shared':
         specifier: ../shared/dist
         version: link:../shared/dist
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
     devDependencies:
       '@types/node':
         specifier: 22.5.0

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { runIraca } from "@scifamek-open-source/iraca/web-api";
 import { Logger } from "@scifamek-open-source/logger";
 import { join } from "node:path";
