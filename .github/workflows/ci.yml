@@ -13,7 +13,7 @@ jobs:
   build:
     name: Build
     # needs: lint
-    uses: StevenLP06/pruebas_pipeline/.github/workflows/build--frontend.yml@v1.1.1
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/build-backend.yml@feat/build--workflow
     with:
       node-version: '22'
     secrets: inherit
