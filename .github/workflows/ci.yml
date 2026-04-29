@@ -1,0 +1,19 @@
+name: Skorify Frontend CI
+
+on:
+  push:
+    branches: [ test/build-workflow ]
+#   pull_request:
+#     branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+
+  # ── Build (solo si lint pasa) ─────────────────────────
+  build:
+    name: Build
+    # needs: lint
+    uses: StevenLP06/pruebas_pipeline/.github/workflows/build--frontend.yml@v1.1.1
+    with:
+      node-version: '22'
+    secrets: inherit
