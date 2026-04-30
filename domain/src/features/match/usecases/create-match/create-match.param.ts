@@ -1,9 +1,10 @@
 import { MatchStage } from "../../match.entity";
+import { Id } from "../../../../core/entity";
 
 export interface CreateMatchParam {
-  homeTeamId: string;
-  awayTeamId: string;
-  tournamentId: string;
+  homeTeamId: Id;
+  awayTeamId: Id;
+  tournamentId: Id;
   kickOff: Date;
   stage?: MatchStage;
   venue?: string;

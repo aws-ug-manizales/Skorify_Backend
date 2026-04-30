@@ -23,10 +23,10 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { awayTeamId, localTeamId, date, tournamentId } = param;
+    const { awayTeamId, homeTeamId, kickOff, tournamentId, createdAt  } = param;
 
     // Verify if the tournament instance exists. 
-    const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({
+    const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({x
       tournamentId,
     });
 
@@ -37,13 +37,13 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     const existingMatches = await this.matchContract.filter({
       tournamentId,
       awayTeamId,
-      localTeamId,
+      homeTeamId,
     });
     
     const existingMatchesInverted = await this.matchContract.filter({
       tournamentId,
-      awayTeamId: localTeamId,
-      localTeamId: awayTeamId,
+      awayTeamId: homeTeamId,
+      homeTeamId: awayTeamId,
     }); 
 
     
@@ -56,8 +56,9 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       id: crypto.randomUUID(),
       tournamentId,
       awayTeamId,
-      localTeamId,
-      date,
+      homeTeamId,
+      kickOff,
+      createdAt: new Date(),
     });
     
     //The entity can't be instatiated for any reason.
