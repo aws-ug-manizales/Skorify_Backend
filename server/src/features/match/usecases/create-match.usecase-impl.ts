@@ -23,7 +23,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { awayTeamId, homeTeamId, kickOff, tournamentId, createdAt  } = param;
+    const { awayTeamId, homeTeamId, kickOff, tournamentId } = param;
 
     // Verify if the tournament instance exists. 
     const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({x
