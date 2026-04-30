@@ -7,23 +7,34 @@ import {
   MatchNotSavedDomainEvent,
   MatchSavedDomainEvent,
   MatchAlreadyExistsInSameTournamentStageDomainEvent,
+  MatchTeamDoesNotExistDomainEvent,
+  MatchTeamIsTheSameDomainEvent,
 } from "@skorify/domain/match";
 import {
   GetTournamentByIdUsecase,
   GottenTournamentDomainEvent,
 } from "@skorify/domain/tournament";
+import {
+  GetTeamByIdUsecase,
+  GottenTeamDomainEvent,
+} from "@skorify/domain/team";
 import type { DomainEvent } from "@skorify/domain/core";
 
 export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   constructor(
     private matchContract: MatchContract,
     private getTournamentByIdUsecase: GetTournamentByIdUsecase,
-  ) { 
+    private getTeamByIdUsecase: GetTeamByIdUsecase,
+  ) {
     super();
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
     const { awayTeamId, homeTeamId, kickOff, tournamentId } = param;
+
+    if (awayTeamId === homeTeamId) {
+      return MatchTeamIsTheSameDomainEvent();
+    }
 
     // Verify if the tournament instance exists. 
     const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({x
@@ -31,8 +42,20 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     });
 
     if (tournamentInstanceDE.isNot(GottenTournamentDomainEvent)) {
-        return tournamentInstanceDE;
-      }
+      return tournamentInstanceDE;
+    }
+
+    const [homeTeamDE, awayTeamDE] = await Promise.all([
+      this.getTeamByIdUsecase.call({ teamId: homeTeamId }),
+      this.getTeamByIdUsecase.call({ teamId: awayTeamId }),
+    ]);
+
+    if (
+      homeTeamDE.isNot(GottenTeamDomainEvent) ||
+      awayTeamDE.isNot(GottenTeamDomainEvent)
+    ) {
+      return MatchTeamDoesNotExistDomainEvent();
+    }
     
     const existingMatches = await this.matchContract.filter({
       tournamentId,

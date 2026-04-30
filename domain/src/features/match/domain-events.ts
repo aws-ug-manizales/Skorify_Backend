@@ -11,7 +11,15 @@ export const MatchAlreadyExistsInSameTournamentStageDomainEvent = DomainEventKin
   "MatchAlreadyExistsInSameTournamentStageDomainEvent",
 );
 
-export const matchdoesNotExistDomainEvent = DomainEventKind(
+export const MatchTeamDoesNotExistDomainEvent = DomainEventKind(
+  "MatchTeamDoesNotExistDomainEvent",
+);
+
+export const MatchTeamIsTheSameDomainEvent = DomainEventKind(
+  "MatchTeamIsTheSameDomainEvent",
+);
+
+export const MatchDoesNotExistDomainEvent = DomainEventKind(
   "MatchDoesNotExistDomainEvent",
 );
 
@@ -35,16 +43,16 @@ export const MatchCannotBeBetedDomainEvent = DomainEventKind(
   "MatchCannotBeBetedDomainEvent",
 );
 
+export const MatchEditedDomainEvent = DomainEventKind<MatchEntity>(
+  "MatchEditedDomainEvent",
+);
+
 export const MatchCannotBeEditedDomainEvent = DomainEventKind<MatchEntity>(
   "MatchCannotBeEditedDomainEvent",
 );
 
 export const MatchCannotChangeTeamsDomainEvent = DomainEventKind<MatchEntity>(
   "MatchCannotChangeTeamsDomainEvent",
-);
-
-export const MatchEditedDomainEvent = DomainEventKind<MatchEntity>(
-  "MatchEditedDomainEvent",
 );
 
 export const MatchCannotBeSavedDomainEvent = DomainEventKind<MatchEntity>(
