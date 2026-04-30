@@ -7,3 +7,7 @@ export const EntityNotInstanciableDomainEvent = DomainEventKind(
 export const TournamentInstanceWithSameNameDomainEvent = DomainEventKind<
   TournamentInstanceEntity[]
 >("TournamentInstanceWithSameNameDomainEvent");
+
+export const GottenTournamentInstancesDomainEvent = DomainEventKind<
+  TournamentInstanceEntity[]
+>("GottenTournamentInstancesDomainEvent");
