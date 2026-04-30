@@ -3,7 +3,7 @@ import {
   GetTeamByIdUsecase,
   GottenTeamDomainEvent,
   NotGottenTeamDomainEvent,
-  TeamContract,
+  TeamContract
 } from "@skorify/domain/team";
 import { DomainEvent } from "@skorify/domain/core";
 

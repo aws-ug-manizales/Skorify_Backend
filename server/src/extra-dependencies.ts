@@ -9,6 +9,7 @@ import {
   TournamentEntity,
 } from "@skorify/domain/tournament";
 import { TournamentInstanceContract } from "@skorify/domain/tournament-instance";
+import { TeamContract } from "@skorify/domain/team";
 import { UserContract, UserEntity } from "@skorify/domain/user";
 import {
   JsonDataSource,
@@ -17,6 +18,7 @@ import {
   TournamentInstanceRepository,
   TournamentRepository,
   UserRepository,
+  TeamRepository,
 } from "@skorify/shared";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
@@ -45,5 +47,10 @@ export const extraDependencies: RunIracaConfig["extraDependencies"] = [
     abstraction: TournamentInstanceContract,
     implementation: TournamentInstanceRepository,
     dependencies: ["TournamentInstanceDatasource"],
+  },
+  {
+    abstraction: TeamContract,
+    implementation: TeamRepository,
+    dependencies: ["TeamDatasource"],
   },
 ];
