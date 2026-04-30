@@ -1,6 +1,5 @@
 import { Id } from "../../../../core";
 import { MatchStage } from "../../match.entity";
-import { Id } from "../../../../core/entity";
 
 export interface CreateMatchParam {
   homeTeamId: Id;
