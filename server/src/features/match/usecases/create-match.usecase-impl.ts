@@ -37,7 +37,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     }
 
     // Verify if the tournament instance exists. 
-    const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({x
+    const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({
       tournamentId,
     });
 
