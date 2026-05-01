@@ -5,6 +5,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
     "build": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-all",
     "copy-package": "copyfiles  package.json dist/",
     "copy-all": "copyfiles -u 1 dist/**/* ../server/libs/shared"
