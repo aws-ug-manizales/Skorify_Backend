@@ -59,20 +59,12 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     
     const existingMatches = await this.matchContract.filter({
       tournamentId,
-      awayTeamId,
       homeTeamId,
+      awayTeamId,
       stage,
     });
     
-    const existingMatchesInverted = await this.matchContract.filter({
-      tournamentId,
-      awayTeamId: homeTeamId,
-      homeTeamId: awayTeamId,
-      stage,
-    }); 
-
-    
-    if (existingMatches.length > 0 || existingMatchesInverted.length > 0) {
+    if (existingMatches.length > 0) {
       return MatchAlreadyExistsInSameTournamentStageDomainEvent();
     }
 
