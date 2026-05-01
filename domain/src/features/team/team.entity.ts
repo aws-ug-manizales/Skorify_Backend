@@ -16,7 +16,7 @@ export class TeamEntity extends Entity {
     this.shieldUrl = params.shieldUrl;
   }
 
-  build(params: TeamAttributes): TeamEntity | null{
+  static build(params: TeamAttributes): TeamEntity | null{
     return new TeamEntity(params);
   }
 }
