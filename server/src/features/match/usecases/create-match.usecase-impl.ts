@@ -30,7 +30,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { awayTeamId, homeTeamId, kickOff, tournamentId } = param;
+    const { awayTeamId, homeTeamId, kickOff, tournamentId, stage } = param;
 
     if (awayTeamId === homeTeamId) {
       return MatchTeamIsTheSameDomainEvent();
@@ -61,12 +61,14 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       tournamentId,
       awayTeamId,
       homeTeamId,
+      stage,
     });
     
     const existingMatchesInverted = await this.matchContract.filter({
       tournamentId,
       awayTeamId: homeTeamId,
       homeTeamId: awayTeamId,
+      stage,
     }); 
 
     
@@ -81,6 +83,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       awayTeamId,
       homeTeamId,
       kickOff,
+      stage,
       createdAt: new Date(),
     });
     
