@@ -14,6 +14,7 @@ import {
   GetTournamentByIdUsecase,
   GottenTournamentDomainEvent,
 } from "@skorify/domain/tournament";
+import { MatchType } from "@skorify/domain/tournament";
 import {
   GetTeamByIdUsecase,
   GottenTeamDomainEvent,
@@ -37,12 +38,12 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     }
 
     // Verify if the tournament instance exists. 
-    const tournamentInstanceDE = await this.getTournamentByIdUsecase.call({
+    const tournamentDE = await this.getTournamentByIdUsecase.call({
       tournamentId,
     });
 
-    if (tournamentInstanceDE.isNot(GottenTournamentDomainEvent)) {
-      return tournamentInstanceDE;
+    if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
+      return tournamentDE;
     }
 
     const [homeTeamDE, awayTeamDE] = await Promise.all([
@@ -66,6 +67,21 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     
     if (existingMatches.length > 0) {
       return MatchAlreadyExistsInSameTournamentStageDomainEvent();
+    }
+
+    // If the tournament only allows one match per round, verify there is no
+    // reversed fixture (same teams inverted) in the same stage.
+    if (tournamentDE.payload.matchType === MatchType.SingleMatchPerRound) {
+      const reversedMatches = await this.matchContract.filter({
+        tournamentId,
+        homeTeamId: awayTeamId,
+        awayTeamId: homeTeamId,
+        stage,
+      });
+
+      if (reversedMatches.length > 0) {
+        return MatchAlreadyExistsInSameTournamentStageDomainEvent();
+      }
     }
 
     // Create a new match entity using the provided parameters. 
