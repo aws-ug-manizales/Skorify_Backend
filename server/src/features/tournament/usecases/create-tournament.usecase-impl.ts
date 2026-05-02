@@ -15,13 +15,14 @@ export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
   }
 
   async call(param: CreateTournamentParam): Promise<DomainEvent> {
-    const { endDate, name, startDate } = param;
+    const { endDate, name, startDate, matchType } = param;
 
     const tournament = TournamentEntity.build({
       endDate,
       id: crypto.randomUUID(),
       name,
       startDate,
+      matchType,  
       token: crypto.randomUUID(),
     });
 
