@@ -200,3 +200,63 @@ describe("MatchRepository – deleteById()", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// filter()
+// ---------------------------------------------------------------------------
+describe("MatchRepository – filter()", () => {
+  const homeTeamId = "aaa00001-aaaa-aaaa-aaaa-aaaaaaaaaaaa" as const;
+  const awayTeamId = "bbb00002-bbbb-bbbb-bbbb-bbbbbbbbbbbb" as const;
+  const tournamentId = "ttt00001-tttt-tttt-tttt-tttttttttttt" as const;
+
+  it("returns all matches that match the given tournamentId", async () => {
+    const repo = makeRepo();
+    await repo.save(buildMatch1()); // tournamentId = ttt00001...
+    await repo.save(buildMatch2()); // tournamentId = ttt00001...
+
+    const result = await repo.filter({ tournamentId });
+
+    expect(result).toHaveLength(2);
+  });
+
+  it("returns only matches for the specified homeTeamId", async () => {
+    const repo = makeRepo();
+    await repo.save(buildMatch1());
+    await repo.save(buildMatch2());
+
+    const result = await repo.filter({ homeTeamId });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].homeTeamId).toBe(homeTeamId);
+  });
+
+  it("returns only the exact match when filtering by homeTeamId and awayTeamId", async () => {
+    const repo = makeRepo();
+    await repo.save(buildMatch1());
+    await repo.save(buildMatch2());
+
+    const result = await repo.filter({ homeTeamId, awayTeamId });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(id1);
+  });
+
+  it("returns an empty array when no match satisfies the filter", async () => {
+    const repo = makeRepo();
+    await repo.save(buildMatch1());
+
+    const result = await repo.filter({
+      homeTeamId: "00000000-0000-0000-0000-000000000000" as any,
+    });
+
+    expect(result).toHaveLength(0);
+  });
+
+  it("returns an empty array when the repository is empty", async () => {
+    const repo = makeRepo();
+
+    const result = await repo.filter({ tournamentId });
+
+    expect(result).toHaveLength(0);
+  });
+});
+
