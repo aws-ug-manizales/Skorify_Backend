@@ -6,6 +6,7 @@ import {
   NotGottenUserDomainEvent,
   UserContract,
   UserEntity,
+  UserWithEmailAlreadyExistDomainEvent,
 } from "@skorify/domain/user";
 
 export class CreateUserUsecaseImpl extends CreateUserUsecase {
@@ -16,6 +17,16 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
   async call(param: CreateUserParam): Promise<DomainEvent> {
     const { name, email } = param;
 
+    const users = await this.userContract.filter({
+      where: {
+        email,
+      },
+    });
+
+    if (users.length) {
+      return UserWithEmailAlreadyExistDomainEvent(users[0]);
+    }
+
     const user = UserEntity.build({
       id: crypto.randomUUID(),
       name,
@@ -23,6 +34,11 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       notificationToken: "",
       createdAt: new Date(),
     });
+    
+    if (!user) {
+      return UserWithEmailAlreadyExistDomainEvent(users[0]);
+    }
+
     const userInDB = await this.userContract.save(user);
 
     if (!userInDB) {

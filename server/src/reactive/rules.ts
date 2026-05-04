@@ -11,9 +11,9 @@ export function configureRules(eventBusContract: EventBusContract) {
       return event.is(GottenMatchDomainEvent);
     },
     handler: (events) => {
-        await calculateGlobalTableUsecase.call({
-            tournamentId: "UUID"
-        })
+      // await calculateGlobalTableUsecase.call({
+      //     tournamentId: "UUID"
+      // })
     },
   });
 }

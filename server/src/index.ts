@@ -5,6 +5,9 @@ import { middleware } from "./middleware";
 import { extraDependencies } from "./extra-dependencies";
 import { onLoadIraca } from "./config/on-load-iraca";
 import { DBClient } from "@skorify/data";
+import { GetUserByIdUsecaseImpl } from "./features/user/usecases/get-user-by-id.usecase-impl";
+import { GetUserByIdUsecase, UserContract } from "@skorify/domain/user";
+import { UserRepository } from "@skorify/shared";
 
 async function main() {
   const loggerFolder = "logs";
