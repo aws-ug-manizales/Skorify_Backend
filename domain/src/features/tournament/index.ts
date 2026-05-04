@@ -1,4 +1,4 @@
-export { TournamentAttributes, TournamentEntity } from "./tournament.entity";
+export { TournamentAttributes, TournamentEntity, MatchType } from "./tournament.entity";
 
 export * from "./domain-events";
 

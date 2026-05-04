@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "start:dev": "nodemon",
     "build": "tsc -p tsconfig.json && pnpm run copy-iraca && pnpm run copy-auth && pnpm run copy-libs && pnpm run copy-npmrc && pnpm run copy-package",
     "copy-iraca": "copyfiles  src/iraca.config.json dist",
@@ -15,18 +16,21 @@
     "start:heroku": "node dist/src/index.js"
   },
   "dependencies": {
-    "@skorify/domain": "../domain/dist",
-    "@skorify/shared": "../shared/dist",
-    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta",
     "@scifamek-open-source/iraca": "9.2.0",
-    "@scifamek-open-source/logger": "1.1.2"
+    "@scifamek-open-source/logger": "1.1.2",
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta",
+    "@skorify/domain": "../domain/dist",
+    "@skorify/shared": "../shared/dist"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "22.5.0",
+    "copyfiles": "^2.4.1",
+    "jest": "^30.3.0",
     "nodemon": "3.1.10",
+    "ts-jest": "^29.4.9",
     "ts-node": "10.9.2",
-    "typescript": "5.8.3",
-    "copyfiles": "^2.4.1"
+    "typescript": "5.8.3"
   },
   "keywords": [],
   "author": "",

@@ -20,16 +20,16 @@ export interface MatchAttributes {
 }
 
 export class MatchEntity extends Entity {
+  tournamentId: Id;
   awayTeamId: Id;
   homeTeamId: Id;
   kickOff: Date;
-  tournamentId: Id;
   awayTeamScore?: number;
   homeTeamScore?: number;
   stage?: MatchStage;
   private _status: MatchStatus;
   private _state: MatchState;
-  private _timeToCloseInMinutes: number;
+  private _timeToCloseInMinutes: number;  
 
   private constructor(attributes: MatchAttributes) {
     super(attributes.id, new Date());
