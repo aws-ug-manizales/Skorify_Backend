@@ -10,9 +10,21 @@ import {
   JsonDataSource,
 } from "@skorify/shared";
 
+type DatabaseConfig = {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  name: string;
+  logging?: boolean;
+};
+type Injections = {
+  database: DatabaseConfig;
+  [key: string]: unknown;
+};
 export const onLoadIraca = async (
   container: IracaContainer,
-  injections?: any,
+  injections: Injections,
 ) => {
   const { database } = injections;
   const { host, port, username, password, name, logging } = database;
