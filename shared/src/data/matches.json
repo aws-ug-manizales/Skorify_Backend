@@ -1,11 +1,25 @@
 [
   {
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "awayTeamId": "team-bra-0002-dddd-eeee-ffffffffffff",
-    "homeTeamId": "team-colombia-updated",
-    "date": "2026-06-15T20:00:00.000Z",
+    "id": "match-col-bra-mundial-001",
+    "homeTeamId": "team-colombia-001",
+    "awayTeamId": "team-brasil-002",
+    "tournamentId": "tournament-mundial-2026",
+    "kickOff": "2026-06-15T20:00:00.000Z",
+    "homeTeamScore": 0,
     "awayTeamScore": 0,
-    "localTeamScore": 0,
-    "timeToCloseInMinutes": 10
+    "stage": "group",
+    "venue": "Estadio El Campín",
+    "createdAt": "2026-05-01T00:00:00.000Z"
+  },
+  {
+    "id": "match-arg-uru-copa-001",
+    "homeTeamId": "team-argentina-003",
+    "awayTeamId": "team-uruguay-004",
+    "tournamentId": "tournament-copa-america-2024",
+    "kickOff": "2024-06-22T21:00:00.000Z",
+    "homeTeamScore": 0,
+    "awayTeamScore": 0,
+    "stage": "finals",
+    "createdAt": "2024-06-01T00:00:00.000Z"
   }
 ]

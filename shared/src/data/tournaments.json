@@ -1,0 +1,29 @@
+[
+  {
+    "id": "tournament-mundial-2026",
+    "name": "Copa Mundial FIFA 2026",
+    "startDate": "2026-06-11T00:00:00.000Z",
+    "endDate": "2026-07-19T00:00:00.000Z",
+    "matchType": "single_match_per_round",
+    "token": "MUNDIAL2026",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "tournament-copa-america-2024",
+    "name": "Copa América 2024",
+    "startDate": "2024-06-20T00:00:00.000Z",
+    "endDate": "2024-07-14T00:00:00.000Z",
+    "matchType": "home_and_away_per_round",
+    "token": "COPAAMERICA2024",
+    "createdAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "id": "tournament-eliminatorias-2026",
+    "name": "Eliminatorias CONMEBOL 2026",
+    "startDate": "2023-09-01T00:00:00.000Z",
+    "endDate": "2025-11-30T00:00:00.000Z",
+    "matchType": "home_and_away_per_round",
+    "token": "ELIM2026",
+    "createdAt": "2023-08-01T00:00:00.000Z"
+  }
+]

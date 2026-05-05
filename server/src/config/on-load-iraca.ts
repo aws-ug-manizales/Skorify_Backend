@@ -21,6 +21,9 @@ export const onLoadIraca = async (
   const { host, port, username, password, name, logging } = database;
   console.log(database);
 
+  // Base path para los archivos JSON en shared/src/data
+  const dataPath = join(__dirname, "../../../shared/src/data");
+
   // const dbClient = new DBClient({
   //   type: "postgres",
   //   host,
@@ -47,11 +50,11 @@ export const onLoadIraca = async (
   // });
   container.addValue({
     id: "MatchDatasource",
-    value: new JsonDataSource<PredictionEntity>("matches.json"),
+    value: new JsonDataSource<MatchEntity>("matches.json", dataPath),
   });
   container.addValue({
     id: "UserDatasource",
-    value: new JsonDataSource<UserEntity>("users.json"),
+    value: new JsonDataSource<UserEntity>("users.json", dataPath),
   });
   // container.addValue({
   //   id: "MatchDatasource",
@@ -63,20 +66,21 @@ export const onLoadIraca = async (
   // });
   container.addValue({
     id: "PredictionDatasource",
-    value: new JsonDataSource<PredictionEntity>("predictions.json"),
+    value: new JsonDataSource<PredictionEntity>("predictions.json", dataPath),
   });
   container.addValue({
     id: "TournamentDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournaments.json"),
+    value: new JsonDataSource<TournamentEntity>("tournaments.json", dataPath),
   });
   container.addValue({
     id: "TournamentInstanceDatasource",
     value: new JsonDataSource<TournamentInstanceEntity>(
       "tournament-intances.json",
+      dataPath,
     ),
   });
   container.addValue({
     id: "TeamDatasource",
-    value: new JsonDataSource<TeamEntity>("teams.json"),
+    value: new JsonDataSource<TeamEntity>("teams.json", dataPath),
   });
 };
