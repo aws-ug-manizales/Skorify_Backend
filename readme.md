@@ -192,10 +192,10 @@ pnpm i
 pnpm run build
 ```
 
-### Para los builder
+### Para los builders
 
 ```shell
-cd builder
+cd builders
 pnpm i
 pnpm run sla
 
