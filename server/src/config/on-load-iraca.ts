@@ -2,6 +2,7 @@ import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection
 import { DBClient } from "@skorify/data";
 import { MatchEntity } from "@skorify/domain/match";
 import { PredictionEntity } from "@skorify/domain/prediction";
+import { TeamEntity } from "@skorify/domain/team";
 import { TournamentEntity } from "@skorify/domain/tournament";
 import { TournamentInstanceEntity } from "@skorify/domain/tournament-instance";
 import { UserEntity } from "@skorify/domain/user";
@@ -73,5 +74,9 @@ export const onLoadIraca = async (
     value: new JsonDataSource<TournamentInstanceEntity>(
       "tournament-intances.json",
     ),
+  });
+  container.addValue({
+    id: "TeamDatasource",
+    value: new JsonDataSource<TeamEntity>("teams.json"),
   });
 };

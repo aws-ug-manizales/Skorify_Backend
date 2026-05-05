@@ -1,51 +1,113 @@
+import type { CreateMatchParam } from "@skorify/domain/match";
 import {
-  CreateMatchParam,
   CreateMatchUsecase,
-  MatchDoesNotExistDomainEvent,
-  GottenMatchDomainEvent,
   MatchContract,
   MatchEntity,
-  MatchCannotBeSavedDomainEvent,
+  EntityNotInstanciableDomainEvent,
+  MatchNotSavedDomainEvent,
+  MatchSavedDomainEvent,
+  MatchAlreadyExistsInSameTournamentStageDomainEvent,
+  MatchTeamDoesNotExistDomainEvent,
+  MatchTeamIsTheSameDomainEvent,
 } from "@skorify/domain/match";
-import { DomainEvent } from "@skorify/domain/core";
+import {
+  GetTournamentByIdUsecase,
+  GottenTournamentDomainEvent,
+} from "@skorify/domain/tournament";
+import { MatchType } from "@skorify/domain/tournament";
+import {
+  GetTeamByIdUsecase,
+  GottenTeamDomainEvent,
+} from "@skorify/domain/team";
+import type { DomainEvent } from "@skorify/domain/core";
 
 export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
-  constructor(private matchContract: MatchContract) {
+  constructor(
+    private matchContract: MatchContract,
+    private getTournamentByIdUsecase: GetTournamentByIdUsecase,
+    private getTeamByIdUsecase: GetTeamByIdUsecase,
+  ) {
     super();
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { homeTeamId, awayTeamId, tournamentId, kickOff, stage, venue } = param;
+    const { awayTeamId, homeTeamId, kickOff, tournamentId, stage } = param;
 
-    // 1. Validar que los equipos sean diferentes
-    if (homeTeamId === awayTeamId) {
-      return MatchCannotBeSavedDomainEvent(null as any);  // TODO: mejorar el mensaje
+    if (awayTeamId === homeTeamId) {
+      return MatchTeamIsTheSameDomainEvent();
     }
 
-    //algunas validaciones posteriores podrían ser: 
-    //  -validar que los equipos existan
-    //  -validar que el torneo exista
-    //  -validar que no haya otro partido igual (definir que significa un partido igual--- mismos equipos, mismo torneo, misma fecha y hora por ejemplo).
-
-    // 2. Crear la entidad
-    const newMatch = MatchEntity.build({
-      id: crypto.randomUUID() as any,
-      homeTeamId: homeTeamId as any,
-      awayTeamId: awayTeamId as any,
-      tournamentId: tournamentId as any,
-      kickOff,
-      stage: stage ?? "group",
-      venue:venue,
-      createdAt: new Date(),
+    // Verify if the tournament instance exists. 
+    const tournamentDE = await this.getTournamentByIdUsecase.call({
+      tournamentId,
     });
 
-    // 3. Guardar
-    const savedMatch = await this.matchContract.save(newMatch);
-
-    if (!savedMatch) {
-      return MatchCannotBeSavedDomainEvent(newMatch);
+    if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
+      return tournamentDE;
     }
 
-    return GottenMatchDomainEvent(savedMatch);
+    const [homeTeamDE, awayTeamDE] = await Promise.all([
+      this.getTeamByIdUsecase.call({ teamId: homeTeamId }),
+      this.getTeamByIdUsecase.call({ teamId: awayTeamId }),
+    ]);
+
+    if (
+      homeTeamDE.isNot(GottenTeamDomainEvent) ||
+      awayTeamDE.isNot(GottenTeamDomainEvent)
+    ) {
+      return MatchTeamDoesNotExistDomainEvent();
+    }
+    
+    const existingMatches = await this.matchContract.filter({
+      tournamentId,
+      homeTeamId,
+      awayTeamId,
+      stage,
+    });
+    
+    if (existingMatches.length > 0) {
+      return MatchAlreadyExistsInSameTournamentStageDomainEvent();
+    }
+
+    // If the tournament only allows one match per round, verify there is no
+    // reversed fixture (same teams inverted) in the same stage.
+    if (tournamentDE.payload.matchType === MatchType.SingleMatchPerRound) {
+      const reversedMatches = await this.matchContract.filter({
+        tournamentId,
+        homeTeamId: awayTeamId,
+        awayTeamId: homeTeamId,
+        stage,
+      });
+
+      if (reversedMatches.length > 0) {
+        return MatchAlreadyExistsInSameTournamentStageDomainEvent();
+      }
+    }
+
+    // Create a new match entity using the provided parameters. 
+    const match = MatchEntity.build({
+      id: crypto.randomUUID(),
+      tournamentId,
+      awayTeamId,
+      homeTeamId,
+      kickOff,
+      stage,
+      createdAt: new Date(),
+    });
+    
+    //The entity can't be instatiated for any reason.
+    if (!match) {
+      return EntityNotInstanciableDomainEvent();
+    }
+
+    const saved = await this.matchContract.save(match);
+
+     //The entity can't be saved for any reason.
+    if (!saved) {
+      return MatchNotSavedDomainEvent();
+    }
+
+    //The entity is successfully saved.
+    return MatchSavedDomainEvent(saved);
   }
 }
