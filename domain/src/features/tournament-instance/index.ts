@@ -9,3 +9,7 @@ export { TournamentInstanceContract } from "./tournament-instance.contract";
 
 export { CreateTournamentInstanceParam } from "./usecases/create-tournament-instance/create-tournament-instance.param";
 export { CreateTournamentInstanceUsecase } from "./usecases/create-tournament-instance/create-tournament-instance.usecase";
+
+
+export { GetTournamentInstanceByIdParam } from "./usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.param";
+export { GetTournamentInstanceByIdUsecase } from "./usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.usecase";
