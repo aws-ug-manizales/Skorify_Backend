@@ -1,0 +1,115 @@
+Escenarios de Prueba para CreateMatch
+✅ Casos Válidos (deberían crear el partido exitosamente)
+1. Partido válido en Mundial (single match per round)
+
+
+{
+  "homeTeamId": "team-colombia",
+  "awayTeamId": "team-argentina",
+  "tournamentId": "tournament-mundial",
+  "kickOff": "2026-06-20T18:00:00.000Z",
+  "stage": "group",
+  "venue": "Estadio Metropolitano"
+}
+2. Partido válido en Copa América (home and away)
+
+
+{
+  "homeTeamId": "team-brasil",
+  "awayTeamId": "team-uruguay",
+  "tournamentId": "tournament-copa-america",
+  "kickOff": "2024-06-25T20:00:00.000Z",
+  "stage": "semifinals",
+  "venue": "Estadio Maracaná"
+}
+3. Partido de vuelta en Copa América (permite partido inverso)
+
+
+{
+  "homeTeamId": "team-uruguay",
+  "awayTeamId": "team-brasil",
+  "tournamentId": "tournament-copa-america",
+  "kickOff": "2024-06-28T20:00:00.000Z",
+  "stage": "semifinals",
+  "venue": "Estadio Centenario"
+}
+❌ Casos Inválidos (deberían fallar con validaciones específicas)
+4. Error: MatchTeamIsTheSameDomainEvent (mismo equipo local y visitante)
+
+
+{
+  "homeTeamId": "team-colombia",
+  "awayTeamId": "team-colombia",
+  "tournamentId": "tournament-mundial",
+  "kickOff": "2026-06-20T18:00:00.000Z",
+  "stage": "group"
+}
+5. Error: NotGottenTournamentDomainEvent (torneo no existe)
+
+
+{
+  "homeTeamId": "team-colombia",
+  "awayTeamId": "team-peru",
+  "tournamentId": "tournament-inexistente",
+  "kickOff": "2026-06-20T18:00:00.000Z",
+  "stage": "group"
+}
+6. Error: MatchTeamDoesNotExistDomainEvent (equipo local no existe)
+
+
+{
+  "homeTeamId": "team-inexistente",
+  "awayTeamId": "team-peru",
+  "tournamentId": "tournament-mundial",
+  "kickOff": "2026-06-20T18:00:00.000Z",
+  "stage": "group"
+}
+7. Error: MatchTeamDoesNotExistDomainEvent (equipo visitante no existe)
+
+
+{
+  "homeTeamId": "team-chile",
+  "awayTeamId": "team-inexistente",
+  "tournamentId": "tournament-mundial",
+  "kickOff": "2026-06-20T18:00:00.000Z",
+  "stage": "group"
+}
+8. Error: MatchAlreadyExistsInSameTournamentStageDomainEvent (partido duplicado exacto)
+
+Primero crea este partido:
+
+
+{
+  "homeTeamId": "team-argentina",
+  "awayTeamId": "team-chile",
+  "tournamentId": "tournament-eliminatorias",
+  "kickOff": "2024-09-10T21:00:00.000Z",
+  "stage": "group",
+  "venue": "Estadio Monumental"
+}
+Luego intenta crear el mismo partido de nuevo (debería fallar):
+
+
+{
+  "homeTeamId": "team-argentina",
+  "awayTeamId": "team-chile",
+  "tournamentId": "tournament-eliminatorias",
+  "kickOff": "2024-09-15T21:00:00.000Z",
+  "stage": "group",
+  "venue": "Otro estadio"
+}
+9. Error: MatchAlreadyExistsInSameTournamentStageDomainEvent (partido inverso en single_match_per_round)
+
+Ya existe: Colombia vs Brasil en Mundial (group)
+
+Intenta crear el partido inverso (debería fallar porque Mundial es single_match_per_round):
+
+
+{
+  "homeTeamId": "team-brasil",
+  "awayTeamId": "team-colombia",
+  "tournamentId": "tournament-mundial",
+  "kickOff": "2026-06-18T20:00:00.000Z",
+  "stage": "group",
+  "venue": "Arena Corinthians"
+}
