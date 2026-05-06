@@ -1,6 +1,6 @@
 [
   {
-    "id": "tournament-mundial-2026",
+    "id": "tournament-mundial",
     "name": "Copa Mundial FIFA 2026",
     "startDate": "2026-06-11T00:00:00.000Z",
     "endDate": "2026-07-19T00:00:00.000Z",
@@ -9,7 +9,7 @@
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
-    "id": "tournament-copa-america-2024",
+    "id": "tournament-copa-america",
     "name": "Copa América 2024",
     "startDate": "2024-06-20T00:00:00.000Z",
     "endDate": "2024-07-14T00:00:00.000Z",
@@ -18,7 +18,7 @@
     "createdAt": "2024-01-15T00:00:00.000Z"
   },
   {
-    "id": "tournament-eliminatorias-2026",
+    "id": "tournament-eliminatorias",
     "name": "Eliminatorias CONMEBOL 2026",
     "startDate": "2023-09-01T00:00:00.000Z",
     "endDate": "2025-11-30T00:00:00.000Z",
