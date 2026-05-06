@@ -1,0 +1,13 @@
+
+  {{MAIN_USECASE}}Lambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs22.x
+      Handler: {{KEBAD_MAIN_USECASE}}/index.handler
+      CodeUri: .
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /{{KEBAD_MAIN_USECASE}}
+            Method: {{METHOD}}

@@ -1,32 +1,19 @@
-import { readdir, stat } from "node:fs/promises";
-import { join } from "node:path";
-export async function getUsecases(serverFolder: string) {
-  const featuresFolder = join(serverFolder, "src", "features");
-  const files = await readdir(featuresFolder, {
-    recursive: true,
-  });
+import { stat } from "node:fs/promises";
 
-  const pattern = /([\w-]+)\\usecases\\([\w-]+)\.usecase-impl\.ts/;
+export type UsecaseInfo = {
+  module: string;
+  modulePascal: string;
+  usecaseName: string;
+  kebadUsecaseName: string;
+  path: string;
+};
+export type UsecasesInfo = UsecaseInfo[];
 
-  const validFiles = files
-    .map((f) => pattern.exec(f))
-    .filter((x) => x !== null)
-    .map((x: RegExpExecArray) => ({
-      module: x[1],
-      modulePascal: kebabToPascal(x[1]),
-
-      kebadUsecaseName: x[2],
-      usecaseName: kebabToPascal(x[2]) + "Usecase",
-      path: join(featuresFolder, x[0]),
-    }));
-  return validFiles;
-}
-
-function kebabToCamel(str: string): string {
+export function kebabToCamel(str: string): string {
   return str.toLowerCase().replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
 }
 
-function kebabToPascal(str: string): string {
+export function kebabToPascal(str: string): string {
   return str
     .toLowerCase()
     .replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());

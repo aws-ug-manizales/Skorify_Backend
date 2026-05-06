@@ -9,13 +9,17 @@ import {
   MatchEditedDomainEvent,
   MatchStatus,
 } from "@skorify/domain/match";
-import { PredictionContract } from "@skorify/domain/prediction";
+import {
+  GottenPredictionsDomainEvent,
+  PredictionContract,
+} from "@skorify/domain/prediction";
 import { DomainEvent } from "@skorify/domain/core";
+import { GetPredictionsByMatchUsecase } from "@skorify/domain/prediction";
 
 export class EditMatchUsecaseImpl extends EditMatchUsecase {
   constructor(
     private matchContract: MatchContract,
-    private predictionContract: PredictionContract,
+    private getPredictionsByMatchUsecase: GetPredictionsByMatchUsecase,
   ) {
     super();
   }
@@ -47,7 +51,14 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
 
     if (teamsChanged) {
       // Obtener predicciones usando filter genérico (equipo de datos)
-      const predictions = await this.predictionContract.filter({ matchId });
+      const predictionsDE = await this.getPredictionsByMatchUsecase.call({
+        matchId,
+      });
+      if (predictionsDE.isNot(GottenPredictionsDomainEvent)) {
+        return predictionsDE;
+      }
+
+      const predictions = predictionsDE.payload;
       const hasPredictions = predictions.length > 0;
 
       // Si hay predicciones y se intenta cambiar equipos, no permitir
