@@ -106,8 +106,6 @@ export abstract class Builder {
 
             dependencies.push(type);
             // this.addImport(imports, usecasesConfig, type, source);
-          
-            
           });
         }
       }
@@ -135,7 +133,9 @@ export abstract class Builder {
         toAdd = `import {${myClass}} from './${usecase.kebadUsecaseName}.usecase-impl';`;
       }
     } else if (myClass.includes("Usecase")) {
-      const usecase = usecases.find((x) => x.usecaseName == myClass);
+      const usecase = usecases.find((x) => {
+        return x.usecaseName == myClass;
+      });
 
       if (usecase) {
         toAdd = `import {${myClass}} from '@skorify/domain/${usecase.module}';`;
