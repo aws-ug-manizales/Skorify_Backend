@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@scifamek-open-source/iraca": "9.1.0",
-    "@skorify/domain": "link:../../../../domain/dist",
+    "@skorify/domain": "link:../../../domain/dist",
     "@aws-sdk/client-lambda": "^3.600.0"
   },
   "devDependencies": {

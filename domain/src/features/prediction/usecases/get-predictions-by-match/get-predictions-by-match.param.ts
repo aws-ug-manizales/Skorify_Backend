@@ -1,5 +1,5 @@
 import { Id } from "../../../../core";
 
-export interface GetPredictionByMatchParam {
+export interface GetPredictionsByMatchParam {
   matchId: Id;
 }

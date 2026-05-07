@@ -123,6 +123,7 @@ export abstract class Builder {
     usecases: UsecasesInfo,
     myClass: string,
     impl: string,
+    subPath?: string
   ) {
     let toAdd = "";
 
@@ -130,7 +131,7 @@ export abstract class Builder {
       const empty = myClass.replace("Impl", "");
       const usecase = usecases.find((x) => x.usecaseName == empty);
       if (usecase) {
-        toAdd = `import {${myClass}} from './${usecase.kebadUsecaseName}.usecase-impl';`;
+        toAdd = `import {${myClass}} from './${subPath}${usecase.kebadUsecaseName}.usecase-impl';`;
       }
     } else if (myClass.includes("Usecase")) {
       const usecase = usecases.find((x) => {
