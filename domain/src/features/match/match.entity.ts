@@ -27,6 +27,7 @@ export class MatchEntity extends Entity {
   awayTeamScore?: number;
   homeTeamScore?: number;
   stage?: MatchStage;
+  venue?: string | null;
   private _status: MatchStatus;
   private _state: MatchState;
   private _timeToCloseInMinutes: number;  
@@ -40,6 +41,8 @@ export class MatchEntity extends Entity {
     this._timeToCloseInMinutes = 10;
     this.awayTeamScore = 0;
     this.homeTeamScore = 0;
+    this.stage = attributes.stage;
+    this.venue = attributes.venue;
     this._status = attributes.status!;
     this._state = matchStateCollection[attributes.status!];
   }
