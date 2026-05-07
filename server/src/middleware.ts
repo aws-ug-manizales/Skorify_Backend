@@ -5,6 +5,6 @@ export const middleware: RunIracaConfig["enabledHandler"] = (
   usecaseId: string,
 ) => {
   return async (request: IncomingMessage, response: ServerResponse) => {
-    return true;
+    return usecaseId != null && request.url != null;
   };
 };

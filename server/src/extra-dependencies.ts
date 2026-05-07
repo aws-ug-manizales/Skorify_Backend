@@ -1,24 +1,21 @@
 import { RunIracaConfig } from "@scifamek-open-source/iraca/web-api";
 import { MatchContract } from "@skorify/domain/match";
 import {
-  PredictionContract,
-  PredictionEntity,
+  PredictionContract
 } from "@skorify/domain/prediction";
+import { TeamContract } from "@skorify/domain/team";
 import {
-  TournamentContract,
-  TournamentEntity,
+  TournamentContract
 } from "@skorify/domain/tournament";
 import { TournamentInstanceContract } from "@skorify/domain/tournament-instance";
-import { TeamContract } from "@skorify/domain/team";
-import { UserContract, UserEntity } from "@skorify/domain/user";
+import { UserContract } from "@skorify/domain/user";
 import {
-  JsonDataSource,
   MatchRepository,
   PredictionRepository,
+  TeamRepository,
   TournamentInstanceRepository,
   TournamentRepository,
-  UserRepository,
-  TeamRepository,
+  UserRepository
 } from "@skorify/shared";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [

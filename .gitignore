@@ -142,4 +142,7 @@ server/libs
 shared/libs
 builders/dist
 builders/generated
+
+# Generated test data (use `pnpm run seed` to generate)
 server/data
+shared/src/data
