@@ -1,14 +1,13 @@
+import { mkdir, readdir, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
+import * as ts from "typescript";
 import {
   existsFile,
   kebabToPascal,
   UsecaseInfo,
   UsecasesInfo,
 } from "./helpers";
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import * as ts from "typescript";
 import { Attribute, Class } from "./models";
-import { exec } from "node:child_process";
 
 export interface BuilderConfiguration {
   root: string;
