@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npx esbuild index.ts  --bundle  --platform=node --target=node22 --outfile=../../../dist/{{MODULE}}/{{USECASE}}/index.js",
+    "build": "npx esbuild index.ts  --bundle --keep-names --platform=node --target=node22 --outfile=../../dist/{{MODULE}}/index.js",
     "copy-template": "copyfiles template.yaml ./dist"
 
   },

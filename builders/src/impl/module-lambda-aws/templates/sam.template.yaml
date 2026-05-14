@@ -6,8 +6,4 @@
       Handler: {{MODULE}}/index.handler
       CodeUri: .
       Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /{{KEBAD_MAIN_USECASE}}
-            Method: {{METHOD}}
+        
