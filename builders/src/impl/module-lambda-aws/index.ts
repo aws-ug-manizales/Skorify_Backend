@@ -28,7 +28,6 @@ type Templates = {
 export class ModuleLambdaAWSBuilder extends Builder {
   async build(config: BuilderConfiguration): Promise<void> {
     const allUsecases = await this.getUsecases(config.serverFolder);
-    writeFileSync("vegeta.json", JSON.stringify(allUsecases, null, 2));
     const myFolder = "module-lambda-aws";
     const templatesFolder = join(
       config.root,
