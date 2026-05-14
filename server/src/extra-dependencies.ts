@@ -11,6 +11,7 @@ import {
 import { TournamentInstanceContract } from "@skorify/domain/tournament-instance";
 import { TeamContract } from "@skorify/domain/team";
 import { UserContract, UserEntity } from "@skorify/domain/user";
+import { EventBusContract } from "@skorify/domain/core";
 import {
   JsonDataSource,
   MatchRepository,
@@ -20,8 +21,15 @@ import {
   UserRepository,
   TeamRepository,
 } from "@skorify/shared";
+import { InMemoryEventBus } from "./reactive/in-memory-event-bus";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
+  // EventBus
+  {
+    abstraction: EventBusContract,
+    implementation: InMemoryEventBus,
+    dependencies: [],
+  },
   // Repositories
   {
     abstraction: MatchContract,

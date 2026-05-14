@@ -9,6 +9,9 @@ import {
   MatchPostgresDataSource,
   JsonDataSource,
 } from "@skorify/shared";
+import { EventBusContract } from "@skorify/domain/core";
+import { CalculateMatchScoreUsecase } from "@skorify/domain/match";
+import { configureRules } from "../reactive/rules";
 
 export const onLoadIraca = async (
   container: IracaContainer,
@@ -76,4 +79,13 @@ export const onLoadIraca = async (
     id: "TeamDatasource",
     value: new JsonDataSource<TeamEntity>("teams.json"),
   });
+
+  // Configurar el EventBus con las reglas reactivas
+  const eventBus = await container.getInstance<EventBusContract>(
+    EventBusContract,
+  );
+  const calculateMatchScoreUsecase = await container.getInstance<CalculateMatchScoreUsecase>(
+    CalculateMatchScoreUsecase,
+  );
+  configureRules(eventBus, calculateMatchScoreUsecase);
 };

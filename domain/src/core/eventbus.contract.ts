@@ -18,13 +18,19 @@ export interface GroupConfiguration {
 export interface GroupCompletionConfiguration<T> {
   domainEvent: DomainEventKind | DomainEventKindWithPayload<T>;
   completionHandler: (domainEvent: DomainEvent) => boolean;
-  handler: (domainEvents: DomainEvent[]) => void;
+  handler: (domainEvents: DomainEvent[]) => void | Promise<void>;
 }
 
+export type EventHandler<T = any> = (domainEvent: DomainEvent<T>) => void | Promise<void>;
+
 export abstract class EventBusContract {
-  abstract send<T>(configuration: SentConfiguration<T>): void;
-  abstract group(configuration: GroupConfiguration): void;
+  abstract send<T>(configuration: SentConfiguration<T>): void | Promise<void>;
+  abstract group(configuration: GroupConfiguration): void | Promise<void>;
   abstract afterGroupCompletion<T>(
     configuration: GroupCompletionConfiguration<T>,
-  ): void;
+  ): void | Promise<void>;
+  abstract on<T>(
+    domainEvent: DomainEventKind | DomainEventKindWithPayload<T>,
+    handler: EventHandler<T>,
+  ): void | Promise<void>;
 }
