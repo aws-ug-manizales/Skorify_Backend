@@ -6,13 +6,28 @@ export const UserEnrollmentParamsNotValidDomainEvent = DomainEventKind(
   "UserEnrollmentParamsNotValidDomainEvent",
 );
 
-// Domain events related to got a user enrollment
+// Domain events related to got a user enrollment by id
 export const NotGottenUserEnrollmentDomainEvent = DomainEventKind(
   "NotGottenUserEnrollmentDomainEvent",
 );
 
+// Domain events related to got all user enrollments by userId
+export const NotGottenUserEnrollmentsDomainEvent = DomainEventKind(
+  "NotGottenUserEnrollmentsDomainEvent",
+);
+
+export const GottenUserEnrollmentsDomainEvent = DomainEventKind<UserEnrollmentEntity[]>(
+  "GottenUserEnrollmentsDomainEvent",
+);
+
 export const GottenUserEnrollmentDomainEvent = DomainEventKind<UserEnrollmentEntity>(
   "GottenUserEnrollmentDomainEvent",
+);
+
+export const UserEnrollmentAlreadyExistsDomainEvent = DomainEventKind<{
+  userEnrollmentId: UserEnrollmentEntity["id"];
+}>(
+  "UserEnrollmentAlreadyExistsDomainEvent",
 );
 
 // Domain events related to instanciating a user enrollment entity.
@@ -21,10 +36,11 @@ export const UserEnrollmentEntityNotInstanciableDomainEvent = DomainEventKind(
 );
 
 // Domain events related to saving a user enrollment.
-export const UserEnrollmentSavedDomainEvent = DomainEventKind<UserEnrollmentEntity>(
-  "UserEnrollmentSavedDomainEvent"
+export const NotSavedUserEnrollmentDomainEvent = DomainEventKind(
+  "NotSavedUserEnrollmentDomainEvent"
 );
 
-export const UserEnrollmentNotSavedDomainEvent = DomainEventKind(
-  "UserEnrollmentNotSavedDomainEvent"
+export const SavedUserEnrollmentDomainEvent = DomainEventKind<UserEnrollmentEntity>(
+  "SavedUserEnrollmentDomainEvent"
 );
+

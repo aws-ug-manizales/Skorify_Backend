@@ -6,9 +6,10 @@ import {
   UserEnrollmentContract,
   UserEnrollmentEntity,
   UserEnrollmentEntityNotInstanciableDomainEvent,
-  UserEnrollmentNotSavedDomainEvent,
-  UserEnrollmentSavedDomainEvent,
+  NotSavedUserEnrollmentDomainEvent,
+  SavedUserEnrollmentDomainEvent,
   UserEnrollmentParamsNotValidDomainEvent,
+  UserEnrollmentAlreadyExistsDomainEvent,
 } from "@skorify/domain/user-enrollment";
 
 import{
@@ -70,6 +71,15 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       return NotGottenTournamentInstanceDomainEvent();
     }
 
+    const userEnrollmentExist = await this.userEnrollmentContract.filter({
+      userId,
+      tournamentInstanceId,
+    });
+
+    if (userEnrollmentExist.length > 0) {
+      return UserEnrollmentAlreadyExistsDomainEvent({ userEnrollmentId: userEnrollmentExist[0].id });
+    }
+
     const userEnrollmentDE = UserEnrollmentEntity.build({
       id: crypto.randomUUID(),
       userId: userId,
@@ -89,9 +99,9 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
     const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollmentDE);
 
     if (!userEnrollmentInDB) {
-      return UserEnrollmentNotSavedDomainEvent();
+      return NotSavedUserEnrollmentDomainEvent();
     }
 
-    return UserEnrollmentSavedDomainEvent(userEnrollmentDE);
+    return SavedUserEnrollmentDomainEvent(userEnrollmentDE);
   }
 }
