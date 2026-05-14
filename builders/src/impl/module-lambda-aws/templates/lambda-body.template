@@ -1,9 +1,12 @@
 // handler.ts
 // import { APIGatewayProxyEvent } from "aws-lambda";
 // import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
+import { IracaServer } from "@scifamek-open-source/iraca/web-api";
+
 import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
 import { generate } from "./helpers";
 import { {{MODULE_PASCAL}}Repository } from "./{{MODULE}}.repository";
+import { {{MODULE_PASCAL}}Controller } from "./controller";
 
 {{IMPORTS}}
 
@@ -21,6 +24,21 @@ export const handler = async (event: any) => {
   const container = new IracaContainer();
 
 {{INJECTIONS}}
+
+
+
+
+  const myController = new {{MODULE_PASCAL}}Controller(
+        {
+      container,
+      prefix: '{{MODULE}}'
+    }
+  );
+
+
+const ser = new IracaServer();
+
+ser.addController(myController)
 
 
 

@@ -36,7 +36,8 @@ export class ModuleLambdaAWSBuilder extends Builder {
 			join(templatesFolder, './tsconfig.template.json'),
 			'utf-8',
 		);
-		const samTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
+		let samTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
+		let eventSamTemplate = await readFile(join(templatesFolder, './event.template.yaml'), 'utf-8');
 		const helpersTemplate = await readFile(join(templatesFolder, './helpers.ts'), 'utf-8');
 		const repositoryTemplate = await readFile(
 			join(templatesFolder, './base.repository.ts'),
@@ -74,7 +75,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
 
 			for (const usecaseConfig of usecasesConfig) {
 				const usecaseProperties = await this.getPropertiesByUsecase(usecasesConfig, usecaseConfig);
-				const {} = await this.constructUsecase(
+				const {myYamlTemplate} = await this.constructUsecase(
 					usecaseProperties,
 					usecasesConfig,
 					allUsecases,
@@ -91,7 +92,10 @@ export class ModuleLambdaAWSBuilder extends Builder {
 					fullDistFolder,
 					injections,
 					fullImports,
+					config.serverFolder,
+					eventSamTemplate
 				);
+				samTemplate = myYamlTemplate
 				// fullImports.push(...imports);
 			}
 
@@ -117,6 +121,8 @@ export class ModuleLambdaAWSBuilder extends Builder {
 				`${moduleConfig.modulePascal}`,
 			);
 			await writeFile(join(moduleFolder, `index.ts`), replacedLambdaTemplate);
+
+			await writeFile(join(moduleFolder, `template.yaml`), samTemplate);
 
 			const n = new Promise<void>((resolve, reject) => {
 				exec(`cd ${moduleFolder} && pnpm run build `, () => {
@@ -144,6 +150,8 @@ export class ModuleLambdaAWSBuilder extends Builder {
 		fullDistFolder: string,
 		injections: string[],
 		imports: string[],
+		serverFolder: string,
+		eventSamTemplate: string
 	): Promise<any> {
 		const {
 			packageTemplate,
@@ -169,11 +177,15 @@ export class ModuleLambdaAWSBuilder extends Builder {
 			source,
 		);
 
+		const originalControllerPath = join(serverFolder,'src','features', usecaseConfig.module, 'infrastructure', 'controller.ts');
 		const controllerPath = join(moduleFolder, 'infrastructure', 'controller.ts');
 
-		const existsControllerPath = await existsFile(controllerPath);
+
+		const existsControllerPath = await existsFile(originalControllerPath);
 		if (existsControllerPath) {
-			const controllerContent = await readFile(controllerPath, {
+					console.log(originalControllerPath);
+
+			const controllerContent = await readFile(originalControllerPath, {
 				encoding: 'utf-8',
 			});
 			await writeFile(join(moduleFolder, `controller.ts`), controllerContent);
@@ -196,7 +208,8 @@ export class ModuleLambdaAWSBuilder extends Builder {
 		const sourceFile = klass.compiledSourceCode;
 
 		myYamlTemplate = samTemplate
-			.replace(new RegExp(toToken('MAIN_USECASE'), 'g'), klass.parent?.replace('Usecase', '') ?? '')
+			.replace(new RegExp(toToken('MODULE'), 'g'), usecaseConfig.module)
+			.replace(new RegExp(toToken('MODULE_PASCAL'), 'g'), usecaseConfig.modulePascal)
 			.replace(
 				new RegExp(toToken('KEBAD_MAIN_USECASE'), 'g'),
 				`${usecaseConfig.module}/${usecaseConfig.kebadUsecaseName}`,
@@ -255,6 +268,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
 		return {
 			imports,
 			moduleFolder,
+			myYamlTemplate
 		};
 	}
 }

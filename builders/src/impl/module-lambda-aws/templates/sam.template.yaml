@@ -1,9 +1,9 @@
 
-  {{MAIN_USECASE}}Lambda:
+  {{MODULE_PASCAL}}Lambda:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs22.x
-      Handler: {{KEBAD_MAIN_USECASE}}/index.handler
+      Handler: {{MODULE}}/index.handler
       CodeUri: .
       Events:
         Api:
