@@ -5,3 +5,4 @@ export { PredictionRepository } from "./repositories/prediction.repository";
 export { TournamentRepository } from "./repositories/tournament.repository";
 export { TournamentInstanceRepository } from "./repositories/tournament-instance.repository";
 export { TeamRepository } from "./repositories/team.repository";
+export { UserEnrollmentRepository } from "./repositories/user-enrollment.repository";

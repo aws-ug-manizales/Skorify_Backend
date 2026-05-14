@@ -33,7 +33,8 @@
     "./team": "./features/team/index.js",
     "./prediction": "./features/prediction/index.js",
     "./tournament": "./features/tournament/index.js",
-    "./tournament-instance": "./features/tournament-instance/index.js"
+    "./tournament-instance": "./features/tournament-instance/index.js",
+    "./user-enrollment": "./features/user-enrollment/index.js"
   },
   "files": [
     "match",
