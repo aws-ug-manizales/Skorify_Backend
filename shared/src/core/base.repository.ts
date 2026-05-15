@@ -1,4 +1,4 @@
-import { BaseContract, Entity } from "@skorify/domain/core";
+import { BaseContract, Entity, Filters } from "@skorify/domain/core";
 import { DataSource } from "./data-source.interface";
 
 /**
@@ -61,12 +61,14 @@ export class BaseRepository<T extends Entity> extends BaseContract<T> {
     return items.filter((item) => ids.includes(item.id));
   }
 
-  async filter(filters: Partial<T>): Promise<T[]> {
+  async filter(filters: Filters): Promise<T[]> {
+    const where = filters.where
+
     const items = await this.dataSource.read();
     return items.filter((entity) =>
-      Object.entries(filters).every(
-        ([key, value]) => (entity as Record<string, unknown>)[key] === value
-      )
+      Object.entries(where).every(
+        ([key, value]) => (entity as Record<string, unknown>)[key] === value,
+      ),
     );
   }
 }

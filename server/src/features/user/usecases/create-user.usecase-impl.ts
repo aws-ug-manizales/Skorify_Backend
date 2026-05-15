@@ -1,4 +1,4 @@
-import { DomainEvent } from "@skorify/domain/core";
+import { DomainEvent } from '@skorify/domain/core';
 import {
   CreateUserParam,
   CreateUserUsecase,
@@ -7,7 +7,7 @@ import {
   UserContract,
   UserEntity,
   UserWithEmailAlreadyExistDomainEvent,
-} from "@skorify/domain/user";
+} from '@skorify/domain/user';
 
 export class CreateUserUsecaseImpl extends CreateUserUsecase {
   constructor(private userContract: UserContract) {
@@ -31,10 +31,10 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       id: crypto.randomUUID(),
       name,
       email,
-      notificationToken: "",
+      notificationToken: '',
       createdAt: new Date(),
     });
-    
+
     if (!user) {
       return UserWithEmailAlreadyExistDomainEvent(users[0]);
     }

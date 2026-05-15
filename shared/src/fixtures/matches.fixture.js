@@ -1,6 +1,6 @@
 const matchesFixture = [
   {
-    id: "match-col-bra-mundial-001",
+    id: "7b7b517c-e30b-4912-9959-ae57bb33d5aa",
     homeTeamId: "team-colombia",
     awayTeamId: "team-brasil",
     tournamentId: "tournament-mundial",
@@ -12,7 +12,7 @@ const matchesFixture = [
     createdAt: "2026-05-01T00:00:00.000Z",
   },
   {
-    id: "match-arg-uru-copa-001",
+    id: "4278bcfc-85d4-4214-955c-8f709470cd0b",
     homeTeamId: "team-argentina",
     awayTeamId: "team-uruguay",
     tournamentId: "tournament-copa-america",

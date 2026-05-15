@@ -59,7 +59,8 @@ El script genera los siguientes archivos en `shared/src/data/`:
 - ✅ `matches.json` - 2 partidos de ejemplo
 - ✅ `users.json` - Vacío (se llena al usar la app)
 - ✅ `predictions.json` - Vacío (se llena al usar la app)
-- ✅ `tournament-intances.json` - Vacío (se llena al usar la app)
+- ✅ `tournament-instances.json` - Vacío (se llena al usar la app)
+- ✅ `user-enrollments.json` - Vacío (se llena al usar la app) 
 
 ## 🔧 Agregar Nuevos Datos
 

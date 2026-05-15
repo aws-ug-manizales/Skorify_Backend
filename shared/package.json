@@ -17,6 +17,7 @@
     "@aws-sdk/client-eventbridge": "^3.1047.0",
     "@aws-sdk/client-s3": "^3.1047.0",
     "@aws-sdk/s3-request-presigner": "^3.1047.0",
+    "@aws-sdk/client-sns": "^3.1047.0",
     "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta",
     "@skorify/domain": "../domain/dist"
   },
