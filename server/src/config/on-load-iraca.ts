@@ -11,7 +11,11 @@ import {
   UserPostgresDataSource,
   MatchPostgresDataSource,
   JsonDataSource,
+  EventBusImpl,
+  StorageImpl,
 } from "@skorify/shared";
+import { EventBusContract, StorageContract } from "@skorify/domain/core";
+import { CalculateMatchScoreUsecase } from "@skorify/domain/match";
 
 type DatabaseConfig = {
   host: string;
@@ -29,13 +33,9 @@ export const onLoadIraca = async (
   container: IracaContainer,
   injections: Injections,
 ) => {
-  const { database } = injections;
+  const { database, eventBus, storage } = injections;
   const { host, port, username, password, name, logging } = database;
-  console.log(database);
-
-  // Base path para los archivos JSON en shared/src/data
-  const dataPath = join(__dirname, "../../../shared/src/data");
-
+  
   // const dbClient = new DBClient({
   //   type: "postgres",
   //   host,
@@ -95,4 +95,17 @@ export const onLoadIraca = async (
     id: "TeamDatasource",
     value: new JsonDataSource<TeamEntity>("teams.json", dataPath),
   });
+
+  container.add({
+    abstraction: EventBusContract,
+    implementation: EventBusImpl,
+    dependencies: ["eventBus"],
+  });
+
+  container.add({
+    abstraction: StorageContract,
+    implementation: StorageImpl,
+    dependencies: ["storage"],
+  });
+
 };

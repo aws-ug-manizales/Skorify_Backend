@@ -7,5 +7,13 @@
     "password": "${SKO_DB_PASSWORD}",
     "name": "${SKO_DB_NAME}",
     "logging": "${SKO_DB_LOGGING}"
+  },
+  "eventBus!": {
+    "eventBusName": "${SKO_EVENT_BUS_NAME}",
+    "source": "${SKO_EVENT_BUS_SOURCE}"
+  },
+  "storage!": {
+    "bucketName": "${SKO_STORAGE_BUCKET_NAME}",
+    "region": "${SKO_STORAGE_REGION}"
   }
 }

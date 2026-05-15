@@ -8,14 +8,18 @@ import {
   TournamentContract
 } from "@skorify/domain/tournament";
 import { TournamentInstanceContract } from "@skorify/domain/tournament-instance";
-import { UserContract } from "@skorify/domain/user";
+import { TeamContract } from "@skorify/domain/team";
+import { UserContract, UserEntity } from "@skorify/domain/user";
+import { EventBusContract } from "@skorify/domain/core";
 import {
   MatchRepository,
   PredictionRepository,
   TeamRepository,
   TournamentInstanceRepository,
   TournamentRepository,
-  UserRepository
+  UserRepository,
+  TeamRepository,
+  EventBusImpl,
 } from "@skorify/shared";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [

@@ -2,8 +2,10 @@ import { runIraca } from "@scifamek-open-source/iraca/web-api";
 import { Logger } from "@scifamek-open-source/logger";
 import { join } from "node:path";
 import { onLoadIraca } from "./config/on-load-iraca";
-import { extraDependencies } from "./extra-dependencies";
-import { middleware } from "./middleware";
+import { DBClient } from "@skorify/data";
+import { GetUserByIdUsecaseImpl } from "./features/user/usecases/get-user-by-id.usecase-impl";
+import { GetUserByIdUsecase, UserContract } from "@skorify/domain/user";
+import { UserRepository } from "@skorify/shared";
 
 async function main() {
   const loggerFolder = "logs";
