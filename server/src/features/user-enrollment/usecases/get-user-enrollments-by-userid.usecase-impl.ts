@@ -1,8 +1,8 @@
 import { DomainEvent } from "@skorify/domain/core";
 
 import {
-  GetUserEnrollmentsParam,
-  GetUserEnrollmentsUsecase,
+  GetUserEnrollmentsByUserIdParam,
+  GetUserEnrollmentsByUserIdUsecase,
   GottenUserEnrollmentsDomainEvent,
   NotGottenUserEnrollmentsDomainEvent,
   UserEnrollmentContract,
@@ -10,14 +10,14 @@ import {
 } from "@skorify/domain/user-enrollment";
 
 
-export class GetUserEnrollmentsUsecaseImpl extends GetUserEnrollmentsUsecase {
+export class GetUserEnrollmentsByUserIdUsecaseImpl extends GetUserEnrollmentsByUserIdUsecase {
   constructor(
     private userEnrollmentContract: UserEnrollmentContract
   ) {
     super();
   }
 
-  async call(param: GetUserEnrollmentsParam): Promise<DomainEvent> {
+  async call(param: GetUserEnrollmentsByUserIdParam): Promise<DomainEvent> {
     const { userId } = param;
 
     if (!userId) {

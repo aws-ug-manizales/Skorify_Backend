@@ -12,13 +12,13 @@ import {
   UserEnrollmentAlreadyExistsDomainEvent,
 } from "@skorify/domain/user-enrollment";
 
-import{
+import {
   GetUserByIdUsecase,
   GottenUserDomainEvent,
   NotGottenUserDomainEvent
 } from "@skorify/domain/user";
 
-import{
+import {
   GetTournamentInstanceByIdUsecase,
   GottenTournamentInstanceDomainEvent,
   NotGottenTournamentInstanceDomainEvent
@@ -39,38 +39,32 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
     const {
       userId,
       tournamentInstanceId,
-      joinedAt,
-      lastPosition,
-      currentPosition,
-      currentScore,
-      streak
     } = param;
 
-    // verificar que los params enviados sean los necesarios
+    // verify that the parameters sent are the correct ones
     if (!userId || !tournamentInstanceId) {
       return UserEnrollmentParamsNotValidDomainEvent();
     }
 
-    // Se valida que el usuario exista
+    // It is verified that the user exists
     const userDE = await this.getUserByIdUsecase.call({
       userId,
     });
 
     if (userDE.isNot(GottenUserDomainEvent)) {
-      // return userDE;
       return NotGottenUserDomainEvent();
     }
 
-    // Se valida que el torneo exista
+    // It is verified that the tournamentInstance exists
     const tournamentInstanceDE = await this.getTournamentInstanceByIdUsecase.call({
       tournamentInstanceId,
     });
 
     if (tournamentInstanceDE.isNot(GottenTournamentInstanceDomainEvent)) {
-      // return tournamentInstanceDE;
       return NotGottenTournamentInstanceDomainEvent();
     }
 
+    // It is verified that the user is not already enrolled in the tournamentInstance
     const userEnrollmentExist = await this.userEnrollmentContract.filter({
       userId,
       tournamentInstanceId,
@@ -84,18 +78,17 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       id: crypto.randomUUID(),
       userId: userId,
       tournamentInstanceId: tournamentInstanceId,
-      joinedAt: joinedAt ?? new Date(),
-      lastPosition: lastPosition ?? 0,
-      currentPosition: currentPosition ?? 0,
-      currentScore: currentScore ?? 0,
-      streak: streak ?? 0,
+      joinedAt: new Date(),
+      lastPosition: 0,
+      currentPosition: 0,
+      currentScore: 0,
+      streak: 0,
     });
 
     if (!userEnrollmentDE) {
       return UserEnrollmentEntityNotInstanciableDomainEvent();
     }
 
-    // const userInDB = await this.userContract.save(user);
     const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollmentDE);
 
     if (!userEnrollmentInDB) {

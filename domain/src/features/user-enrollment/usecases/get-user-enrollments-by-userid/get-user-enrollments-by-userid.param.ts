@@ -1,5 +1,5 @@
 import { Id } from "../../../../core";
 
-export interface GetUserEnrollmentsParam {
+export interface GetUserEnrollmentsByUserIdParam {
   userId: Id;
 }

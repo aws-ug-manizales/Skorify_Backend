@@ -9,5 +9,5 @@ export { CreateUserEnrollmentUsecase } from "./usecases/create-user-enrollment/c
 export { GetUserEnrollmentByIdParam } from "./usecases/get-user-enrollment-by-id/get-user-enrollment-by-id.param";
 export { GetUserEnrollmentByIdUsecase } from "./usecases/get-user-enrollment-by-id/get-user-enrollment-by-id.usecase";
 
-export { GetUserEnrollmentsParam } from "./usecases/get-user-enrollments/get-user-enrollments.param";
-export { GetUserEnrollmentsUsecase } from "./usecases/get-user-enrollments/get-user-enrollments.usecase";
+export { GetUserEnrollmentsByUserIdParam } from "./usecases/get-user-enrollments-by-userid/get-user-enrollments-by-userid.param";
+export { GetUserEnrollmentsByUserIdUsecase } from "./usecases/get-user-enrollments-by-userid/get-user-enrollments-by-userid.usecase";
