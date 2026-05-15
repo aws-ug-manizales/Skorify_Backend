@@ -5,12 +5,9 @@ import {
   GottenMatchDomainEvent,
   MatchContract,
   MatchEntity,
-} from "@skorify/domain/match";
-import {
-  PredictionContract,
-  PredictionEntity,
-} from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
+} from '@skorify/domain/match';
+import { PredictionContract, PredictionEntity } from '@skorify/domain/prediction';
+import { DomainEvent } from '@skorify/domain/core';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
@@ -35,7 +32,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     }
 
     match.setScores(4, 2);
-    const predictions = await this.predictionContract.filter({ matchId });
+    const predictions = await this.predictionContract.filter({ where: { matchId } });
 
     if (predictions && predictions.length > 0) {
       await this.calculateScores(match, predictions);
@@ -49,14 +46,8 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     predictions: PredictionEntity[],
   ): Promise<void> {
     for (const prediction of predictions) {
-      if (
-        match.awayTeamScore != undefined &&
-        match.homeTeamScore != undefined
-      ) {
-        const result = prediction.calculateScore(
-          match.awayTeamScore,
-          match.homeTeamScore,
-        );
+      if (match.awayTeamScore != undefined && match.homeTeamScore != undefined) {
+        const result = prediction.calculateScore(match.awayTeamScore, match.homeTeamScore);
 
         const scoreResult = result;
       }
