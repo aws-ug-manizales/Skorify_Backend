@@ -1,18 +1,15 @@
-import { DomainEventKind } from "../../core";
-import { TournamentEntity } from "./tournament.entity";
+import { DomainEventKind } from '../../core';
+import { TournamentEntity } from './tournament.entity';
 
-export const EntityNotInstanciableDomainEvent = DomainEventKind(
-  "EntityNotInstanciableDomainEvent",
-);
-export const TournamentNotSavedDomainEvent = DomainEventKind(
-  "TournamentNotSavedDomainEvent",
-);
+export const EntityNotInstanciableDomainEvent = DomainEventKind('EntityNotInstanciableDomainEvent');
+export const TournamentNotSavedDomainEvent = DomainEventKind('TournamentNotSavedDomainEvent');
 export const TournamentSavedDomainEvent = DomainEventKind<TournamentEntity>(
-  "TournamentSavedDomainEvent",
+	'TournamentSavedDomainEvent',
 );
 export const GottenTournamentDomainEvent = DomainEventKind<TournamentEntity>(
-  "GottenTournamentDomainEvent",
+	'GottenTournamentDomainEvent',
 );
-export const NotGottenTournamentDomainEvent = DomainEventKind(
-  "NotGottenTournamentDomainEvent",
+export const NotGottenTournamentDomainEvent = DomainEventKind('NotGottenTournamentDomainEvent');
+export const FilteredTournamentsDomainEvent = DomainEventKind<TournamentEntity[]>(
+	'FilteredTournamentsDomainEvent',
 );
