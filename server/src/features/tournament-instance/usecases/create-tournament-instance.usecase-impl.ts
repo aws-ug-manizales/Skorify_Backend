@@ -58,6 +58,6 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return TournamentInstanceNotSavedDomainEvent();
     }
 
-    return TournamentInstanceSavedDomainEvent();
+    return TournamentInstanceSavedDomainEvent(tournamentInstance);
   }
 }
