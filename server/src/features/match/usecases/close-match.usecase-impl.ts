@@ -62,17 +62,9 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
     const tournamentInstances: TournamentInstanceEntity[] =
       tournamentInstancesDE.payload;
 
-    const groupId = crypto.randomUUID();
-
-    this.eventBusContract.group({
-      groupId,
-      amount: tournamentInstances.length,
-    });
-
     for (const tournamentInstance of tournamentInstances) {
       this.eventBusContract.send({
-        groupId,
-        domainEvent: ReactiveClosedMatchDomainEvent,
+        domainEvent: ReactiveClosedMatchDomainEvent, // Estandar para nosotros
         payload: { match, tournamentInstance },
       });
     }

@@ -20,16 +20,10 @@ import {
   TournamentRepository,
   UserRepository,
   TeamRepository,
+  EventBusImpl,
 } from "@skorify/shared";
-import { InMemoryEventBus } from "./reactive/in-memory-event-bus";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
-  // EventBus
-  {
-    abstraction: EventBusContract,
-    implementation: InMemoryEventBus,
-    dependencies: [],
-  },
   // Repositories
   {
     abstraction: MatchContract,
