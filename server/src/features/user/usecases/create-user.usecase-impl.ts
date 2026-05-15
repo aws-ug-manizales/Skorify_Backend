@@ -1,4 +1,4 @@
-import { DomainEvent } from "@skorify/domain/core";
+import { DomainEvent } from '@skorify/domain/core';
 import {
   CreateUserParam,
   CreateUserUsecase,
@@ -7,35 +7,35 @@ import {
   UserContract,
   UserEntity,
   UserWithSameEmailDomainEvent,
-} from "@skorify/domain/user";
+} from '@skorify/domain/user';
 
 export class CreateUserUsecaseImpl extends CreateUserUsecase {
-  constructor(private userContract: UserContract) {
-    super();
-  }
+	constructor(private userContract: UserContract) {
+		super();
+	}
 
-  async call(param: CreateUserParam): Promise<DomainEvent> {
-    const { name, email } = param;
+	async call(param: CreateUserParam): Promise<DomainEvent> {
+		const {name, email} = param;
 
-    const exist = await this.userContract.filter({ email });
+		const exist = await this.userContract.filter({where: {email}});
 
-    if (exist.length) {
-      return UserWithSameEmailDomainEvent();
-    }
+		if (exist.length) {
+			return UserWithSameEmailDomainEvent();
+		}
 
-    const user = UserEntity.build({
-      id: crypto.randomUUID(),
-      name,
-      email,
-      notificationToken: "",
-      createdAt: new Date(),
-    });
-    const userInDB = await this.userContract.save(user);
+		const user = UserEntity.build({
+			id: crypto.randomUUID(),
+			name,
+			email,
+			notificationToken: '',
+			createdAt: new Date(),
+		});
+		const userInDB = await this.userContract.save(user);
 
-    if (!userInDB) {
-      return NotGottenUserDomainEvent();
-    }
+		if (!userInDB) {
+			return NotGottenUserDomainEvent();
+		}
 
-    return GottenUserDomainEvent(user);
-  }
+		return GottenUserDomainEvent(user);
+	}
 }
