@@ -76,7 +76,7 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       id: crypto.randomUUID(),
       userId: userId,
       tournamentInstanceId: tournamentInstanceId,
-      tournamentId: tournamentInstance.id,
+      tournamentId: tournamentInstance.tournamentId,
       joinedAt: new Date(),
       lastPosition: 0,
       currentPosition: 0,

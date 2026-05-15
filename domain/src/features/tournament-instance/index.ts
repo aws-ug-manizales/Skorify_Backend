@@ -15,6 +15,3 @@ export { GetTournamentInstancesByTournamentIdUsecase } from './usecases/get-tour
 
 export { GetTournamentInstanceByIdParam } from './usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.param';
 export { GetTournamentInstanceByIdUsecase } from './usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.usecase';
-
-export { GetTournamentInstanceByTournamentIdParam } from './usecases/get-tournament-instance-by-tournament-id/get-tournament-instance-by-tournament-id.param';
-export { GetTournamentInstanceByTournamentIdUsecase } from './usecases/get-tournament-instance-by-tournament-id/get-tournament-instance-by-tournament-id.usecase';
