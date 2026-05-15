@@ -6,6 +6,7 @@ import { TeamEntity } from "@skorify/domain/team";
 import { TournamentEntity } from "@skorify/domain/tournament";
 import { TournamentInstanceEntity } from "@skorify/domain/tournament-instance";
 import { UserEntity } from "@skorify/domain/user";
+import { UserEnrollmentEntity } from "@skorify/domain/user-enrollment";
 import { join } from "path";
 import {
   UserPostgresDataSource,
@@ -68,6 +69,10 @@ export const onLoadIraca = async (
     id: "UserDatasource",
     value: new JsonDataSource<UserEntity>("users.json", dataPath),
   });
+  container.addValue({
+    id: "UserEnrollmentDatasource",
+    value: new JsonDataSource<UserEnrollmentEntity>("user-enrollments.json", dataPath),
+  });
   // container.addValue({
   //   id: "MatchDatasource",
   //   value: new MatchPostgresDataSource(dbClient),
@@ -87,7 +92,7 @@ export const onLoadIraca = async (
   container.addValue({
     id: "TournamentInstanceDatasource",
     value: new JsonDataSource<TournamentInstanceEntity>(
-      "tournament-intances.json",
+      "tournament-instances.json",
       dataPath,
     ),
   });

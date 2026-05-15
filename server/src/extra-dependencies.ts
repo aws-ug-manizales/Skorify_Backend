@@ -4,18 +4,18 @@ import {
   PredictionContract
 } from "@skorify/domain/prediction";
 import { TeamContract } from "@skorify/domain/team";
-import {
-  TournamentContract
-} from "@skorify/domain/tournament";
+import { TournamentContract } from "@skorify/domain/tournament";
 import { TournamentInstanceContract } from "@skorify/domain/tournament-instance";
 import { UserContract } from "@skorify/domain/user";
+import { UserEnrollmentContract } from "@skorify/domain/user-enrollment";
 import {
   MatchRepository,
   PredictionRepository,
   TeamRepository,
   TournamentInstanceRepository,
   TournamentRepository,
-  UserRepository
+  UserRepository,
+  UserEnrollmentRepository
 } from "@skorify/shared";
 
 export const extraDependencies: RunIracaConfig["extraDependencies"] = [
@@ -49,5 +49,10 @@ export const extraDependencies: RunIracaConfig["extraDependencies"] = [
     abstraction: TeamContract,
     implementation: TeamRepository,
     dependencies: ["TeamDatasource"],
+  },
+  {
+    abstraction: UserEnrollmentContract,
+    implementation: UserEnrollmentRepository,
+    dependencies: ["UserEnrollmentDatasource"],
   },
 ];
