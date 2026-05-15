@@ -1,4 +1,4 @@
-import { DomainEvent } from "@skorify/domain/core";
+import { DomainEvent } from '@skorify/domain/core';
 
 import {
   CreateUserEnrollmentParam,
@@ -10,19 +10,20 @@ import {
   SavedUserEnrollmentDomainEvent,
   UserEnrollmentParamsNotValidDomainEvent,
   UserEnrollmentAlreadyExistsDomainEvent,
-} from "@skorify/domain/user-enrollment";
+} from '@skorify/domain/user-enrollment';
 
 import {
   GetUserByIdUsecase,
   GottenUserDomainEvent,
   NotGottenUserDomainEvent,
-} from "@skorify/domain/user";
+} from '@skorify/domain/user';
 
 import {
   GetTournamentInstanceByIdUsecase,
   GottenTournamentInstanceDomainEvent,
   NotGottenTournamentInstanceDomainEvent,
-} from "@skorify/domain/tournament-instance";
+  TournamentInstanceEntity,
+} from '@skorify/domain/tournament-instance';
 
 export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase {
   constructor(
@@ -37,12 +38,10 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
   async call(param: CreateUserEnrollmentParam): Promise<DomainEvent> {
     const { userId, tournamentInstanceId } = param;
 
-    // verify that the parameters sent are the correct ones
     if (!userId || !tournamentInstanceId) {
       return UserEnrollmentParamsNotValidDomainEvent();
     }
 
-    // It is verified that the user exists
     const userDE = await this.getUserByIdUsecase.call({
       userId,
     });
@@ -51,17 +50,15 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       return NotGottenUserDomainEvent();
     }
 
-    // It is verified that the tournamentInstance exists
-    const tournamentInstanceDE =
-      await this.getTournamentInstanceByIdUsecase.call({
-        tournamentInstanceId,
-      });
+    const tournamentInstanceDE = await this.getTournamentInstanceByIdUsecase.call({
+      tournamentInstanceId,
+    });
 
     if (tournamentInstanceDE.isNot(GottenTournamentInstanceDomainEvent)) {
       return NotGottenTournamentInstanceDomainEvent();
     }
+    const tournamentInstance: TournamentInstanceEntity = tournamentInstanceDE.payload;
 
-    // It is verified that the user is not already enrolled in the tournamentInstance
     const userEnrollmentExist = await this.userEnrollmentContract.filter({
       where: {
         userId,
@@ -79,6 +76,7 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       id: crypto.randomUUID(),
       userId: userId,
       tournamentInstanceId: tournamentInstanceId,
+      tournamentId: tournamentInstance.id,
       joinedAt: new Date(),
       lastPosition: 0,
       currentPosition: 0,
@@ -90,8 +88,7 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       return UserEnrollmentEntityNotInstanciableDomainEvent();
     }
 
-    const userEnrollmentInDB =
-      await this.userEnrollmentContract.save(userEnrollmentDE);
+    const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollmentDE);
 
     if (!userEnrollmentInDB) {
       return NotSavedUserEnrollmentDomainEvent();

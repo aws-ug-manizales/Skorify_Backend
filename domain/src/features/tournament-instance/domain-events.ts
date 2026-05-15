@@ -6,9 +6,9 @@ export const TournamentInstanceWithSameNameDomainEvent = DomainEventKind<
   TournamentInstanceEntity[]
 >('TournamentInstanceWithSameNameDomainEvent');
 
-export const GottenTournamentInstancesDomainEvent = DomainEventKind<
-  TournamentInstanceEntity[]
->("GottenTournamentInstancesDomainEvent");
+export const GottenTournamentInstancesDomainEvent = DomainEventKind<TournamentInstanceEntity[]>(
+  'GottenTournamentInstancesDomainEvent',
+);
 // Domain events related to saving a tournament instance.
 export const TournamentInstanceSavedDomainEvent = DomainEventKind<TournamentInstanceEntity>(
   'TournamentInstanceSavedDomainEvent',
@@ -23,7 +23,4 @@ export const NotGottenTournamentInstanceDomainEvent = DomainEventKind(
 );
 export const GottenTournamentInstanceDomainEvent = DomainEventKind<TournamentInstanceEntity>(
   'GottenTournamentInstanceDomainEvent',
-);
-export const GottenTournamentInstancesDomainEvent = DomainEventKind<TournamentInstanceEntity[]>(
-  'GottenTournamentInstancesDomainEvent',
 );
