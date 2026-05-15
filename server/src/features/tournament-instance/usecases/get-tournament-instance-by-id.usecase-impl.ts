@@ -3,9 +3,9 @@ import {
   GetTournamentInstanceByIdUsecase,
   GottenTournamentInstanceDomainEvent,
   NotGottenTournamentInstanceDomainEvent,
-  TournamentInstanceContract
-} from "@skorify/domain/tournament-instance";
-import { DomainEvent } from "@skorify/domain/core";
+  TournamentInstanceContract,
+} from '@skorify/domain/tournament-instance';
+import { DomainEvent } from '@skorify/domain/core';
 
 export class GetTournamentInstanceByIdUsecaseImpl extends GetTournamentInstanceByIdUsecase {
   constructor(private tournamentInstanceContract: TournamentInstanceContract) {
@@ -15,11 +15,11 @@ export class GetTournamentInstanceByIdUsecaseImpl extends GetTournamentInstanceB
   async call(param: GetTournamentInstanceByIdParam): Promise<DomainEvent> {
     const { tournamentInstanceId } = param;
 
-    const tournamentInstanceDE = await this.tournamentInstanceContract.getById(tournamentInstanceId);
+    const tournamentInstance = await this.tournamentInstanceContract.getById(tournamentInstanceId);
 
-    if(!tournamentInstanceDE){
+    if (!tournamentInstance) {
       return NotGottenTournamentInstanceDomainEvent();
     }
-    return GottenTournamentInstanceDomainEvent(tournamentInstanceDE);
+    return GottenTournamentInstanceDomainEvent(tournamentInstance);
   }
 }
