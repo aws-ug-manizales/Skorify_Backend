@@ -16,3 +16,7 @@ export const GottenTeamDomainEvent = DomainEventKind<TeamEntity>(
 export const NotGottenTeamDomainEvent = DomainEventKind(
   "NotGottenTeamDomainEvent",
 );
+
+export const GottenTeamsDomainEvent = DomainEventKind<TeamEntity[]>(
+  "GottenTeamsDomainEvent",
+);
