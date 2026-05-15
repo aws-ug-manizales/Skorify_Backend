@@ -4,6 +4,7 @@ export interface UserEnrollmentAttributes{
   id: Id;
   userId: Id;
   tournamentInstanceId: Id;
+  tournamentId: Id;
   joinedAt: Date;
   lastPosition: number;
   currentPosition: number;
@@ -14,6 +15,7 @@ export interface UserEnrollmentAttributes{
 export class UserEnrollmentEntity extends Entity {
   userId: Id;
   tournamentInstanceId: Id;
+  tournamentId: Id;
   joinedAt: Date;
   lastPosition: number;
   currentPosition: number;
@@ -25,6 +27,7 @@ export class UserEnrollmentEntity extends Entity {
       id,
       userId,
       tournamentInstanceId,
+      tournamentId,
       joinedAt,
       lastPosition,
       currentPosition,
@@ -34,6 +37,7 @@ export class UserEnrollmentEntity extends Entity {
     super(id, new Date());
     this.userId = userId;
     this.tournamentInstanceId = tournamentInstanceId;
+    this.tournamentId = tournamentId;
     this.joinedAt = joinedAt;
     this.lastPosition = lastPosition;
     this.currentPosition = currentPosition;
