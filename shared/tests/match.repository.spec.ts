@@ -143,7 +143,9 @@ describe("MatchRepository – getByIDs()", () => {
     const repo = makeRepo();
     await repo.save(buildMatch1());
 
-    const result = await repo.getByIDs(["00000000-0000-0000-0000-000000000000"]);
+    const result = await repo.getByIDs([
+      "00000000-0000-0000-0000-000000000000",
+    ]);
 
     expect(result).toHaveLength(0);
   });
@@ -169,7 +171,10 @@ describe("MatchRepository – modifyById()", () => {
   it("returns null when the match does not exist", async () => {
     const repo = makeRepo();
 
-    const result = await repo.modifyById("00000000-0000-0000-0000-000000000000", buildMatch1());
+    const result = await repo.modifyById(
+      "00000000-0000-0000-0000-000000000000",
+      buildMatch1(),
+    );
 
     expect(result).toBeNull();
   });
@@ -194,7 +199,9 @@ describe("MatchRepository – deleteById()", () => {
   it("returns null when the match does not exist", async () => {
     const repo = makeRepo();
 
-    const result = await repo.deleteById("00000000-0000-0000-0000-000000000000");
+    const result = await repo.deleteById(
+      "00000000-0000-0000-0000-000000000000",
+    );
 
     expect(result).toBeNull();
   });
@@ -213,7 +220,7 @@ describe("MatchRepository – filter()", () => {
     await repo.save(buildMatch1()); // tournamentId = ttt00001...
     await repo.save(buildMatch2()); // tournamentId = ttt00001...
 
-    const result = await repo.filter({ tournamentId });
+    const result = await repo.filter({ where: { tournamentId } });
 
     expect(result).toHaveLength(2);
   });
@@ -223,7 +230,11 @@ describe("MatchRepository – filter()", () => {
     await repo.save(buildMatch1());
     await repo.save(buildMatch2());
 
-    const result = await repo.filter({ homeTeamId });
+    const result = await repo.filter({
+      where: {
+        homeTeamId,
+      },
+    });
 
     expect(result).toHaveLength(1);
     expect(result[0].homeTeamId).toBe(homeTeamId);
@@ -234,7 +245,7 @@ describe("MatchRepository – filter()", () => {
     await repo.save(buildMatch1());
     await repo.save(buildMatch2());
 
-    const result = await repo.filter({ homeTeamId, awayTeamId });
+    const result = await repo.filter({ where: { homeTeamId, awayTeamId } });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe(id1);
@@ -245,7 +256,9 @@ describe("MatchRepository – filter()", () => {
     await repo.save(buildMatch1());
 
     const result = await repo.filter({
-      homeTeamId: "00000000-0000-0000-0000-000000000000" as any,
+      where: {
+        homeTeamId: "00000000-0000-0000-0000-000000000000" as any,
+      },
     });
 
     expect(result).toHaveLength(0);
@@ -254,9 +267,8 @@ describe("MatchRepository – filter()", () => {
   it("returns an empty array when the repository is empty", async () => {
     const repo = makeRepo();
 
-    const result = await repo.filter({ tournamentId });
+    const result = await repo.filter({ where: { tournamentId } });
 
     expect(result).toHaveLength(0);
   });
 });
-

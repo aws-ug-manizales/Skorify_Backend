@@ -62,9 +62,11 @@ export class BaseRepository<T extends Entity> extends BaseContract<T> {
   }
 
   async filter(filters: Filters): Promise<T[]> {
+    const where = filters.where
+
     const items = await this.dataSource.read();
     return items.filter((entity) =>
-      Object.entries(filters).every(
+      Object.entries(where).every(
         ([key, value]) => (entity as Record<string, unknown>)[key] === value,
       ),
     );
