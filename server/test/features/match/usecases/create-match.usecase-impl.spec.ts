@@ -1,29 +1,28 @@
-import { CreateMatchUsecaseImpl } from "../../../../src/features/match/usecases/create-match.usecase-impl";
+import type { DomainEvent, Id } from "@skorify/domain/core";
+import type { CreateMatchParam } from "@skorify/domain/match";
 import {
+  MatchAlreadyExistsInSameTournamentStageDomainEvent,
   MatchContract,
   MatchEntity,
-  MatchSavedDomainEvent,
   MatchNotSavedDomainEvent,
-  EntityNotInstanciableDomainEvent,
-  MatchTeamIsTheSameDomainEvent,
+  MatchSavedDomainEvent,
   MatchTeamDoesNotExistDomainEvent,
-  MatchAlreadyExistsInSameTournamentStageDomainEvent,
+  MatchTeamIsTheSameDomainEvent,
 } from "@skorify/domain/match";
-import {
-  GetTournamentByIdUsecase,
-  GottenTournamentDomainEvent,
-  NotGottenTournamentDomainEvent,
-  TournamentEntity,
-  MatchType,
-} from "@skorify/domain/tournament";
 import {
   GetTeamByIdUsecase,
   GottenTeamDomainEvent,
   NotGottenTeamDomainEvent,
   TeamEntity,
 } from "@skorify/domain/team";
-import type { CreateMatchParam } from "@skorify/domain/match";
-import type { Id } from "@skorify/domain/core";
+import {
+  GetTournamentByIdUsecase,
+  GottenTournamentDomainEvent,
+  MatchType,
+  NotGottenTournamentDomainEvent,
+  TournamentEntity,
+} from "@skorify/domain/tournament";
+import { CreateMatchUsecaseImpl } from "../../../../src/features/match/usecases/create-match.usecase-impl";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -84,11 +83,13 @@ function makeMockMatchContract(
   } as unknown as MatchContract;
 }
 
-function makeGetTournamentUsecase(de: any): GetTournamentByIdUsecase {
-  return { call: jest.fn().mockResolvedValue(de) } as unknown as GetTournamentByIdUsecase;
+function makeGetTournamentUsecase(de: DomainEvent): GetTournamentByIdUsecase {
+  return {
+    call: jest.fn().mockResolvedValue(de),
+  } as unknown as GetTournamentByIdUsecase;
 }
 
-function makeGetTeamUsecase(...results: any[]): GetTeamByIdUsecase {
+function makeGetTeamUsecase(...results: DomainEvent[]): GetTeamByIdUsecase {
   const mock = jest.fn();
   results.forEach((r) => mock.mockResolvedValueOnce(r));
   return { call: mock } as unknown as GetTeamByIdUsecase;
@@ -116,7 +117,10 @@ describe("CreateMatchUsecaseImpl", () => {
         getTeamUsecase,
       );
 
-      const result = await usecase.call({ ...validParam, awayTeamId: homeTeamId });
+      const result = await usecase.call({
+        ...validParam,
+        awayTeamId: homeTeamId,
+      });
 
       expect(result.is(MatchTeamIsTheSameDomainEvent)).toBe(true);
       expect(getTournamentUsecase.call).not.toHaveBeenCalled();
@@ -203,18 +207,22 @@ describe("CreateMatchUsecaseImpl", () => {
 
       const result = await usecase.call(validParam);
 
-      expect(result.is(MatchAlreadyExistsInSameTournamentStageDomainEvent)).toBe(true);
+      expect(
+        result.is(MatchAlreadyExistsInSameTournamentStageDomainEvent),
+      ).toBe(true);
     });
 
     it("returns MatchAlreadyExistsInSameTournamentStageDomainEvent for a reversed fixture in SingleMatchPerRound", async () => {
       const matchContract = makeMockMatchContract({
         filter: jest
           .fn()
-          .mockResolvedValueOnce([])               // no direct duplicate
+          .mockResolvedValueOnce([]) // no direct duplicate
           .mockResolvedValueOnce([buildFakeMatch()]), // reversed fixture exists
       });
       const getTournamentUsecase = makeGetTournamentUsecase(
-        GottenTournamentDomainEvent(buildFakeTournament(MatchType.SingleMatchPerRound)),
+        GottenTournamentDomainEvent(
+          buildFakeTournament(MatchType.SingleMatchPerRound),
+        ),
       );
       const getTeamUsecase = makeGetTeamUsecase(
         GottenTeamDomainEvent(buildFakeTeam(homeTeamId)),
@@ -228,7 +236,9 @@ describe("CreateMatchUsecaseImpl", () => {
 
       const result = await usecase.call(validParam);
 
-      expect(result.is(MatchAlreadyExistsInSameTournamentStageDomainEvent)).toBe(true);
+      expect(
+        result.is(MatchAlreadyExistsInSameTournamentStageDomainEvent),
+      ).toBe(true);
     });
   });
 
@@ -246,7 +256,8 @@ describe("CreateMatchUsecaseImpl", () => {
     }
 
     it("returns MatchSavedDomainEvent with the saved match", async () => {
-      const { matchContract, getTournamentUsecase, getTeamUsecase } = setupValidMocks();
+      const { matchContract, getTournamentUsecase, getTeamUsecase } =
+        setupValidMocks();
       const saved = buildFakeMatch();
       matchContract.save = jest.fn().mockResolvedValue(saved);
       const usecase = new CreateMatchUsecaseImpl(
@@ -262,7 +273,8 @@ describe("CreateMatchUsecaseImpl", () => {
     });
 
     it("returns MatchNotSavedDomainEvent when the contract fails to save", async () => {
-      const { matchContract, getTournamentUsecase, getTeamUsecase } = setupValidMocks();
+      const { matchContract, getTournamentUsecase, getTeamUsecase } =
+        setupValidMocks();
       matchContract.save = jest.fn().mockResolvedValue(null);
       const usecase = new CreateMatchUsecaseImpl(
         matchContract,

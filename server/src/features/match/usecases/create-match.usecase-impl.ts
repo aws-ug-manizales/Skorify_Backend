@@ -31,7 +31,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   }
 
   async call(param: CreateMatchParam): Promise<DomainEvent> {
-    const { awayTeamId, homeTeamId, kickOff, tournamentId, stage } = param;
+    const { awayTeamId, homeTeamId, kickOff, tournamentId, stage, venue } = param;
 
     if (awayTeamId === homeTeamId) {
       return MatchTeamIsTheSameDomainEvent();
@@ -84,7 +84,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       }
     }
 
-    // Create a new match entity using the provided parameters. 
+    // Create a new match entity using the provided parameters.
     const match = MatchEntity.build({
       id: crypto.randomUUID(),
       tournamentId,
@@ -92,6 +92,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       homeTeamId,
       kickOff,
       stage,
+      venue,
       createdAt: new Date(),
     });
     

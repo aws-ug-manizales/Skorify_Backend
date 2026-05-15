@@ -5,6 +5,10 @@ export const NotGottenUserDomainEvent = DomainEventKind(
   "NotGottenUserDomainEvent",
 );
 
+export const UserWithSameEmailDomainEvent = DomainEventKind(
+  "UserWithSameEmailDomainEvent",
+);
+
 export const GottenUserDomainEvent = DomainEventKind<UserEntity>(
   "GottenUserDomainEvent",
 );

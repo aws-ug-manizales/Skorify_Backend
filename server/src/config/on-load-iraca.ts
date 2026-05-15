@@ -1,9 +1,12 @@
 import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
 import { DBClient } from "@skorify/data";
+import { MatchEntity } from "@skorify/domain/match";
 import { PredictionEntity } from "@skorify/domain/prediction";
 import { TeamEntity } from "@skorify/domain/team";
 import { TournamentEntity } from "@skorify/domain/tournament";
 import { TournamentInstanceEntity } from "@skorify/domain/tournament-instance";
+import { UserEntity } from "@skorify/domain/user";
+import { join } from "path";
 import {
   UserPostgresDataSource,
   MatchPostgresDataSource,
@@ -13,9 +16,21 @@ import {
 import { EventBusContract } from "@skorify/domain/core";
 import { CalculateMatchScoreUsecase } from "@skorify/domain/match";
 
+type DatabaseConfig = {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  name: string;
+  logging?: boolean;
+};
+type Injections = {
+  database: DatabaseConfig;
+  [key: string]: unknown;
+};
 export const onLoadIraca = async (
   container: IracaContainer,
-  injections?: any,
+  injections: Injections,
 ) => {
   const { database, eventBus } = injections;
   const { host, port, username, password, name, logging } = database;
@@ -46,11 +61,11 @@ export const onLoadIraca = async (
   // });
   container.addValue({
     id: "MatchDatasource",
-    value: new JsonDataSource<PredictionEntity>("matches.json"),
+    value: new JsonDataSource<MatchEntity>("matches.json", dataPath),
   });
   container.addValue({
     id: "UserDatasource",
-    value: new JsonDataSource<PredictionEntity>("users.json"),
+    value: new JsonDataSource<UserEntity>("users.json", dataPath),
   });
   // container.addValue({
   //   id: "MatchDatasource",
@@ -62,21 +77,22 @@ export const onLoadIraca = async (
   // });
   container.addValue({
     id: "PredictionDatasource",
-    value: new JsonDataSource<PredictionEntity>("predictions.json"),
+    value: new JsonDataSource<PredictionEntity>("predictions.json", dataPath),
   });
   container.addValue({
     id: "TournamentDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournaments.json"),
+    value: new JsonDataSource<TournamentEntity>("tournaments.json", dataPath),
   });
   container.addValue({
     id: "TournamentInstanceDatasource",
     value: new JsonDataSource<TournamentInstanceEntity>(
       "tournament-intances.json",
+      dataPath,
     ),
   });
   container.addValue({
     id: "TeamDatasource",
-    value: new JsonDataSource<TeamEntity>("teams.json"),
+    value: new JsonDataSource<TeamEntity>("teams.json", dataPath),
   });
 
   container.add({

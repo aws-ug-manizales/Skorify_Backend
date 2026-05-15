@@ -1,8 +1,6 @@
 import { runIraca } from "@scifamek-open-source/iraca/web-api";
 import { Logger } from "@scifamek-open-source/logger";
 import { join } from "node:path";
-import { middleware } from "./middleware";
-import { extraDependencies } from "./extra-dependencies";
 import { onLoadIraca } from "./config/on-load-iraca";
 import { DBClient } from "@skorify/data";
 import { GetUserByIdUsecaseImpl } from "./features/user/usecases/get-user-by-id.usecase-impl";

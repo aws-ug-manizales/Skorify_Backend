@@ -9,7 +9,9 @@
     "test:watch": "jest --watch",
     "build": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-all",
     "copy-package": "copyfiles  package.json dist/",
-    "copy-all": "copyfiles -u 1 dist/**/* ../server/libs/shared"
+    "copy-all": "copyfiles -u 1 dist/**/* ../server/libs/shared",
+    "seed": "node src/fixtures/seed.js",
+    "seed:clean": "node src/fixtures/seed.js --clean"
   },
   "dependencies": {
     "@aws-sdk/client-eventbridge": "^3.1047.0",
