@@ -15,15 +15,14 @@ import {
 import {
   GetUserByIdUsecase,
   GottenUserDomainEvent,
-  NotGottenUserDomainEvent
+  NotGottenUserDomainEvent,
 } from "@skorify/domain/user";
 
 import {
   GetTournamentInstanceByIdUsecase,
   GottenTournamentInstanceDomainEvent,
-  NotGottenTournamentInstanceDomainEvent
+  NotGottenTournamentInstanceDomainEvent,
 } from "@skorify/domain/tournament-instance";
-
 
 export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase {
   constructor(
@@ -36,10 +35,7 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
   }
 
   async call(param: CreateUserEnrollmentParam): Promise<DomainEvent> {
-    const {
-      userId,
-      tournamentInstanceId,
-    } = param;
+    const { userId, tournamentInstanceId } = param;
 
     // verify that the parameters sent are the correct ones
     if (!userId || !tournamentInstanceId) {
@@ -56,9 +52,10 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
     }
 
     // It is verified that the tournamentInstance exists
-    const tournamentInstanceDE = await this.getTournamentInstanceByIdUsecase.call({
-      tournamentInstanceId,
-    });
+    const tournamentInstanceDE =
+      await this.getTournamentInstanceByIdUsecase.call({
+        tournamentInstanceId,
+      });
 
     if (tournamentInstanceDE.isNot(GottenTournamentInstanceDomainEvent)) {
       return NotGottenTournamentInstanceDomainEvent();
@@ -66,12 +63,16 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
 
     // It is verified that the user is not already enrolled in the tournamentInstance
     const userEnrollmentExist = await this.userEnrollmentContract.filter({
-      userId,
-      tournamentInstanceId,
+      where: {
+        userId,
+        tournamentInstanceId,
+      },
     });
 
     if (userEnrollmentExist.length > 0) {
-      return UserEnrollmentAlreadyExistsDomainEvent({ userEnrollmentId: userEnrollmentExist[0].id });
+      return UserEnrollmentAlreadyExistsDomainEvent({
+        userEnrollmentId: userEnrollmentExist[0].id,
+      });
     }
 
     const userEnrollmentDE = UserEnrollmentEntity.build({
@@ -89,7 +90,8 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       return UserEnrollmentEntityNotInstanciableDomainEvent();
     }
 
-    const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollmentDE);
+    const userEnrollmentInDB =
+      await this.userEnrollmentContract.save(userEnrollmentDE);
 
     if (!userEnrollmentInDB) {
       return NotSavedUserEnrollmentDomainEvent();

@@ -6,14 +6,11 @@ import {
   GottenUserEnrollmentsDomainEvent,
   NotGottenUserEnrollmentsDomainEvent,
   UserEnrollmentContract,
-  UserEnrollmentParamsNotValidDomainEvent
+  UserEnrollmentParamsNotValidDomainEvent,
 } from "@skorify/domain/user-enrollment";
 
-
 export class GetUserEnrollmentsByUserIdUsecaseImpl extends GetUserEnrollmentsByUserIdUsecase {
-  constructor(
-    private userEnrollmentContract: UserEnrollmentContract
-  ) {
+  constructor(private userEnrollmentContract: UserEnrollmentContract) {
     super();
   }
 
@@ -24,11 +21,13 @@ export class GetUserEnrollmentsByUserIdUsecaseImpl extends GetUserEnrollmentsByU
       return UserEnrollmentParamsNotValidDomainEvent();
     }
 
-    const userEnrollmentsInDB = await this.userEnrollmentContract.filter({ userId });
+    const userEnrollmentsInDB = await this.userEnrollmentContract.filter({
+      where: { userId },
+    });
 
     if (!userEnrollmentsInDB) {
       return NotGottenUserEnrollmentsDomainEvent();
-    };
+    }
 
     return GottenUserEnrollmentsDomainEvent(userEnrollmentsInDB);
   }
