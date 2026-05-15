@@ -8,9 +8,9 @@ import {
   MatchCannotBeSavedDomainEvent,
   MatchEditedDomainEvent,
   MatchStatus,
-} from "@skorify/domain/match";
-import { PredictionContract } from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
+} from '@skorify/domain/match';
+import { PredictionContract } from '@skorify/domain/prediction';
+import { DomainEvent } from '@skorify/domain/core';
 
 export class EditMatchUsecaseImpl extends EditMatchUsecase {
   constructor(
@@ -41,13 +41,11 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
     }
 
     // 3. Validar cambios de equipos
-    const teamsChanged =
-      matchInDB.awayTeamId !== awayTeamId ||
-      matchInDB.homeTeamId !== homeTeamId;
+    const teamsChanged = matchInDB.awayTeamId !== awayTeamId || matchInDB.homeTeamId !== homeTeamId;
 
     if (teamsChanged) {
       // Obtener predicciones usando filter genérico (equipo de datos)
-      const predictions = await this.predictionContract.filter({ matchId });
+      const predictions = await this.predictionContract.filter({ where: { matchId } });
       const hasPredictions = predictions.length > 0;
 
       // Si hay predicciones y se intenta cambiar equipos, no permitir
