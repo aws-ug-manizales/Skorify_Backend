@@ -1,6 +1,8 @@
-export { BaseContract } from './base.contract';
-export { DomainEvent, DomainEventKind } from './domain-event';
+export { DomainEvent, DomainEventKind, DomainEventKindWithPayload } from './domain-event';
 export { Entity, Id } from './entity';
+export { EventBusContract, SentConfiguration } from './eventbus.contract';
+export { StorageContract } from './storage.contract';
+export { BaseContract } from './base.contract';
 export {
   Equals,
   Filters,
@@ -12,8 +14,7 @@ export {
   Order,
   SingleWhere,
   SpecificOperator,
-  Where
+  Where,
 } from './filters';
 export { generalMethodMapper } from './method.mapper';
 export { NotificationContract, NotificationType } from './notifications.contract';
-
