@@ -1,0 +1,46 @@
+import { DomainEvent } from '@skorify/domain/core';
+import {
+  CreateTeamParam,
+  CreateTeamUsecase,
+  EntityNotInstanciableDomainEvent,
+  TeamContract,
+  TeamEntity,
+  TeamNotSavedDomainEvent,
+  TeamSavedDomainEvent,
+  TeamWithThatNameAlreadyExistsDomainEvent,
+} from '@skorify/domain/team';
+
+export class CreateTeamUsecaseImpl extends CreateTeamUsecase {
+  constructor(private teamContract: TeamContract) {
+    super();
+  }
+  async call(param: CreateTeamParam): Promise<DomainEvent> {
+    const { name } = param;
+
+    const teams = await this.teamContract.filter({
+      where: {
+        name,
+      },
+    });
+
+    if (teams.length) {
+      return TeamWithThatNameAlreadyExistsDomainEvent(teams[0]);
+    }
+
+    const team = TeamEntity.build({
+      id: crypto.randomUUID(),
+      name,
+    });
+
+    if (!team) {
+      return EntityNotInstanciableDomainEvent();
+    }
+
+    const saved = await this.teamContract.save(team);
+    if (!saved) {
+      return TeamNotSavedDomainEvent();
+    }
+
+    return TeamSavedDomainEvent(saved);
+  }
+}

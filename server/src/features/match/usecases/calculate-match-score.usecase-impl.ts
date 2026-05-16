@@ -4,10 +4,10 @@ import {
   MatchDoesNotExistDomainEvent,
   GottenMatchDomainEvent,
   MatchContract,
-  MatchEntity
-} from "@skorify/domain/match";
-import { PredictionContract, PredictionEntity } from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
+  MatchEntity,
+} from '@skorify/domain/match';
+import { PredictionContract, PredictionEntity } from '@skorify/domain/prediction';
+import { DomainEvent } from '@skorify/domain/core';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
@@ -31,9 +31,8 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-
     match.setScores(4, 2);
-    const predictions = await this.predictionContract.filter({ matchId });
+    const predictions = await this.predictionContract.filter({ where: { matchId } });
 
     if (predictions && predictions.length > 0) {
       await this.calculateScores(match, predictions);
@@ -42,25 +41,18 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     return GottenMatchDomainEvent(match);
   }
 
-  private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]): Promise<void> {
-
+  private async calculateScores(
+    match: MatchEntity,
+    predictions: PredictionEntity[],
+  ): Promise<void> {
     for (const prediction of predictions) {
-      const result = prediction.calculateScore(match.awayTeamScore, match.localTeamScore);
+      if (match.awayTeamScore != undefined && match.homeTeamScore != undefined) {
+        const result = prediction.calculateScore(match.awayTeamScore, match.homeTeamScore);
 
-
-      const scoreResult = result;
-      console.log({
-        predictionId: prediction.id, 
-        prediction: `${prediction.awayTeamScore}:${prediction.localTeamScore}`, 
-        matchResult: `${match.awayTeamScore}:${match.localTeamScore}`, 
-        scoreResult: scoreResult.total, 
-        breakdown: scoreResult.breakdown 
-      });
+        const scoreResult = result;
+      }
 
       // await this.predictionContract.save(prediction);
-
     }
   }
 }
-
-

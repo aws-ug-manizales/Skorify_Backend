@@ -29,7 +29,7 @@ export class DraftState implements MatchState {
   }
 
   isMatchClose(match: MatchEntity): boolean {
-    return match.date.getTime() - Date.now() < match.timeToCloseInMinutes * 60 * 1000;
+    return match.kickOff.getTime() - Date.now() < match.timeToCloseInMinutes * 60 * 1000;
   }
 }
 
@@ -47,7 +47,7 @@ export class ScheduledState implements MatchState {
   }
 
   isMatchClose(match: MatchEntity): boolean {
-    return match.date.getTime() - Date.now() < match.timeToCloseInMinutes * 60 * 1000;
+    return match.kickOff.getTime() - Date.now() < match.timeToCloseInMinutes * 60 * 1000;
   }
 }
 

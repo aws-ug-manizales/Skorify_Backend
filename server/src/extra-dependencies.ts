@@ -1,73 +1,57 @@
-import { RunIracaConfig } from "@scifamek-open-source/iraca/web-api";
-import { MatchContract, MatchEntity } from "@skorify/domain/match";
+import { RunIracaConfig } from '@scifamek-open-source/iraca/web-api';
+import { MatchContract } from '@skorify/domain/match';
+import { PredictionContract } from '@skorify/domain/prediction';
+import { TournamentContract } from '@skorify/domain/tournament';
+import { TournamentInstanceContract } from '@skorify/domain/tournament-instance';
+import { TeamContract } from '@skorify/domain/team';
+import { UserContract } from '@skorify/domain/user';
+import { UserEnrollmentContract } from '@skorify/domain/user-enrollment';
 import {
-  JsonDataSource,
   MatchRepository,
-  UserRepository,
   PredictionRepository,
-  TournamentRepository,
   TournamentInstanceRepository,
-} from "@skorify/shared";
-import { UserContract, UserEntity } from "@skorify/domain/user";
-import {
-  PredictionContract,
-  PredictionEntity,
-} from "@skorify/domain/prediction";
-import {
-  TournamentContract,
-  TournamentEntity,
-} from "@skorify/domain/tournament";
-import {
-  TournamentInstanceContract,
-  TournamentInstanceEntity,
-} from "@skorify/domain/tournament-instance";
+  TournamentRepository,
+  UserRepository,
+  TeamRepository,
+  EventBusImpl,
+  UserEnrollmentRepository,
+} from '@skorify/shared';
 
-export const extraDependencies: RunIracaConfig["extraDependencies"] = [
-  {
-    id: "MatchDatasource",
-    value: new JsonDataSource<MatchEntity>("matches.json"),
-  },
-  {
-    id: "UserDatasource",
-    value: new JsonDataSource<UserEntity>("users.json"),
-  },
-  {
-    id: "PredictionDatasource",
-    value: new JsonDataSource<PredictionEntity>("predictions.json"),
-  },
-
-  {
-    id: "TournamentDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournaments.json"),
-  },
-  {
-    id: "TournamentInstanceDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournament-intances.json"),
-  },
-
+export const extraDependencies: RunIracaConfig['extraDependencies'] = [
+  // Repositories
   {
     abstraction: MatchContract,
     implementation: MatchRepository,
-    dependencies: ["MatchDatasource"],
+    dependencies: ['MatchDatasource'],
   },
   {
     abstraction: UserContract,
     implementation: UserRepository,
-    dependencies: ["UserDatasource"],
+    dependencies: ['UserDatasource'],
   },
   {
     abstraction: PredictionContract,
     implementation: PredictionRepository,
-    dependencies: ["PredictionDatasource"],
+    dependencies: ['PredictionDatasource'],
   },
   {
     abstraction: TournamentContract,
     implementation: TournamentRepository,
-    dependencies: ["TournamentDatasource"],
+    dependencies: ['TournamentDatasource'],
   },
   {
     abstraction: TournamentInstanceContract,
     implementation: TournamentInstanceRepository,
-    dependencies: ["TournamentInstanceDatasource"],
+    dependencies: ['TournamentInstanceDatasource'],
+  },
+  {
+    abstraction: TeamContract,
+    implementation: TeamRepository,
+    dependencies: ['TeamDatasource'],
+  },
+  {
+    abstraction: UserEnrollmentContract,
+    implementation: UserEnrollmentRepository,
+    dependencies: ['UserEnrollmentDatasource'],
   },
 ];

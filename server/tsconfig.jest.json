@@ -4,15 +4,12 @@
     "noEmit": true,
     "types": ["node", "jest"],
     "module": "commonjs",
-    "moduleResolution": "node"
-    ,"baseUrl": ".",
+    "moduleResolution": "node",
     "paths": {
-      "@skorify/domain": ["../domain/src/index.ts"],
-      "@skorify/domain/*": ["../domain/src/features/*"],
-      "@skorify/domain/core": ["../domain/src/core/index.ts"],
-      "@skorify/shared": ["../shared/src/index.ts"],
-      "@skorify/shared/*": ["../shared/src/*"]
+      "@skorify/domain/core": ["./libs/domain/core/index.d.ts"],
+      "@skorify/domain/*": ["./libs/domain/features/*/index.d.ts"],
+      "@skorify/shared/*": ["./libs/shared/*"]
     }
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "../domain/src/**/*.ts", "../shared/src/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

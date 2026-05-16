@@ -4,7 +4,7 @@ export const generalMethodMapper = [
     method: "patch",
     patterns: [/^Edit/, /^Update/, /^Asign/, /^Modify/, /^Set/],
   },
-  { method: "get", patterns: [/^Get/, /^Consult/, /^Enroll/] },
+  { method: "get", patterns: [/^Get/, /^Consult/, /^Enroll/,/^Filter/] },
   { method: "put", patterns: [/^Add/, /^Create/, /^Save/, /^Register/] },
   { method: "post", patterns: [/.+/] },
 ];

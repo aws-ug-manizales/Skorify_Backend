@@ -9,6 +9,9 @@ module.exports = {
     '^@skorify/domain/(.*)$': '<rootDir>/../domain/src/features/$1',
     '^@skorify/shared$': '<rootDir>/../shared/src/index.ts',
     '^@skorify/shared/(.*)$': '<rootDir>/../shared/src/$1',
+    '^@skorify/domain/core$': '<rootDir>/libs/domain/core/index.js',
+    '^@skorify/domain/(.+)$': '<rootDir>/libs/domain/features/$1/index.js',
+    '^@skorify/shared/(.+)$': '<rootDir>/libs/shared/$1',
   },
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.jest.json' }],

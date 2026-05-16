@@ -7,3 +7,10 @@ export const UserAlreadyPredictedDomainEvent = DomainEventKind("UserAlreadyPredi
 export const PredictionNotCreatedDomainEvent = DomainEventKind("PredictionNotCreatedDomainEvent");
 export const PredictionCreatedDomainEvent = DomainEventKind<PredictionEntity>("PredictionCreatedDomainEvent");
 export const MatchBetabilityCheckedDomainEvent = DomainEventKind<{ canBet: boolean }>("MatchBetabilityCheckedDomainEvent");
+
+export const GottenPredictionsByMatchDomainEvent = DomainEventKind<PredictionEntity[]>(
+  'GottenPredictionsByMatchDomainEvent',
+);
+export const GottenPredictionsByUserDomainEvent = DomainEventKind<PredictionEntity[]>(
+  'GottenPredictionsByUserDomainEvent',
+);

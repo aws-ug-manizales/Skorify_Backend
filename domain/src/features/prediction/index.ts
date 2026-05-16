@@ -17,4 +17,5 @@ export { CheckMatchCanBetParam } from './usecases/check-match-can-bet/check-matc
 export { CheckMatchCanBetUsecase } from './usecases/check-match-can-bet/check-match-can-bet.usecase';
 
 export { PredictionContract } from './prediction.contract';
-
+export { GetPredictionsByMatchParam } from './usecases/get-predictions-by-match/get-predictions-by-match.param';
+export { GetPredictionsByMatchUsecase } from './usecases/get-predictions-by-match/get-predictions-by-match.usecase';

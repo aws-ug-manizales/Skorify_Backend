@@ -1,16 +1,25 @@
 import {
-  BasicDomainEvent,
   GetPredictionsByUserParam,
   GetPredictionsByUserUsecase,
-} from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
+  GottenPredictionsByUserDomainEvent,
+  PredictionContract,
+} from '@skorify/domain/prediction';
+import { DomainEvent } from '@skorify/domain/core';
 
 export class GetPredictionsByUserUsecaseImpl extends GetPredictionsByUserUsecase {
-  constructor() {
+  constructor(private predictionContract: PredictionContract) {
     super();
   }
 
   async call(param: GetPredictionsByUserParam): Promise<DomainEvent> {
-    return BasicDomainEvent();
+    const { tournamentInstanceId, userId } = param;
+
+    const predictions = await this.predictionContract.filter({
+      where: {
+        tournamentInstanceId,
+        userId,
+      },
+    });
+    return GottenPredictionsByUserDomainEvent(predictions);
   }
 }

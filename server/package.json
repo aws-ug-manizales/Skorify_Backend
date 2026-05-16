@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test:watch": "jest --watch",
+    "build:deps": "pnpm --dir ../domain install --frozen-lockfile && pnpm --dir ../shared install --frozen-lockfile && pnpm --dir ../domain build && pnpm --dir ../shared build",
+    "fullstart:dev": "export SKO_PREDICTION_EDITING_WINDOW=${SKO_PREDICTION_EDITING_WINDOW:-60} && pnpm run build:deps && nodemon",
     "start:dev": "nodemon",
     "build": "tsc -p tsconfig.json && pnpm run copy-iraca && pnpm run copy-auth && pnpm run copy-libs && pnpm run copy-npmrc && pnpm run copy-package",
     "copy-iraca": "copyfiles  src/iraca.config.json dist",
@@ -17,6 +20,7 @@
   "dependencies": {
     "@scifamek-open-source/iraca": "9.2.0",
     "@scifamek-open-source/logger": "1.1.2",
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta",
     "@skorify/domain": "../domain/dist",
     "@skorify/shared": "../shared/dist"
   },

@@ -1,5 +1,8 @@
 import { Entity, Id } from "../../core/entity";
-import { PredictionScoreResult, PredictionScoreRuleset } from "./scoreRules/prediction-score.ruleset";
+import {
+  PredictionScoreResult,
+  PredictionScoreRuleset,
+} from "./scoreRules/prediction-score.ruleset";
 
 export class PredictionEntity extends Entity {
   userId: Id;
@@ -10,7 +13,7 @@ export class PredictionEntity extends Entity {
   score: number;
 
   private constructor(id: Id, userId: Id, instancePlayerId: Id, matchId: Id, awayTeamScore: number, localTeamScore: number) {
-    super(id);
+    super(id, new Date());
     this.userId = userId;
     this.instancePlayerId = instancePlayerId;
     this.matchId = matchId;
@@ -23,7 +26,10 @@ export class PredictionEntity extends Entity {
     return new PredictionEntity(params.id, params.userId, params.instancePlayerId, params.matchId, params.awayTeamScore, params.localTeamScore);
   }
 
-  calculateScore(awayTeamScore: number, localTeamScore: number): PredictionScoreResult {
+  calculateScore(
+    awayTeamScore: number,
+    localTeamScore: number,
+  ): PredictionScoreResult {
     const ruleset = PredictionScoreRuleset.default();
 
     const result = ruleset.calculateWithBreakdown({
@@ -41,5 +47,4 @@ export class PredictionEntity extends Entity {
 
     return result;
   }
-
 }

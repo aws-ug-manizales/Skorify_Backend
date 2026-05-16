@@ -1,4 +1,5 @@
-import { PredictionEntity } from "./prediction.entity";
+import { BaseContract } from '../../core';
+import { PredictionEntity } from './prediction.entity';
 
 export abstract class PredictionContract {
   abstract getById(id: string): Promise<PredictionEntity | null>;
