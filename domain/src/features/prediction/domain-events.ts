@@ -1,4 +1,4 @@
-import { DomainEventKind } from "src/core";
+import { DomainEventKind } from "@skorify/domain/core";
 import { PredictionEntity } from "./prediction.entity";
 
 export const BasicDomainEvent = DomainEventKind("BasicDomainEvent");

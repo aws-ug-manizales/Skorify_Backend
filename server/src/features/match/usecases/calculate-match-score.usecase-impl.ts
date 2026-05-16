@@ -47,9 +47,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   ): Promise<void> {
     for (const prediction of predictions) {
       if (match.awayTeamScore != undefined && match.homeTeamScore != undefined) {
-        const result = prediction.calculateScore(match.awayTeamScore, match.homeTeamScore);
-
-        const scoreResult = result;
+        prediction.calculateScore(match.awayTeamScore, match.homeTeamScore);
       }
 
       // await this.predictionContract.save(prediction);

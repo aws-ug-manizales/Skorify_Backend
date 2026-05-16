@@ -1,5 +1,4 @@
 import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
-import { DBClient } from '@skorify/data';
 import { MatchEntity } from '@skorify/domain/match';
 import { PredictionEntity } from '@skorify/domain/prediction';
 import { TeamEntity } from '@skorify/domain/team';
@@ -9,14 +8,11 @@ import { UserEntity } from '@skorify/domain/user';
 import { UserEnrollmentEntity } from '@skorify/domain/user-enrollment';
 import { join } from 'path';
 import {
-  UserPostgresDataSource,
-  MatchPostgresDataSource,
   JsonDataSource,
   EventBusImpl,
   StorageImpl,
 } from '@skorify/shared';
 import { EventBusContract, StorageContract } from '@skorify/domain/core';
-import { CalculateMatchScoreUsecase } from '@skorify/domain/match';
 
 type DatabaseConfig = {
   host: string;
@@ -31,8 +27,7 @@ type Injections = {
   [key: string]: unknown;
 };
 export const onLoadIraca = async (container: IracaContainer, injections: Injections) => {
-  const { database, eventBus, storage } = injections;
-  const { host, port, username, password, name, logging } = database;
+  void injections;
   const dataPath = join(__dirname, '../../../shared/src/data');
 
   // const dbClient = new DBClient({

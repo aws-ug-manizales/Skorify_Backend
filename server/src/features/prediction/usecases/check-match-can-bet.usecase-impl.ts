@@ -4,7 +4,7 @@ import {
   CheckMatchCanBetUsecase,
   MatchBetabilityCheckedDomainEvent,
 } from '@skorify/domain/prediction';
-import { GetMatchByIdUsecase, GottenMatchDomainEvent, MatchDoesNotExistDomainEvent } from '@skorify/domain/match';
+import { GetMatchByIdUsecase, GottenMatchDomainEvent, MatchEntity } from '@skorify/domain/match';
 
 export class CheckMatchCanBetUsecaseImpl extends CheckMatchCanBetUsecase {
   constructor(private getMatchByIdUsecase: GetMatchByIdUsecase) {
@@ -20,9 +20,9 @@ export class CheckMatchCanBetUsecaseImpl extends CheckMatchCanBetUsecase {
       return matchDE; // propagate not found or other match events
     }
 
-    const match = matchDE.payload as any;
+    const match = matchDE.payload as MatchEntity;
 
-    const remainingMs = match.date.getTime() - Date.now();
+    const remainingMs = match.kickOff.getTime() - Date.now();
     const canBet = remainingMs >= match.timeToCloseInMinutes * 60 * 1000;
 
     return MatchBetabilityCheckedDomainEvent({ canBet });

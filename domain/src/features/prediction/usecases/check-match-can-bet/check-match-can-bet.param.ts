@@ -1,4 +1,4 @@
-import { Id } from 'src/core';
+import { Id } from '../../../../core';
 
 export interface CheckMatchCanBetParam {
   matchId: Id;
