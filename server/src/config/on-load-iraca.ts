@@ -1,18 +1,18 @@
 import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
-import { MatchEntity } from '@skorify/domain/match';
+import { EventBusContract, StorageContract } from '@skorify/domain/core';
+import {
+  CalculateMatchScoreUsecase,
+  MatchEntity,
+  ReactiveClosedMatchDomainEvent,
+} from '@skorify/domain/match';
 import { PredictionEntity } from '@skorify/domain/prediction';
 import { TeamEntity } from '@skorify/domain/team';
 import { TournamentEntity } from '@skorify/domain/tournament';
 import { TournamentInstanceEntity } from '@skorify/domain/tournament-instance';
 import { UserEntity } from '@skorify/domain/user';
 import { UserEnrollmentEntity } from '@skorify/domain/user-enrollment';
+import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl } from '@skorify/shared';
 import { join } from 'path';
-import {
-  JsonDataSource,
-  EventBusImpl,
-  StorageImpl,
-} from '@skorify/shared';
-import { EventBusContract, StorageContract } from '@skorify/domain/core';
 
 type DatabaseConfig = {
   host: string;
@@ -91,15 +91,39 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
     value: new JsonDataSource<TeamEntity>('teams.json', dataPath),
   });
 
-  container.add({
-    abstraction: EventBusContract,
-    implementation: EventBusImpl,
-    dependencies: ['eventBus'],
+  const queue = new Queue();
+
+  queue.subscribe(ReactiveClosedMatchDomainEvent.eventName, async (data) => {
+    console.log('Hola mundo', data);
+
+    const usecase = await container.getInstance<CalculateMatchScoreUsecase>(
+      CalculateMatchScoreUsecase,
+    );
+    if (usecase) {
+      await usecase.call({
+        matchId: data.match.id,
+      });
+    }
+  });
+
+  container.addValue({
+    id: 'Queue',
+    value: queue,
   });
 
   container.add({
+    abstraction: EventBusContract,
+    implementation: EventBusMemoryImpl,
+    dependencies: ['Queue'],
+  });
+
+  container.addValue({
+    id: 'rootFolder',
+    value: join(__dirname, '../../../shared/src/storage'),
+  });
+  container.add({
     abstraction: StorageContract,
-    implementation: StorageImpl,
-    dependencies: ['storage'],
+    implementation: StorageMemoryImpl,
+    dependencies: ['rootFolder'],
   });
 };

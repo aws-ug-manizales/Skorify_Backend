@@ -146,3 +146,4 @@ builders/generated
 # Generated test data (use `pnpm run seed` to generate)
 server/data
 shared/src/data
+shared/src/storage

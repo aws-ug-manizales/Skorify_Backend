@@ -1,4 +1,4 @@
-import { BaseAttributes, Entity, Id } from "../../core/entity";
+import { BaseAttributes, Entity, Id } from '../../core/entity';
 
 export interface UserAttributes extends BaseAttributes {
   id: Id;
@@ -6,6 +6,7 @@ export interface UserAttributes extends BaseAttributes {
   isActive: boolean;
   notificationToken: string;
   email: string;
+  image?: string;
 }
 
 export class UserEntity extends Entity {
@@ -13,12 +14,14 @@ export class UserEntity extends Entity {
   isActive: boolean;
   notificationToken: string;
   email: string;
+  image?: string;
 
   private constructor(attributes: UserAttributes) {
-    const { id, name, notificationToken, isActive, email } = attributes;
+    const { id, name, notificationToken, email, image } = attributes;
     super(id, new Date());
     this.name = name;
-    this.isActive = isActive;
+    this.email = email;
+    this.image = image;
     this.notificationToken = notificationToken;
     this.email = email;
   }
