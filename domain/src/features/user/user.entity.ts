@@ -3,6 +3,7 @@ import { BaseAttributes, Entity, Id } from '../../core/entity';
 export interface UserAttributes extends BaseAttributes {
   id: Id;
   name: string;
+  isActive: boolean;
   notificationToken: string;
   email: string;
   image?: string;
@@ -10,6 +11,7 @@ export interface UserAttributes extends BaseAttributes {
 
 export class UserEntity extends Entity {
   name: string;
+  isActive: boolean;
   notificationToken: string;
   email: string;
   image?: string;
@@ -21,6 +23,7 @@ export class UserEntity extends Entity {
     this.email = email;
     this.image = image;
     this.notificationToken = notificationToken;
+    this.email = email;
   }
 
   static build(params: UserAttributes): UserEntity {

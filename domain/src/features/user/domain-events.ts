@@ -24,3 +24,7 @@ export const NotificationTokenAssignmentFailedDomainEvent = DomainEventKind(
 export const UserWithEmailAlreadyExistDomainEvent = DomainEventKind<UserEntity>(
   "UserWithEmailAlreadyExistDomainEvent",
 );
+
+export const UserFoundAndDeletedDomainEvent = DomainEventKind(
+  "UserFoundAndDeletedDomainEvent",
+);

@@ -13,3 +13,6 @@ export { GetTournamentByIdUsecase } from './usecases/get-tournament-by-id/get-to
 export { FilterTournamentsParam } from './usecases/filter-tournaments/filter-tournaments.param';
 export { FilterTournamentsUsecase } from './usecases/filter-tournaments/filter-tournaments.usecase';
 
+export { UpdateTournamentParam } from './usecases/update-tournament/update-tournament.param';
+export { UpdateTournamentUsecase } from './usecases/update-tournament/update-tournament.usecase';
+

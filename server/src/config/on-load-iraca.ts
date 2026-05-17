@@ -27,8 +27,7 @@ type Injections = {
   [key: string]: unknown;
 };
 export const onLoadIraca = async (container: IracaContainer, injections: Injections) => {
-  const { database, eventBus, storage } = injections;
-  const { host, port, username, password, name, logging } = database;
+  void injections;
   const dataPath = join(__dirname, '../../../shared/src/data');
 
   // const dbClient = new DBClient({
