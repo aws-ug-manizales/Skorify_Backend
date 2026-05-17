@@ -12,7 +12,7 @@ export class FilterTournamentsUsecaseImpl extends FilterTournamentsUsecase {
 	}
 	async call(param: FilterTournamentsParam): Promise<DomainEvent> {
 		const tournaments = await this.tournamentContract.filter({
-            where: []
+            where: { name: param.name },
         });
 		return FilteredTournamentsDomainEvent(tournaments);
 	}

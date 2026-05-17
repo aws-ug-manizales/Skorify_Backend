@@ -8,6 +8,7 @@ import {
 
 export class PredictionEntity extends Entity {
   userEnrollmentId: Id;
+  instancePlayerId: Id;
   matchId: Id;
   tournamentInstanceId : Id;
   awayScore: number;
@@ -18,6 +19,7 @@ export class PredictionEntity extends Entity {
   private constructor(
     id: Id,
     userEnrollmentId: Id,
+    instancePlayerId: Id,
     matchId: Id,
     tournamentInstanceId: Id,
     awayScore: number,
@@ -27,6 +29,7 @@ export class PredictionEntity extends Entity {
     super(id, new Date());
     this.userEnrollmentId = userEnrollmentId;
     this.matchId = matchId;
+    this.instancePlayerId = instancePlayerId;
     this.tournamentInstanceId = tournamentInstanceId;
     this.awayScore = awayScore;
     this.homeScore = homeScore;
@@ -37,6 +40,7 @@ export class PredictionEntity extends Entity {
   static build(params: {
     id: Id;
     userEnrollmentId: Id;
+    instancePlayerId: Id;
     matchId: Id;
     tournamentInstanceId: Id;
     awayScore: number;
@@ -46,6 +50,7 @@ export class PredictionEntity extends Entity {
     return new PredictionEntity(
       params.id,
       params.userEnrollmentId,
+      params.instancePlayerId,
       params.matchId,
       params.tournamentInstanceId,
       params.awayScore,

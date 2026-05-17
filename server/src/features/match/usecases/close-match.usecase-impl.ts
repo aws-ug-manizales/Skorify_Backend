@@ -4,19 +4,18 @@ import {
   CloseMatchUsecase,
   GetMatchByIdUsecase,
   GottenMatchDomainEvent,
-  MatchAlreadyClosedDomainEvent,
   MatchContract,
   MatchEntity,
   NotEditedMatchDomainEvent,
-  ReactiveClosedMatchDomainEvent,
-} from "@skorify/domain/match";
+  ReactiveClosedMatchDomainEvent
+} from '@skorify/domain/match';
 
-import { DomainEvent, EventBusContract } from "@skorify/domain/core";
+import { DomainEvent, EventBusContract } from '@skorify/domain/core';
 import {
   GetTournamentInstancesByTournamentIdUsecase,
   GottenTournamentInstancesDomainEvent,
   TournamentInstanceEntity,
-} from "@skorify/domain/tournament-instance";
+} from '@skorify/domain/tournament-instance';
 
 export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
   constructor(
@@ -34,15 +33,17 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
     const matchDE = await this.getMatchByIdUsecase.call({
       matchId,
     });
+    console.log(matchDE);
 
-    if (!matchDE.isNot(GottenMatchDomainEvent)) {
+    if (matchDE.isNot(GottenMatchDomainEvent)) {
       return matchDE;
     }
     const match: MatchEntity = matchDE.payload;
+    console.log(match);
 
-    if (match.isMatchClose()) {
-      return MatchAlreadyClosedDomainEvent(match);
-    }
+    // if (match.isMatchClose()) {
+    //   return MatchAlreadyClosedDomainEvent(match);
+    // }
 
     //Cerrar partido
 
@@ -51,16 +52,14 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
       return NotEditedMatchDomainEvent(match);
     }
 
-    const tournamentInstancesDE =
-      await this.getTournamentInstancesByTournamentIdUsecase.call({
-        tournamentId: match.tournamentId,
-      });
+    const tournamentInstancesDE = await this.getTournamentInstancesByTournamentIdUsecase.call({
+      tournamentId: match.tournamentId,
+    });
 
     if (tournamentInstancesDE.isNot(GottenTournamentInstancesDomainEvent)) {
       return tournamentInstancesDE;
     }
-    const tournamentInstances: TournamentInstanceEntity[] =
-      tournamentInstancesDE.payload;
+    const tournamentInstances: TournamentInstanceEntity[] = tournamentInstancesDE.payload;
 
     for (const tournamentInstance of tournamentInstances) {
       this.eventBusContract.send({

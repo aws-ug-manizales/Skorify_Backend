@@ -29,6 +29,7 @@ export class UserPostgresDataSource implements DataSource<UserEntity> {
       email: dbUser.email,
       notificationToken: "",
       name: dbUser.name,
+      isActive: true,
       updatedAt: dbUser.updated_at == null ? undefined : dbUser.updated_at,
     });
   }

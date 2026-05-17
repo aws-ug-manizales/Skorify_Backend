@@ -1,9 +1,10 @@
+import { DomainEvent } from '@skorify/domain/core';
 import {
   CalculateMatchScoreParam,
   CalculateMatchScoreUsecase,
-  MatchDoesNotExistDomainEvent,
   GottenMatchDomainEvent,
   MatchContract,
+  MatchDoesNotExistDomainEvent,
   MatchEntity,
 } from "@skorify/domain/match";
 import {
@@ -11,7 +12,6 @@ import {
   PredictionContract,
   PredictionEntity,
 } from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
 import {
   GetUserEnrollmentByIdUsecase,
   GottenUserEnrollmentDomainEvent,
@@ -66,7 +66,6 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       await this.calculateScores(match, predictions);
     }
 
-    // NEW: Reiniciar racha para los que no hicieron predicción
     await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
 
     return GottenMatchDomainEvent(match);

@@ -4,6 +4,7 @@ import { PredictionRuleBreakdown } from "../../src/features/prediction/scoreRule
 function makePrediction(params: {
   predictionId: string;
   userId: string;
+  instanceId: string;
   matchId: string;
   awayTeamScore: number;
   localTeamScore: number;
@@ -11,6 +12,7 @@ function makePrediction(params: {
   return PredictionEntity.build({
     id: params.predictionId as any,
     userEnrollmentId: params.userId as any,
+    instancePlayerId: params.instanceId as any,
     matchId: params.matchId as any,
     tournamentInstanceId: "ti-1111-1111" as any,
     awayScore: params.awayTeamScore,
@@ -30,6 +32,7 @@ describe("PredictionEntity.calculateScore", () => {
   const ids = {
     predictionId: "11111111-1111-1111-1111-111111111111",
     userId: "22222222-2222-2222-2222-222222222222",
+    instanceId: "44444444-4444-4444-4444-444444444444",
     matchId: "33333333-3333-3333-3333-333333333333",
   };
 
