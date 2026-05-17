@@ -4,4 +4,6 @@ export { JsonDataSource } from "./json.data-source";
 export { UserPostgresDataSource } from "./user.postgres-data-source";
 export { MatchPostgresDataSource } from "./match.postgres-data-source";
 export { EventBusImpl } from "./eventbus.impl";
+export { EventBusMemoryImpl } from "./eventbus-memory.impl";
 export { StorageImpl } from "./storage.impl";
+export { StorageMemoryImpl } from "./storage-memory.impl";
