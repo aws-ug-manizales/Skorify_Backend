@@ -10,6 +10,7 @@ export interface UserEnrollmentAttributes{
   currentPosition: number;
   currentScore: number;
   streak: number;
+  maxStreak: number;
 }
 
 export class UserEnrollmentEntity extends Entity {
@@ -21,6 +22,9 @@ export class UserEnrollmentEntity extends Entity {
   currentPosition: number;
   currentScore: number;
   streak: number;
+  maxStreak: number;
+  
+  private streakBonusRules: Map<number, number> = new Map<number, number>();
 
   private constructor(attributes: UserEnrollmentAttributes) {
     const {
@@ -32,7 +36,8 @@ export class UserEnrollmentEntity extends Entity {
       lastPosition,
       currentPosition,
       currentScore,
-      streak
+      streak,
+      maxStreak
     } = attributes;
     super(id, new Date());
     this.userId = userId;
@@ -43,9 +48,35 @@ export class UserEnrollmentEntity extends Entity {
     this.currentPosition = currentPosition;
     this.currentScore = currentScore;
     this.streak = streak;
+    this.maxStreak = maxStreak;
+
+    this.streakBonusRules.set(3, 1);
+    this.streakBonusRules.set(5, 2);
+    this.streakBonusRules.set(7, 3);
+    this.streakBonusRules.set(10, 4);
   }
 
   static build(params: UserEnrollmentAttributes): UserEnrollmentEntity {
     return new UserEnrollmentEntity(params);
   }
+
+  getStreakBonusPoints(): number{
+    return this.streakBonusRules.get(this.streak) ?? 0
+  }
+
+  applyScore(points: number, isExact: boolean): void {
+    this.currentScore += points;
+    if (isExact) {
+      this.streak += 1;
+    } else {
+      this.streak = 0;
+    }
+  }
+
+  verifyMaxStreak(): void {
+    if(this.streak > this.maxStreak){
+      this.maxStreak = this.streak;
+    }
+  }
+
 }

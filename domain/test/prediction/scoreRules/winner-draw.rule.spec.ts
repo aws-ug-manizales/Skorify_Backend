@@ -5,8 +5,8 @@ describe("WinnerDrawRule", () => {
     const rule = new WinnerDrawRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 1, localTeamScore: 1 },
-      match: { awayTeamScore: 0, localTeamScore: 0 },
+      prediction: { awayScore: 1, homeScore: 1 },
+      match: { awayScore: 0, homeScore: 0 },
     });
 
     expect(score).toBe(2);
@@ -16,8 +16,8 @@ describe("WinnerDrawRule", () => {
     const rule = new WinnerDrawRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 2, localTeamScore: 1 },
-      match: { awayTeamScore: 1, localTeamScore: 0 },
+      prediction: { awayScore: 2, homeScore: 1 },
+      match: { awayScore: 1, homeScore: 0 },
     });
 
     expect(score).toBe(2);
@@ -27,8 +27,8 @@ describe("WinnerDrawRule", () => {
     const rule = new WinnerDrawRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 0, localTeamScore: 1 },
-      match: { awayTeamScore: 2, localTeamScore: 0 },
+      prediction: { awayScore: 0, homeScore: 1 },
+      match: { awayScore: 2, homeScore: 0 },
     });
 
     expect(score).toBe(0);

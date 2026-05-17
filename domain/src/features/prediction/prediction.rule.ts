@@ -1,11 +1,11 @@
 export type PredictionRuleContext = {
   prediction: {
-    awayTeamScore: number;
-    localTeamScore: number;
+    awayScore: number;
+    homeScore: number;
   };
   match: {
-    awayTeamScore: number;
-    localTeamScore: number;
+    awayScore: number;
+    homeScore: number;
   };
 };
 

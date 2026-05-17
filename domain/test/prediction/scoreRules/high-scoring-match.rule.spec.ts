@@ -5,8 +5,8 @@ describe("HighScoringMatchRule", () => {
     const rule = new HighScoringMatchRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 2, localTeamScore: 1 },
-      match: { awayTeamScore: 1, localTeamScore: 1 },
+      prediction: { awayScore: 2, homeScore: 1 },
+      match: { awayScore: 1, homeScore: 1 },
     });
 
     expect(score).toBe(0);
@@ -16,8 +16,8 @@ describe("HighScoringMatchRule", () => {
     const rule = new HighScoringMatchRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 3, localTeamScore: 1 },
-      match: { awayTeamScore: 3, localTeamScore: 1 },
+      prediction: { awayScore: 3, homeScore: 1 },
+      match: { awayScore: 3, homeScore: 1 },
     });
 
     expect(score).toBe(1);
@@ -27,8 +27,8 @@ describe("HighScoringMatchRule", () => {
     const rule = new HighScoringMatchRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 4, localTeamScore: 0 },
-      match: { awayTeamScore: 3, localTeamScore: 1 },
+      prediction: { awayScore: 4, homeScore: 0 },
+      match: { awayScore: 3, homeScore: 1 },
     });
 
     expect(score).toBe(0);

@@ -6,8 +6,8 @@ export class TeamGoalsRule implements PredictionRule {
     calculateScore(context: PredictionRuleContext): number {
         let score = 0;
 
-        if (context.prediction.awayTeamScore === context.match.awayTeamScore
-            || context.prediction.localTeamScore === context.match.localTeamScore
+        if (context.prediction.awayScore === context.match.awayScore
+            || context.prediction.homeScore === context.match.homeScore
         ) {
             score += this.ruleScore;
         }
