@@ -13,3 +13,10 @@ export const NotGottenTournamentDomainEvent = DomainEventKind('NotGottenTourname
 export const FilteredTournamentsDomainEvent = DomainEventKind<TournamentEntity[]>(
 	'FilteredTournamentsDomainEvent',
 );
+export const TournamentNotUpdatedDomainEvent = DomainEventKind('TournamentNotUpdatedDomainEvent');
+export const TournamentUpdatedDomainEvent = DomainEventKind<TournamentEntity>(
+	'TournamentUpdatedDomainEvent',
+);
+export const TournamentInvalidDatesDomainEvent = DomainEventKind(
+	'TournamentInvalidDatesDomainEvent',
+);
