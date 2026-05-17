@@ -8,12 +8,14 @@ import {
   UserEntity,
   UserWithEmailAlreadyExistDomainEvent,
 } from '@skorify/domain/user';
+import { LogUsecase } from '@skorify/shared';
 
 export class CreateUserUsecaseImpl extends CreateUserUsecase {
   constructor(private userContract: UserContract) {
     super();
   }
 
+  @LogUsecase()
   async call(param: CreateUserParam): Promise<DomainEvent> {
     const { name, email } = param;
 

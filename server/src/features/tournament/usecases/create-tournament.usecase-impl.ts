@@ -8,12 +8,15 @@ import {
   TournamentSavedDomainEvent,
 } from "@skorify/domain/tournament";
 import { DomainEvent } from "@skorify/domain/core";
+import crypto from "crypto";
+import { LogUsecase } from '@skorify/shared';
 
 export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
   constructor(private tournamentContract: TournamentContract) {
     super();
   }
 
+  @LogUsecase()
   async call(param: CreateTournamentParam): Promise<DomainEvent> {
     const { endDate, name, startDate, matchType } = param;
 
