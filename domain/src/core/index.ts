@@ -18,3 +18,5 @@ export {
 } from './filters';
 export { generalMethodMapper } from './method.mapper';
 export { NotificationContract, NotificationType } from './notifications.contract';
+export { LoggerPort } from "./logger.port";
+

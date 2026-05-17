@@ -12,11 +12,12 @@ import {
   UserPostgresDataSource,
   MatchPostgresDataSource,
   JsonDataSource,
-  EventBusImpl,
-  StorageImpl,
 } from '@skorify/shared';
+import { EventBusImpl, StorageImpl } from '@skorify/shared/core';
 import { EventBusContract, StorageContract } from '@skorify/domain/core';
 import { CalculateMatchScoreUsecase } from '@skorify/domain/match';
+import { LoggerContext} from "@skorify/shared";
+import { LoggerAdapter} from "../core/logger.adapter";
 
 type DatabaseConfig = {
   host: string;
@@ -34,6 +35,15 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
   const { database, eventBus, storage } = injections;
   const { host, port, username, password, name, logging } = database;
   const dataPath = join(__dirname, '../../../shared/src/data');
+
+  // Inicializar Logger
+  const loggerFolder = "logs";
+  const logger = new LoggerAdapter(loggerFolder);
+  LoggerContext.initialize(logger);
+  container.addValue({
+    id: "Logger",
+    value: logger,
+  });
 
   // const dbClient = new DBClient({
   //   type: "postgres",

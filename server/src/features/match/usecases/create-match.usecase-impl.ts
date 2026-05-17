@@ -17,6 +17,8 @@ import {
   GottenTournamentDomainEvent,
   MatchType,
 } from '@skorify/domain/tournament';
+import { LogUsecase } from '@skorify/shared';
+import  crypto 	from 'crypto';
 
 export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
 	constructor(
@@ -27,6 +29,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
 		super();
 	}
 
+	@LogUsecase()
 	async call(param: CreateMatchParam): Promise<DomainEvent> {
 		const {awayTeamId, homeTeamId, kickOff, tournamentId, stage, venue} = param;
 

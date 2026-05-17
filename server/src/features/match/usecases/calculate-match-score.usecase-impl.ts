@@ -8,6 +8,7 @@ import {
 } from '@skorify/domain/match';
 import { PredictionContract, PredictionEntity } from '@skorify/domain/prediction';
 import { DomainEvent } from '@skorify/domain/core';
+import { LogUsecase } from '@skorify/shared';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
@@ -17,6 +18,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     super();
   }
 
+  @LogUsecase()
   async call(param: CalculateMatchScoreParam): Promise<DomainEvent> {
     const { matchId } = param;
 
