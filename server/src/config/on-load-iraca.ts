@@ -120,7 +120,7 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
 
   container.addValue({
     id: 'rootFolder',
-    value: './storage',
+    value: join(__dirname, '../../../shared/src/storage'),
   });
   container.add({
     abstraction: StorageContract,

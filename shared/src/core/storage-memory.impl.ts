@@ -1,6 +1,7 @@
 import { StorageContract } from '@skorify/domain/core';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { writeFile, readFile, mkdir } from 'fs/promises';
+import { join, dirname } from 'path';
+import { existsSync } from 'fs';
 
 interface StoredFile {
   key: string;
@@ -11,7 +12,7 @@ interface StoredFile {
 }
 
 export class StorageMemoryImpl extends StorageContract {
-  constructor(public folder: string) {
+  constructor(public folder: string = join(__dirname, '../../src/storage')) {
     super();
   }
   //   private readonly storage: Map<string, StoredFile> = new Map();
@@ -90,8 +91,14 @@ export class StorageMemoryImpl extends StorageContract {
       size: buffer.length,
     };
 
-    // TODO hacer que no importe la catidad de carpetas internas
-    await writeFile(join(this.folder, key), buffer);
+    const fullPath = join(this.folder, key);
+    const dir = dirname(fullPath);
+
+    if (!existsSync(dir)) {
+      await mkdir(dir, { recursive: true });
+    }
+
+    await writeFile(fullPath, buffer);
     console.log(`Archivo almacenado en memoria: ${key} (${buffer.length} bytes, ${contentType})`);
 
     return key;
@@ -103,12 +110,13 @@ export class StorageMemoryImpl extends StorageContract {
    * @returns URL en formato memory://
    */
   async getAbsolutePath(path: string): Promise<string> {
-    // if (!this.storage.has(path)) {
-    //   throw new Error(`Archivo no encontrado: ${path}`);
-    // }
+    const fullPath = join(this.folder, path);
+    
+    if (!existsSync(fullPath)) {
+      throw new Error(`Archivo no encontrado: ${path}`);
+    }
 
-    // Retorna una URL ficticia para compatibilidad
-    return `memory://${path}`;
+    return fullPath;
   }
 
   /**
@@ -117,14 +125,12 @@ export class StorageMemoryImpl extends StorageContract {
    * @returns Buffer con el contenido del archivo
    */
   async getBytes(path: string): Promise<Buffer> {
-    // const file = this.storage.get(path);
+    const fullPath = join(this.folder, path);
+    
+    if (!existsSync(fullPath)) {
+      throw new Error(`Archivo no encontrado: ${path}`);
+    }
 
-    // if (!file) {
-    //   throw new Error(`Archivo no encontrado: ${path}`);
-    // }
-
-    // return file.content;
-
-    return Buffer.from([]);
+    return readFile(fullPath);
   }
 }
