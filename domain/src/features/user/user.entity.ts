@@ -1,18 +1,18 @@
-import { BaseAttributes, Entity, Id } from "../../core/entity";
+import { BaseAttributes, Entity, Id } from '../../core/entity';
 
 export interface UserAttributes extends BaseAttributes {
   id: Id;
   name: string;
   notificationToken: string;
   email: string;
-  image: Buffer;
+  image?: string;
 }
 
 export class UserEntity extends Entity {
   name: string;
   notificationToken: string;
   email: string;
-  image: Buffer;
+  image?: string;
 
   private constructor(attributes: UserAttributes) {
     const { id, name, notificationToken, email, image } = attributes;

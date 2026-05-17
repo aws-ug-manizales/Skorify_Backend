@@ -30,24 +30,26 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       return UserWithEmailAlreadyExistDomainEvent(users[0]);
     }
 
-    // Subir la imagen al storage si se proporciona
-    let imageBuffer: Buffer | undefined;
-    if (image) {
-      await this.storageContract.uploadImage(image);
-      imageBuffer = image;
-    }
-
     const user = UserEntity.build({
       id: crypto.randomUUID(),
       name,
       email,
       notificationToken: '',
-      image: imageBuffer || Buffer.alloc(0),
       createdAt: new Date(),
     });
 
     if (!user) {
       return UserWithEmailAlreadyExistDomainEvent(users[0]);
+    }
+
+    // Subir la imagen al storage si se proporciona
+    let imageBuffer: Buffer | undefined;
+    if (image) {
+      const key = `user/${user.id}/profile`;
+
+      await this.storageContract.uploadImage(key, image);
+      imageBuffer = image;
+      user.image = key;
     }
 
     const userInDB = await this.userContract.save(user);
