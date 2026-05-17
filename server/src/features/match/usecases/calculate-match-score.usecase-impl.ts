@@ -7,21 +7,33 @@ import {
   MatchEntity,
 } from "@skorify/domain/match";
 import {
+  BasicDomainEvent,
   PredictionContract,
   PredictionEntity,
 } from "@skorify/domain/prediction";
 import { DomainEvent } from "@skorify/domain/core";
+import {
+  GetUserEnrollmentByIdUsecase,
+  GottenUserEnrollmentDomainEvent,
+  GottenUserEnrollmentsDomainEvent,
+  UserEnrollmentEntity,
+  UpdateUserEnrollmentUsecase,
+  GetEnrollmentsWithoutPredictionUsecase,
+} from "@skorify/domain/user-enrollment";
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
     private predictionContract: PredictionContract,
+    private getUserEnrollmentByIdUsecase: GetUserEnrollmentByIdUsecase,
+    private updateUserEnrollmentUsecase: UpdateUserEnrollmentUsecase,
+    private getEnrollmentsWithoutPredictionUsecase: GetEnrollmentsWithoutPredictionUsecase
   ) {
     super();
   }
 
   async call(param: CalculateMatchScoreParam): Promise<DomainEvent> {
-    const { matchId } = param;
+    const { matchId, tournamentInstanceId } = param;
 
     const match = await this.matchContract.getById(matchId);
 
@@ -34,12 +46,28 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-    match.setScores(4, 2);
-    const predictions = await this.predictionContract.filter({ matchId });
+    if (match.awayTeamScore === undefined || match.homeTeamScore === undefined) {
+      // No scores to calculate
+      return GottenMatchDomainEvent(match);
+    }
+
+    const predictions = await this.predictionContract.filter({
+      where: [
+        {
+          matchId,
+        },
+        {
+          tournamentInstanceId,
+        }
+      ]
+    });
 
     if (predictions && predictions.length > 0) {
       await this.calculateScores(match, predictions);
     }
+
+    // NEW: Reiniciar racha para los que no hicieron predicción
+    await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
 
     return GottenMatchDomainEvent(match);
   }
@@ -47,21 +75,57 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   private async calculateScores(
     match: MatchEntity,
     predictions: PredictionEntity[],
-  ): Promise<void> {
+  ): Promise<DomainEvent> {
     for (const prediction of predictions) {
-      if (
-        match.awayTeamScore != undefined &&
-        match.homeTeamScore != undefined
-      ) {
-        const result = prediction.calculateScore(
-          match.awayTeamScore,
-          match.homeTeamScore,
-        );
+      const userEnrollmentDE = await this.getUserEnrollmentByIdUsecase.call({
+        userEnrollmentId: prediction.userEnrollmentId
+      });
 
-        const scoreResult = result;
+      if (!userEnrollmentDE.is(GottenUserEnrollmentDomainEvent)) {
+        continue;
       }
 
-      // await this.predictionContract.save(prediction);
+      const userEnrollment: UserEnrollmentEntity = userEnrollmentDE.payload as any;
+      const streakBonusPoints = userEnrollment.getStreakBonusPoints();
+
+      // Calculate prediction score
+      prediction.calculateScore(
+        match.awayTeamScore!,
+        match.homeTeamScore!,
+        streakBonusPoints
+      );
+
+      // Save updated prediction
+      await this.predictionContract.modifyById(prediction.id, prediction);
+
+      // Update user enrollment with points and streak
+      await this.updateUserEnrollmentUsecase.call({
+        userEnrollmentId: prediction.userEnrollmentId,
+        points: prediction.earnedPoints,
+        isExact: prediction.hasExactResult
+      });
+    }
+    return BasicDomainEvent();
+  }
+
+  private async resetStreakForMissingPredictions(
+    matchId: string,
+    tournamentInstanceId: string
+  ): Promise<void> {
+    const missingEnrollmentsDE = await this.getEnrollmentsWithoutPredictionUsecase.call({
+      matchId,
+      tournamentInstanceId
+    });
+
+    if (missingEnrollmentsDE.is(GottenUserEnrollmentsDomainEvent)) {
+      const enrollments: UserEnrollmentEntity[] = missingEnrollmentsDE.payload as any;
+      for (const enrollment of enrollments) {
+        await this.updateUserEnrollmentUsecase.call({
+          userEnrollmentId: enrollment.id,
+          points: 0,
+          isExact: false
+        });
+      }
     }
   }
 }

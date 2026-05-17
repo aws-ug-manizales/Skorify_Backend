@@ -5,8 +5,8 @@ describe("ExactScoreRule", () => {
     const rule = new ExactScoreRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 2, localTeamScore: 1 },
-      match: { awayTeamScore: 2, localTeamScore: 1 },
+      prediction: { awayScore: 2, homeScore: 1 },
+      match: { awayScore: 2, homeScore: 1 },
     });
 
     expect(score).toBe(1);
@@ -16,8 +16,8 @@ describe("ExactScoreRule", () => {
     const rule = new ExactScoreRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 2, localTeamScore: 1 },
-      match: { awayTeamScore: 2, localTeamScore: 2 },
+      prediction: { awayScore: 2, homeScore: 1 },
+      match: { awayScore: 2, homeScore: 2 },
     });
 
     expect(score).toBe(0);

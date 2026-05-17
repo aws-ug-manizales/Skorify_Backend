@@ -1,66 +1,84 @@
 import { Entity, Id } from "../../core/entity";
+import { ExactScoreRule } from "./scoreRules";
 import {
+  PredictionRuleBreakdown,
   PredictionScoreResult,
   PredictionScoreRuleset,
 } from "./scoreRules/prediction-score.ruleset";
 
 export class PredictionEntity extends Entity {
-  userId: Id;
+  userEnrollmentId: Id;
   matchId: Id;
-  awayTeamScore: number;
-  localTeamScore: number;
-  score: number;
+  tournamentInstanceId : Id;
+  awayScore: number;
+  homeScore: number;
+  earnedPoints: number;
+  hasExactResult: boolean;
 
   private constructor(
     id: Id,
-    userId: Id,
+    userEnrollmentId: Id,
     matchId: Id,
-    awayTeamScore: number,
-    localTeamScore: number,
+    tournamentInstanceId: Id,
+    awayScore: number,
+    homeScore: number,
+    hasExactResult: boolean,
   ) {
     super(id, new Date());
-    this.userId = userId;
+    this.userEnrollmentId = userEnrollmentId;
     this.matchId = matchId;
-    this.awayTeamScore = awayTeamScore;
-    this.localTeamScore = localTeamScore;
-    this.score = 0;
+    this.tournamentInstanceId = tournamentInstanceId;
+    this.awayScore = awayScore;
+    this.homeScore = homeScore;
+    this.earnedPoints = 0;
+    this.hasExactResult = hasExactResult;
   }
 
   static build(params: {
     id: Id;
-    userId: Id;
+    userEnrollmentId: Id;
     matchId: Id;
-    awayTeamScore: number;
-    localTeamScore: number;
+    tournamentInstanceId: Id;
+    awayScore: number;
+    homeScore: number;
+    hasExactResult: boolean;
   }): PredictionEntity {
     return new PredictionEntity(
       params.id,
-      params.userId,
+      params.userEnrollmentId,
       params.matchId,
-      params.awayTeamScore,
-      params.localTeamScore,
+      params.tournamentInstanceId,
+      params.awayScore,
+      params.homeScore,
+      params.hasExactResult,
     );
   }
 
   calculateScore(
-    awayTeamScore: number,
-    localTeamScore: number,
+    matchAwayScore: number,
+    matchHomeScore: number,
+    streakBonusPoints: number,
   ): PredictionScoreResult {
     const ruleset = PredictionScoreRuleset.default();
 
     const result = ruleset.calculateWithBreakdown({
       prediction: {
-        awayTeamScore: this.awayTeamScore,
-        localTeamScore: this.localTeamScore,
+        awayScore: this.awayScore,
+        homeScore: this.homeScore,
       },
       match: {
-        awayTeamScore,
-        localTeamScore,
+        awayScore: matchAwayScore,
+        homeScore: matchHomeScore,
       },
     });
 
-    this.score = result.total;
+    this.setHasExactResult(result.breakdown)
+    this.earnedPoints = result.total + streakBonusPoints;
 
     return result;
+  }
+
+  private setHasExactResult(rulesApplied: PredictionRuleBreakdown[]) {
+    this.hasExactResult = !!rulesApplied.find(r => r.rule == ExactScoreRule.name)
   }
 }

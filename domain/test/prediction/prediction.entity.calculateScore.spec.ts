@@ -10,10 +10,12 @@ function makePrediction(params: {
 }): PredictionEntity {
   return PredictionEntity.build({
     id: params.predictionId as any,
-    userId: params.userId as any,
+    userEnrollmentId: params.userId as any,
     matchId: params.matchId as any,
-    awayTeamScore: params.awayTeamScore,
-    localTeamScore: params.localTeamScore,
+    tournamentInstanceId: "ti-1111-1111" as any,
+    awayScore: params.awayTeamScore,
+    homeScore: params.localTeamScore,
+    hasExactResult: false
   });
 }
 
@@ -130,11 +132,26 @@ describe("PredictionEntity.calculateScore", () => {
         localTeamScore: testCase.prediction.localTeamScore,
       });
 
-      const result = prediction.calculateScore(testCase.match.awayTeamScore, testCase.match.localTeamScore);
+      const result = prediction.calculateScore(testCase.match.awayTeamScore, testCase.match.localTeamScore, 0);
 
-      expect(prediction.score).toBe(testCase.expectedScore);
+      expect(prediction.earnedPoints).toBe(testCase.expectedScore);
       expect(result.total).toBe(testCase.expectedScore);
       expect(asMap(result.breakdown)).toEqual(testCase.expectedBreakdown);
     });
   }
+
+  it("should add streak bonus points to earnedPoints", () => {
+    const prediction = makePrediction({
+        ...ids,
+        awayTeamScore: 2,
+        localTeamScore: 1,
+      });
+
+      const streakBonus = 2;
+      const result = prediction.calculateScore(2, 1, streakBonus);
+
+      // 4 (exact) + 2 (streak) = 6
+      expect(prediction.earnedPoints).toBe(6);
+      expect(result.total).toBe(4); // result.total is just ruleset total
+  });
 });
