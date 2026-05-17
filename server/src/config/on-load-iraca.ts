@@ -13,7 +13,9 @@ import {
   MatchPostgresDataSource,
   JsonDataSource,
   EventBusImpl,
+  EventBusMemoryImpl,
   StorageImpl,
+  StorageMemoryImpl,
 } from '@skorify/shared';
 import { EventBusContract, StorageContract } from '@skorify/domain/core';
 import { CalculateMatchScoreUsecase } from '@skorify/domain/match';
@@ -98,13 +100,11 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
 
   container.add({
     abstraction: EventBusContract,
-    implementation: EventBusImpl,
-    dependencies: ['eventBus'],
+    implementation: EventBusMemoryImpl,
   });
 
   container.add({
     abstraction: StorageContract,
-    implementation: StorageImpl,
-    dependencies: ['storage'],
+    implementation: StorageMemoryImpl,
   });
 };

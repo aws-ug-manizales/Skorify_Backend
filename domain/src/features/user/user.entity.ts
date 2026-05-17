@@ -5,18 +5,21 @@ export interface UserAttributes extends BaseAttributes {
   name: string;
   notificationToken: string;
   email: string;
+  image: Buffer;
 }
 
 export class UserEntity extends Entity {
   name: string;
   notificationToken: string;
   email: string;
+  image: Buffer;
 
   private constructor(attributes: UserAttributes) {
-    const { id, name, notificationToken, email } = attributes;
+    const { id, name, notificationToken, email, image } = attributes;
     super(id, new Date());
     this.name = name;
     this.email = email;
+    this.image = image;
     this.notificationToken = notificationToken;
   }
 
