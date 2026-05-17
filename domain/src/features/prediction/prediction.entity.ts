@@ -6,40 +6,24 @@ import {
 
 export class PredictionEntity extends Entity {
   userId: Id;
+  instancePlayerId: Id;
   matchId: Id;
   awayTeamScore: number;
   localTeamScore: number;
   score: number;
 
-  private constructor(
-    id: Id,
-    userId: Id,
-    matchId: Id,
-    awayTeamScore: number,
-    localTeamScore: number,
-  ) {
+  private constructor(id: Id, userId: Id, instancePlayerId: Id, matchId: Id, awayTeamScore: number, localTeamScore: number) {
     super(id, new Date());
     this.userId = userId;
+    this.instancePlayerId = instancePlayerId;
     this.matchId = matchId;
     this.awayTeamScore = awayTeamScore;
     this.localTeamScore = localTeamScore;
     this.score = 0;
   }
 
-  static build(params: {
-    id: Id;
-    userId: Id;
-    matchId: Id;
-    awayTeamScore: number;
-    localTeamScore: number;
-  }): PredictionEntity {
-    return new PredictionEntity(
-      params.id,
-      params.userId,
-      params.matchId,
-      params.awayTeamScore,
-      params.localTeamScore,
-    );
+  static build(params: { id: Id; userId: Id; instancePlayerId: Id; matchId: Id; awayTeamScore: number; localTeamScore: number }): PredictionEntity {
+    return new PredictionEntity(params.id, params.userId, params.instancePlayerId, params.matchId, params.awayTeamScore, params.localTeamScore);
   }
 
   calculateScore(
