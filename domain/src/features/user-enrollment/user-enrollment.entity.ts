@@ -6,10 +6,11 @@ export interface UserEnrollmentAttributes{
   tournamentInstanceId: Id;
   tournamentId: Id;
   joinedAt: Date;
-  lastPosition: number;
-  currentPosition: number;
+  lastPosition: null | number;
+  currentPosition: null | number;
   currentScore: number;
   streak: number;
+  maxStreak: number;
 }
 
 export class UserEnrollmentEntity extends Entity {
@@ -17,10 +18,11 @@ export class UserEnrollmentEntity extends Entity {
   tournamentInstanceId: Id;
   tournamentId: Id;
   joinedAt: Date;
-  lastPosition: number;
-  currentPosition: number;
+  lastPosition: null | number;
+  currentPosition: null | number;
   currentScore: number;
   streak: number;
+  maxStreak: number;
 
   private constructor(attributes: UserEnrollmentAttributes) {
     const {
@@ -32,7 +34,8 @@ export class UserEnrollmentEntity extends Entity {
       lastPosition,
       currentPosition,
       currentScore,
-      streak
+      streak,
+      maxStreak,
     } = attributes;
     super(id, new Date());
     this.userId = userId;
@@ -43,6 +46,7 @@ export class UserEnrollmentEntity extends Entity {
     this.currentPosition = currentPosition;
     this.currentScore = currentScore;
     this.streak = streak;
+    this.maxStreak = maxStreak;
   }
 
   static build(params: UserEnrollmentAttributes): UserEnrollmentEntity {

@@ -78,10 +78,11 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       tournamentInstanceId: tournamentInstanceId,
       tournamentId: tournamentInstance.tournamentId,
       joinedAt: new Date(),
-      lastPosition: 0,
-      currentPosition: 0,
+      lastPosition: null,
+      currentPosition: null,
       currentScore: 0,
       streak: 0,
+      maxStreak: 0,
     });
 
     if (!userEnrollmentDE) {
