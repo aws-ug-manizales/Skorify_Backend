@@ -1,0 +1,2241 @@
+openapi: 3.0.3
+
+info:
+  title: Skorify Backend API
+  description: |
+    API RESTful para el backend de Skorify, una plataforma de predicciones deportivas y gestión de torneos.
+
+    Esta API permite gestionar:
+    - **Usuarios**: Creación y gestión de usuarios
+    - **Torneos**: Información de torneos y competiciones
+    - **Equipos**: Datos de equipos participantes
+    - **Partidos**: Creación y gestión de encuentros deportivos
+    - **Predicciones**: Sistema de pronósticos de resultados
+    - **Instancias de Torneo**: Configuración de torneos personalizados
+    - **Inscripciones de Usuario**: Registro de usuarios en instancias de torneo
+
+    ## Arquitectura
+    El backend está construido con el framework Iraca, siguiendo una arquitectura hexagonal (Clean Architecture).
+
+    ## Patrón de URLs
+    Todos los endpoints siguen el patrón: `/{feature}/{usecase-name}`
+
+    ## Sistema de Respuestas (Domain Events)
+    Todas las respuestas de la API están basadas en Domain Events. Cada endpoint retorna un objeto con:
+    - `kind`: Nombre del domain event (tipo de respuesta)
+    - `payload`: Datos de la respuesta (entidad, array, o vacío)
+    - `error`: Indica si es un error (true/false)
+
+    **Total de endpoints**: 31
+  version: 2.1.0
+
+
+servers:
+  - url: http://localhost:9898
+    description: Servidor de desarrollo local (Puerto configurado en el servidor)
+  - url: https://api.skorify.com
+    description: Servidor de producción
+
+tags:
+  - name: Match
+    description: Operaciones relacionadas con partidos deportivos (7 endpoints)
+  - name: Prediction
+    description: Sistema de predicciones y pronósticos (4 endpoints)
+  - name: User
+    description: Gestión de usuarios (4 endpoints)
+  - name: Team
+    description: Información de equipos (3 endpoints)
+  - name: Tournament
+    description: Gestión de torneos (4 endpoints)
+  - name: Tournament Instance
+    description: Instancias personalizadas de torneos (3 endpoints)
+  - name: User Enrollment
+    description: Inscripciones de usuarios en instancias de torneo (7 endpoints)
+
+paths:
+  # ==================== MATCH ENDPOINTS (7) ====================
+  /match/get-match-by-id:
+    get:
+      tags:
+        - Match
+      summary: Obtener partido por ID
+      description: Recupera la información detallada de un partido específico mediante su ID
+      operationId: getMatchById
+      parameters:
+        - name: matchId
+          in: query
+          required: true
+          description: ID único del partido
+          schema:
+            type: string
+            format: uuid
+          example: "match-arg-uru-copa-001"
+      responses:
+        '200':
+          description: Partido encontrado exitosamente (GottenMatchDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenMatchDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Match'
+        '404':
+          description: Partido no encontrado (MatchDoesNotExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchDoesNotExistDomainEvent]
+
+  /match/get-matches-by-tournament-id:
+    get:
+      tags:
+        - Match
+      summary: Obtener todos los partidos de un torneo
+      description: Recupera la lista completa de partidos de un torneo específico
+      operationId: getMatchesByTournamentId
+      parameters:
+        - name: tournamentId
+          in: query
+          required: true
+          description: ID del torneo
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Partidos recuperados exitosamente (GottenMatchesDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenMatchesDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Match'
+
+  /match/create-match:
+    put:
+      tags:
+        - Match
+      summary: Crear un nuevo partido
+      description: Registra un nuevo partido en el sistema. Valida que ambos equipos existan, que el torneo exista, y que no haya un partido duplicado en la misma etapa.
+      operationId: createMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMatchRequest'
+      responses:
+        '201':
+          description: Partido creado exitosamente (MatchSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchSavedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Match'
+        '400':
+          description: Error de validación (MatchTeamIsTheSameDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchTeamIsTheSameDomainEvent]
+        '404':
+          description: Recurso no encontrado (NotGottenTournamentDomainEvent, MatchTeamDoesNotExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenTournamentDomainEvent, MatchTeamDoesNotExistDomainEvent]
+        '409':
+          description: Conflicto - El partido ya existe (MatchAlreadyExistsInSameTournamentStageDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchAlreadyExistsInSameTournamentStageDomainEvent]
+        '500':
+          description: Error interno (EntityNotInstanciableDomainEvent, MatchNotSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [EntityNotInstanciableDomainEvent, MatchNotSavedDomainEvent]
+
+  /match/edit-match:
+    patch:
+      tags:
+        - Match
+      summary: Editar información de un partido
+      description: |
+        Actualiza los datos de un partido existente.
+
+        **Restricciones:**
+        - No se puede editar un partido en curso o finalizado
+        - No se puede cambiar el estado a "finished"
+        - No se pueden cambiar los equipos si ya hay predicciones registradas
+      operationId: editMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditMatchRequest'
+      responses:
+        '200':
+          description: Partido actualizado exitosamente (MatchEditedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchEditedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Match'
+        '400':
+          description: Error de validación (MatchCannotBeEditedDomainEvent, MatchCannotChangeTeamsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchCannotBeEditedDomainEvent, MatchCannotChangeTeamsDomainEvent]
+        '404':
+          description: Partido no encontrado (MatchDoesNotExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchDoesNotExistDomainEvent]
+        '500':
+          description: Error al guardar (MatchCannotBeSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchCannotBeSavedDomainEvent]
+
+  /match/calculate-match-score:
+    post:
+      tags:
+        - Match
+      summary: Calcular puntuaciones del partido
+      description: Calcula los puntos obtenidos por los usuarios basándose en el resultado final del partido
+      operationId: calculateMatchScore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matchId
+              properties:
+                matchId:
+                  type: string
+                  format: uuid
+                  description: ID del partido para calcular puntuaciones
+      responses:
+        '200':
+          description: Puntuaciones calculadas exitosamente (GottenMatchDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenMatchDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Match'
+        '404':
+          description: Partido no encontrado (MatchDoesNotExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchDoesNotExistDomainEvent]
+
+  /match/close-match:
+    post:
+      tags:
+        - Match
+      summary: Cerrar un partido
+      description: Marca un partido como cerrado para apuestas y dispara eventos relacionados
+      operationId: closeMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matchId
+              properties:
+                matchId:
+                  type: string
+                  format: uuid
+                  description: ID del partido a cerrar
+      responses:
+        '200':
+          description: Partido cerrado exitosamente (MatchClosedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchClosedDomainEvent]
+        '404':
+          description: Partido no encontrado (MatchDoesNotExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchDoesNotExistDomainEvent]
+
+  # ==================== PREDICTION ENDPOINTS (4) ====================
+  /prediction/check-match-can-bet:
+    post:
+      tags:
+        - Prediction
+      summary: Verificar si un partido acepta apuestas
+      description: Valida si un partido específico está abierto para recibir predicciones basándose en su estado y hora de inicio
+      operationId: checkMatchCanBet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matchId
+              properties:
+                matchId:
+                  type: string
+                  format: uuid
+                  description: ID del partido a verificar
+      responses:
+        '200':
+          description: Verificación completada exitosamente (MatchBetabilityCheckedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchBetabilityCheckedDomainEvent]
+                      payload:
+                        type: object
+                        properties:
+                          canBet:
+                            type: boolean
+                            description: Indica si el partido acepta apuestas
+                            example: true
+              examples:
+                canBet:
+                  summary: El partido acepta apuestas
+                  value:
+                    kind: "MatchBetabilityCheckedDomainEvent"
+                    payload:
+                      canBet: true
+                    error: false
+                cannotBet:
+                  summary: El partido no acepta apuestas
+                  value:
+                    kind: "MatchBetabilityCheckedDomainEvent"
+                    payload:
+                      canBet: false
+                    error: false
+        '404':
+          description: Partido no encontrado (MatchDoesNotExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchDoesNotExistDomainEvent]
+
+  /prediction/make-prediction:
+    post:
+      tags:
+        - Prediction
+      summary: Realizar una predicción
+      description: |
+        Permite a un usuario registrar su pronóstico para un partido específico.
+
+        **Validaciones:**
+        - El usuario debe existir
+        - El partido debe existir
+        - El partido debe estar abierto para apuestas
+      operationId: makePrediction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MakePredictionRequest'
+      responses:
+        '201':
+          description: Predicción registrada exitosamente (PredictionCreatedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [PredictionCreatedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Prediction'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [MatchCannotBeBetedDomainEvent, UserNotActiveDomainEvent]
+              examples:
+                cannotBet:
+                  summary: El partido no acepta más apuestas
+                  value:
+                    kind: "MatchCannotBeBetedDomainEvent"
+                    payload: {}
+                    error: true
+                userNotActive:
+                  summary: El usuario no está activo
+                  value:
+                    kind: "UserNotActiveDomainEvent"
+                    payload: {}
+                    error: true
+        '404':
+          description: Usuario o partido no encontrado (NotGottenUserDomainEvent, MatchDoesNotExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserDomainEvent, MatchDoesNotExistDomainEvent]
+        '409':
+          description: El usuario ya realizó una predicción para este partido (UserAlreadyPredictedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [UserAlreadyPredictedDomainEvent]
+        '500':
+          description: Error al crear la predicción (PredictionNotCreatedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [PredictionNotCreatedDomainEvent]
+
+  /prediction/get-predictions-by-user:
+    get:
+      tags:
+        - Prediction
+      summary: Obtener predicciones de un usuario
+      description: Recupera todas las predicciones realizadas por un usuario específico en una instancia de torneo
+      operationId: getPredictionsByUser
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: ID del usuario
+          schema:
+            type: string
+            format: uuid
+        - name: tournamentInstanceId
+          in: query
+          required: true
+          description: ID de la instancia de torneo
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Predicciones recuperadas exitosamente (GottenPredictionsByUserDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenPredictionsByUserDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Prediction'
+
+  /prediction/get-predictions-by-match:
+    get:
+      tags:
+        - Prediction
+      summary: Obtener predicciones de un partido
+      description: Recupera todas las predicciones realizadas para un partido específico
+      operationId: getPredictionsByMatch
+      parameters:
+        - name: matchId
+          in: query
+          required: true
+          description: ID del partido
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Predicciones recuperadas exitosamente (GottenPredictionsByMatchDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenPredictionsByMatchDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Prediction'
+
+  # ==================== USER ENDPOINTS (4) ====================
+  /user/create-user:
+    put:
+      tags:
+        - User
+      summary: Crear un nuevo usuario
+      description: Registra un nuevo usuario en el sistema. El email debe ser único.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Usuario creado exitosamente (GottenUserDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenUserDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '409':
+          description: Ya existe un usuario con ese email (UserWithEmailAlreadyExistDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [UserWithEmailAlreadyExistDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '500':
+          description: Error al crear el usuario (NotGottenUserDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserDomainEvent]
+
+  /user/get-user-by-id:
+    get:
+      tags:
+        - User
+      summary: Obtener usuario por ID
+      description: Recupera la información de un usuario específico
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: ID del usuario
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Usuario encontrado exitosamente (GottenUserDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenUserDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado (NotGottenUserDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserDomainEvent]
+
+  /user/delete-user:
+    delete:
+      tags:
+        - User
+      summary: Eliminar un usuario
+      description: Elimina (soft delete) un usuario del sistema
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: ID del usuario a eliminar
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Usuario eliminado exitosamente (UserFoundAndDeletedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [UserFoundAndDeletedDomainEvent]
+        '404':
+          description: Usuario no encontrado (NotGottenUserDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserDomainEvent]
+
+  /user/register-notification-token:
+    put:
+      tags:
+        - User
+      summary: Registrar token de notificación
+      description: Asocia un token de notificaciones push al usuario
+      operationId: registerNotificationToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - token
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                  description: ID del usuario
+                token:
+                  type: string
+                  description: Token de notificaciones push (FCM, APNS, etc.)
+      responses:
+        '200':
+          description: Token registrado exitosamente (NotificationTokenAssignedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotificationTokenAssignedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Error al asignar token (NotificationTokenAssignmentFailedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotificationTokenAssignmentFailedDomainEvent]
+
+  # ==================== TEAM ENDPOINTS (3) ====================
+  /team/create-team:
+    put:
+      tags:
+        - Team
+      summary: Crear un nuevo equipo
+      description: Registra un nuevo equipo en el sistema
+      operationId: createTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamRequest'
+      responses:
+        '201':
+          description: Equipo creado exitosamente (TeamSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [TeamSavedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Team'
+        '500':
+          description: Error interno (EntityNotInstanciableDomainEvent, TeamNotSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [EntityNotInstanciableDomainEvent, TeamNotSavedDomainEvent]
+
+  /team/get-team-by-id:
+    get:
+      tags:
+        - Team
+      summary: Obtener equipo por ID
+      description: Recupera la información de un equipo específico
+      operationId: getTeamById
+      parameters:
+        - name: teamId
+          in: query
+          required: true
+          description: ID del equipo
+          schema:
+            type: string
+            format: uuid
+          example: "team-peru"
+      responses:
+        '200':
+          description: Equipo encontrado exitosamente (GottenTeamDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenTeamDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Team'
+        '404':
+          description: Equipo no encontrado (NotGottenTeamDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenTeamDomainEvent]
+
+  /team/get-team-by-ids:
+    get:
+      tags:
+        - Team
+      summary: Obtener múltiples equipos por IDs
+      description: Recupera la información de varios equipos simultáneamente
+      operationId: getTeamByIds
+      parameters:
+        - name: teamIds
+          in: query
+          required: true
+          description: Lista de IDs de equipos separados por coma
+          schema:
+            type: string
+          example: "team-peru,team-chile,team-argentina"
+      responses:
+        '200':
+          description: Equipos encontrados exitosamente (GottenTeamsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenTeamsDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Team'
+
+  # ==================== TOURNAMENT ENDPOINTS (4) ====================
+  /tournament/create-tournament:
+    put:
+      tags:
+        - Tournament
+      summary: Crear un nuevo torneo
+      description: Registra un nuevo torneo en el sistema
+      operationId: createTournament
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTournamentRequest'
+      responses:
+        '201':
+          description: Torneo creado exitosamente (TournamentSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [TournamentSavedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Tournament'
+        '500':
+          description: Error interno (EntityNotInstanciableDomainEvent, TournamentNotSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [EntityNotInstanciableDomainEvent, TournamentNotSavedDomainEvent]
+
+  /tournament/get-tournament-by-id:
+    get:
+      tags:
+        - Tournament
+      summary: Obtener torneo por ID
+      description: Recupera la información de un torneo específico
+      operationId: getTournamentById
+      parameters:
+        - name: tournamentId
+          in: query
+          required: true
+          description: ID del torneo
+          schema:
+            type: string
+            format: uuid
+          example: "tournament-mundial"
+      responses:
+        '200':
+          description: Torneo encontrado exitosamente (GottenTournamentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenTournamentDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Tournament'
+        '404':
+          description: Torneo no encontrado (NotGottenTournamentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenTournamentDomainEvent]
+
+  /tournament/filter-tournaments:
+    get:
+      tags:
+        - Tournament
+      summary: Filtrar torneos
+      description: Recupera torneos aplicando filtros opcionales
+      operationId: filterTournaments
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Filtrar por nombre del torneo (búsqueda parcial)
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          description: Filtrar por fecha de inicio
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          description: Filtrar por fecha de finalización
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Torneos recuperados exitosamente (GottenTournamentsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenTournamentsDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Tournament'
+
+  /tournament/update-tournament:
+    patch:
+      tags:
+        - Tournament
+      summary: Actualizar un torneo
+      description: Actualiza la información de un torneo existente
+      operationId: updateTournament
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tournamentId
+              properties:
+                tournamentId:
+                  type: string
+                  format: uuid
+                  description: ID del torneo a actualizar
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 200
+                  description: Nuevo nombre del torneo
+                startDate:
+                  type: string
+                  format: date
+                  description: Nueva fecha de inicio
+                endDate:
+                  type: string
+                  format: date
+                  description: Nueva fecha de finalización
+                matchType:
+                  type: string
+                  enum: [SingleMatchPerRound, DoubleMatchPerRound]
+                  description: Nuevo tipo de emparejamiento
+      responses:
+        '200':
+          description: Torneo actualizado exitosamente (TournamentUpdatedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [TournamentUpdatedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/Tournament'
+        '400':
+          description: Fechas inválidas (TournamentInvalidDatesDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [TournamentInvalidDatesDomainEvent]
+        '404':
+          description: Torneo no encontrado (NotGottenTournamentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenTournamentDomainEvent]
+        '500':
+          description: Error al actualizar (TournamentNotUpdatedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [TournamentNotUpdatedDomainEvent]
+
+  # ==================== TOURNAMENT INSTANCE ENDPOINTS (3) ====================
+  /tournament-instance/create-tournament-instance:
+    put:
+      tags:
+        - Tournament Instance
+      summary: Crear una instancia de torneo
+      description: |
+        Crea una instancia personalizada de torneo con reglas y configuración específicas.
+
+        **Validaciones:**
+        - El torneo debe existir
+        - El usuario propietario debe existir
+        - El nombre de la instancia debe ser único
+      operationId: createTournamentInstance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTournamentInstanceRequest'
+      responses:
+        '201':
+          description: Instancia de torneo creada exitosamente (TournamentInstanceSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [TournamentInstanceSavedDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/TournamentInstance'
+        '404':
+          description: Recurso no encontrado (NotGottenTournamentDomainEvent, NotGottenUserDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenTournamentDomainEvent, NotGottenUserDomainEvent]
+        '409':
+          description: Ya existe una instancia con ese nombre (TournamentInstanceWithSameNameDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [TournamentInstanceWithSameNameDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TournamentInstance'
+        '500':
+          description: Error interno (EntityNotInstanciableDomainEvent, TournamentInstanceNotSavedDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [EntityNotInstanciableDomainEvent, TournamentInstanceNotSavedDomainEvent]
+
+  /tournament-instance/get-tournament-instance-by-id:
+    get:
+      tags:
+        - Tournament Instance
+      summary: Obtener instancia de torneo por ID
+      description: Recupera la información de una instancia de torneo específica
+      operationId: getTournamentInstanceById
+      parameters:
+        - name: instanceId
+          in: query
+          required: true
+          description: ID de la instancia de torneo
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Instancia de torneo encontrada exitosamente (GottenTournamentInstanceDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenTournamentInstanceDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/TournamentInstance'
+        '404':
+          description: Instancia de torneo no encontrada (NotGottenTournamentInstanceDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenTournamentInstanceDomainEvent]
+
+  /tournament-instance/get-tournament-instances-by-tournament-id:
+    get:
+      tags:
+        - Tournament Instance
+      summary: Obtener instancias de un torneo
+      description: Recupera todas las instancias creadas para un torneo específico
+      operationId: getTournamentInstancesByTournamentId
+      parameters:
+        - name: tournamentId
+          in: query
+          required: true
+          description: ID del torneo
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Instancias recuperadas exitosamente (GottenTournamentInstancesDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenTournamentInstancesDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TournamentInstance'
+
+  # ==================== USER ENROLLMENT ENDPOINTS (7) ====================
+  /user-enrollment/create-user-enrollment:
+    put:
+      tags:
+        - User Enrollment
+      summary: Crear inscripción de usuario
+      description: |
+        Registra la inscripción de un usuario en una instancia de torneo.
+
+        **Validaciones:**
+        - El usuario debe existir
+        - La instancia de torneo debe existir
+        - El usuario no debe estar ya inscrito en esa instancia
+      operationId: createUserEnrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserEnrollmentRequest'
+      responses:
+        '201':
+          description: Inscripción creada exitosamente (SavedUserEnrollmentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [SavedUserEnrollmentDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/UserEnrollment'
+        '400':
+          description: Parámetros inválidos (UserEnrollmentParamsNotValidDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [UserEnrollmentParamsNotValidDomainEvent]
+        '404':
+          description: Recurso no encontrado (NotGottenUserDomainEvent, NotGottenTournamentInstanceDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserDomainEvent, NotGottenTournamentInstanceDomainEvent]
+        '409':
+          description: El usuario ya está inscrito (UserEnrollmentAlreadyExistsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [UserEnrollmentAlreadyExistsDomainEvent]
+                      payload:
+                        type: object
+                        properties:
+                          userEnrollmentId:
+                            type: string
+                            format: uuid
+        '500':
+          description: Error interno (UserEnrollmentEntityNotInstanciableDomainEvent, NotSavedUserEnrollmentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [UserEnrollmentEntityNotInstanciableDomainEvent, NotSavedUserEnrollmentDomainEvent]
+
+  /user-enrollment/get-user-enrollment-by-id:
+    get:
+      tags:
+        - User Enrollment
+      summary: Obtener inscripción por ID
+      description: Recupera la información de una inscripción específica
+      operationId: getUserEnrollmentById
+      parameters:
+        - name: userEnrollmentId
+          in: query
+          required: true
+          description: ID de la inscripción
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Inscripción encontrada exitosamente (GottenUserEnrollmentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenUserEnrollmentDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/UserEnrollment'
+        '404':
+          description: Inscripción no encontrada (NotGottenUserEnrollmentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserEnrollmentDomainEvent]
+
+  /user-enrollment/get-user-enrollments-by-user-id:
+    get:
+      tags:
+        - User Enrollment
+      summary: Obtener inscripciones de un usuario
+      description: Recupera todas las inscripciones de un usuario específico
+      operationId: getUserEnrollmentsByUserId
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: ID del usuario
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Inscripciones recuperadas exitosamente (GottenUserEnrollmentsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenUserEnrollmentsDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserEnrollment'
+        '404':
+          description: No se encontraron inscripciones (NotGottenUserEnrollmentsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserEnrollmentsDomainEvent]
+
+  /user-enrollment/get-user-enrollments-by-tournament-id:
+    get:
+      tags:
+        - User Enrollment
+      summary: Obtener inscripciones de un torneo
+      description: Recupera todas las inscripciones relacionadas a un torneo específico
+      operationId: getUserEnrollmentsByTournamentId
+      parameters:
+        - name: tournamentId
+          in: query
+          required: true
+          description: ID del torneo
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Inscripciones recuperadas exitosamente (GottenUserEnrollmentsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenUserEnrollmentsDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserEnrollment'
+
+  /user-enrollment/get-user-enrollments-by-tournament-instance-id:
+    get:
+      tags:
+        - User Enrollment
+      summary: Obtener inscripciones de una instancia de torneo
+      description: Recupera todas las inscripciones (participantes) de una instancia de torneo específica. Útil para obtener tablas de posiciones.
+      operationId: getUserEnrollmentsByTournamentInstanceId
+      parameters:
+        - name: tournamentInstanceId
+          in: query
+          required: true
+          description: ID de la instancia de torneo
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Inscripciones recuperadas exitosamente (GottenUserEnrollmentsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenUserEnrollmentsDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserEnrollment'
+
+  /user-enrollment/get-enrollments-without-prediction:
+    get:
+      tags:
+        - User Enrollment
+      summary: Obtener inscripciones sin predicción
+      description: Recupera todas las inscripciones de una instancia de torneo que aún no han realizado predicción para un partido específico. Útil para enviar recordatorios.
+      operationId: getEnrollmentsWithoutPrediction
+      parameters:
+        - name: matchId
+          in: query
+          required: true
+          description: ID del partido
+          schema:
+            type: string
+            format: uuid
+        - name: tournamentInstanceId
+          in: query
+          required: true
+          description: ID de la instancia de torneo
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Inscripciones recuperadas exitosamente (GottenUserEnrollmentsDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [GottenUserEnrollmentsDomainEvent]
+                      payload:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UserEnrollment'
+
+  /user-enrollment/update-user-enrollment:
+    patch:
+      tags:
+        - User Enrollment
+      summary: Actualizar inscripción de usuario
+      description: Actualiza la puntuación y estadísticas de una inscripción de usuario (usado internamente por el sistema de cálculo de puntos)
+      operationId: updateUserEnrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userEnrollmentId
+                - points
+                - isExact
+              properties:
+                userEnrollmentId:
+                  type: string
+                  format: uuid
+                  description: ID de la inscripción a actualizar
+                points:
+                  type: integer
+                  description: Puntos a asignar
+                  example: 3
+                isExact:
+                  type: boolean
+                  description: Indica si la predicción fue exacta
+                  example: true
+      responses:
+        '200':
+          description: Inscripción actualizada exitosamente (SavedUserEnrollmentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [SavedUserEnrollmentDomainEvent]
+                      payload:
+                        $ref: '#/components/schemas/UserEnrollment'
+        '404':
+          description: Inscripción no encontrada (NotGottenUserEnrollmentDomainEvent)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DomainEventResponse'
+                  - type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum: [NotGottenUserEnrollmentDomainEvent]
+
+# ==================== COMPONENTS ====================
+components:
+  schemas:
+    # ==================== BASE DOMAIN EVENT SCHEMA ====================
+    DomainEventResponse:
+      type: object
+      description: Estructura base de respuesta de todos los endpoints. Basado en el patrón Domain Event.
+      required:
+        - kind
+        - error
+      properties:
+        kind:
+          type: string
+          description: Nombre del Domain Event que identifica el tipo de respuesta
+          example: "GottenMatchDomainEvent"
+        payload:
+          description: Datos de la respuesta (entidad, array, o objeto vacío)
+          oneOf:
+            - type: object
+            - type: array
+              items:
+                type: object
+        error:
+          type: boolean
+          description: Indica si la respuesta representa un error
+          example: false
+
+    # ==================== MATCH SCHEMAS ====================
+    Match:
+      type: object
+      description: Entidad que representa un partido deportivo
+      required:
+        - id
+        - home_team_id
+        - away_team_id
+        - tournament_id
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único del partido
+          example: "match-arg-uru-copa-001"
+        home_team_id:
+          type: string
+          format: uuid
+          description: ID del equipo local
+          example: "team-argentina"
+        away_team_id:
+          type: string
+          format: uuid
+          description: ID del equipo visitante
+          example: "team-uruguay"
+        tournament_id:
+          type: string
+          format: uuid
+          description: ID del torneo al que pertenece el partido
+          example: "tournament-mundial"
+        kick_off:
+          type: string
+          format: date-time
+          description: Fecha y hora de inicio del partido
+          example: "2026-06-18T20:00:00.000Z"
+        home_goals:
+          type: integer
+          nullable: true
+          description: Goles del equipo local
+          example: 2
+        away_goals:
+          type: integer
+          nullable: true
+          description: Goles del equipo visitante
+          example: 1
+        status:
+          type: string
+          enum: [scheduled, in_progress, finished]
+          default: scheduled
+          description: Estado actual del partido
+          example: "scheduled"
+        stage:
+          type: string
+          enum: [group, finals]
+          default: group
+          description: Etapa del torneo
+          example: "group"
+        venue:
+          type: string
+          nullable: true
+          description: Lugar donde se juega el partido
+          example: "Arena Corinthians"
+        created_at:
+          type: string
+          format: date-time
+          description: Fecha de creación del registro
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de última actualización
+
+    CreateMatchRequest:
+      type: object
+      required:
+        - homeTeamId
+        - awayTeamId
+        - tournamentId
+        - kickOff
+        - stage
+      properties:
+        homeTeamId:
+          type: string
+          format: uuid
+          description: ID del equipo local
+          example: "team-brasil"
+        awayTeamId:
+          type: string
+          format: uuid
+          description: ID del equipo visitante
+          example: "team-colombia"
+        tournamentId:
+          type: string
+          format: uuid
+          description: ID del torneo
+          example: "tournament-mundial"
+        kickOff:
+          type: string
+          format: date-time
+          description: Fecha y hora de inicio del partido
+          example: "2026-06-18T20:00:00.000Z"
+        stage:
+          type: string
+          enum: [group, finals]
+          description: Etapa del torneo
+          example: "group"
+        venue:
+          type: string
+          description: Lugar del partido
+          example: "Arena Corinthians"
+
+    EditMatchRequest:
+      type: object
+      required:
+        - matchId
+      properties:
+        matchId:
+          type: string
+          format: uuid
+          description: ID del partido a editar
+        homeTeamId:
+          type: string
+          format: uuid
+          description: Nuevo ID del equipo local
+        awayTeamId:
+          type: string
+          format: uuid
+          description: Nuevo ID del equipo visitante
+        date:
+          type: string
+          format: date-time
+          description: Nueva fecha y hora de inicio
+        status:
+          type: string
+          enum: [scheduled, in_progress]
+          description: Nuevo estado del partido
+
+    # ==================== PREDICTION SCHEMAS ====================
+    Prediction:
+      type: object
+      description: Entidad que representa una predicción de resultado
+      required:
+        - id
+        - instance_player_id
+        - match_id
+        - pred_home_goals
+        - pred_away_goals
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único de la predicción
+        instance_player_id:
+          type: string
+          format: uuid
+          description: ID del jugador en la instancia del torneo
+        match_id:
+          type: string
+          format: uuid
+          description: ID del partido pronosticado
+        pred_home_goals:
+          type: integer
+          description: Goles pronosticados para el equipo local
+          example: 2
+        pred_away_goals:
+          type: integer
+          description: Goles pronosticados para el equipo visitante
+          example: 1
+        earned_points:
+          type: integer
+          default: 0
+          description: Puntos ganados con esta predicción
+          example: 3
+        created_at:
+          type: string
+          format: date-time
+          description: Fecha de creación de la predicción
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de última actualización
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de eliminación lógica
+
+    MakePredictionRequest:
+      type: object
+      required:
+        - userId
+        - matchId
+        - predHomeGoals
+        - predAwayGoals
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: ID del usuario que realiza la predicción
+        matchId:
+          type: string
+          format: uuid
+          description: ID del partido a predecir
+        predHomeGoals:
+          type: integer
+          minimum: 0
+          description: Goles pronosticados para el equipo local
+          example: 2
+        predAwayGoals:
+          type: integer
+          minimum: 0
+          description: Goles pronosticados para el equipo visitante
+          example: 1
+
+    # ==================== USER SCHEMAS ====================
+    User:
+      type: object
+      description: Entidad que representa un usuario del sistema
+      required:
+        - id
+        - name
+        - email
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único del usuario
+        name:
+          type: string
+          description: Nombre completo del usuario
+          example: "Juan Pérez"
+        email:
+          type: string
+          format: email
+          description: Correo electrónico único del usuario
+          example: "juan.perez@example.com"
+        notificationToken:
+          type: string
+          description: Token de notificaciones push
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL del avatar del usuario
+          example: "https://example.com/avatars/user123.jpg"
+        role:
+          type: string
+          enum: [general, global, instance]
+          default: general
+          description: Rol del usuario en el sistema
+          example: "general"
+        created_at:
+          type: string
+          format: date-time
+          description: Fecha de creación del usuario
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de última actualización
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de eliminación lógica
+
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre completo del usuario
+          example: "María García"
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del usuario
+          example: "maria.garcia@example.com"
+
+    # ==================== TEAM SCHEMAS ====================
+    Team:
+      type: object
+      description: Entidad que representa un equipo deportivo
+      required:
+        - id
+        - name
+        - code
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único del equipo
+          example: "team-peru"
+        name:
+          type: string
+          description: Nombre completo del equipo
+          example: "Perú"
+        code:
+          type: string
+          description: Código único del equipo (ISO 3166-1 alpha-3 para selecciones)
+          example: "PER"
+        shield_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL del escudo del equipo
+          example: "https://example.com/shields/peru.png"
+        created_at:
+          type: string
+          format: date-time
+          description: Fecha de creación del registro
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de última actualización
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de eliminación lógica
+
+    CreateTeamRequest:
+      type: object
+      required:
+        - name
+        - code
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre del equipo
+          example: "Brasil"
+        code:
+          type: string
+          minLength: 2
+          maxLength: 10
+          description: Código del equipo
+          example: "BRA"
+        shieldUrl:
+          type: string
+          format: uri
+          description: URL del escudo del equipo
+          example: "https://example.com/shields/brasil.png"
+
+    # ==================== TOURNAMENT SCHEMAS ====================
+    Tournament:
+      type: object
+      description: Entidad que representa un torneo o competición
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único del torneo
+          example: "tournament-mundial"
+        name:
+          type: string
+          description: Nombre del torneo
+          example: "Copa Mundial FIFA 2026"
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha de inicio del torneo
+          example: "2026-06-11"
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha de finalización del torneo
+          example: "2026-07-19"
+        matchType:
+          type: string
+          enum: [SingleMatchPerRound, DoubleMatchPerRound]
+          description: Tipo de emparejamiento del torneo
+        token:
+          type: string
+          format: uuid
+          description: Token único del torneo
+        created_at:
+          type: string
+          format: date-time
+          description: Fecha de creación del registro
+
+    CreateTournamentRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 200
+          description: Nombre del torneo
+          example: "Copa América 2027"
+        startDate:
+          type: string
+          format: date
+          description: Fecha de inicio
+          example: "2027-06-15"
+        endDate:
+          type: string
+          format: date
+          description: Fecha de finalización
+          example: "2027-07-15"
+        matchType:
+          type: string
+          enum: [SingleMatchPerRound, DoubleMatchPerRound]
+          description: Tipo de emparejamiento
+          example: "SingleMatchPerRound"
+
+    # ==================== TOURNAMENT INSTANCE SCHEMAS ====================
+    TournamentInstance:
+      type: object
+      description: Instancia personalizada de un torneo con reglas específicas
+      required:
+        - id
+        - tournament_id
+        - owner_user_id
+        - name
+        - state
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único de la instancia
+        tournament_id:
+          type: string
+          format: uuid
+          description: ID del torneo base
+        owner_user_id:
+          type: string
+          format: uuid
+          description: ID del usuario creador de la instancia
+        validator_user_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID del usuario validador
+        state:
+          type: string
+          enum: [active, inactive, pending, approved, denied]
+          default: active
+          description: Estado de la instancia
+          example: "active"
+        name:
+          type: string
+          description: Nombre de la instancia
+          example: "Polla Mundial Oficina 2026"
+        price:
+          type: integer
+          default: 0
+          description: Precio de entrada a la instancia (en centavos)
+          example: 5000
+        created_at:
+          type: string
+          format: date-time
+          description: Fecha de creación
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de última actualización
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de eliminación lógica
+
+    CreateTournamentInstanceRequest:
+      type: object
+      required:
+        - tournamentId
+        - ownerId
+        - name
+      properties:
+        tournamentId:
+          type: string
+          format: uuid
+          description: ID del torneo base
+        ownerId:
+          type: string
+          format: uuid
+          description: ID del usuario creador
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: Nombre de la instancia
+          example: "Polla Amigos 2026"
+        price:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Precio de entrada (en centavos)
+          example: 10000
+
+    # ==================== USER ENROLLMENT SCHEMAS ====================
+    UserEnrollment:
+      type: object
+      description: |
+        Inscripción de un usuario en una instancia de torneo.
+        Representa la participación del usuario con su puntuación y posición en el ranking.
+      required:
+        - id
+        - userId
+        - tournamentInstanceId
+        - tournamentId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único de la inscripción
+        userId:
+          type: string
+          format: uuid
+          description: ID del usuario inscrito
+        tournamentInstanceId:
+          type: string
+          format: uuid
+          description: ID de la instancia de torneo
+        tournamentId:
+          type: string
+          format: uuid
+          description: ID del torneo base
+        joinedAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de inscripción
+        lastPosition:
+          type: integer
+          default: 0
+          description: Posición anterior en el ranking
+          example: 5
+        currentPosition:
+          type: integer
+          default: 0
+          description: Posición actual en el ranking
+          example: 3
+        currentScore:
+          type: integer
+          default: 0
+          description: Puntuación total acumulada
+          example: 47
+        streak:
+          type: integer
+          default: 0
+          description: Racha de aciertos consecutivos
+          example: 3
+
+    CreateUserEnrollmentRequest:
+      type: object
+      required:
+        - userId
+        - tournamentInstanceId
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: ID del usuario a inscribir
+        tournamentInstanceId:
+          type: string
+          format: uuid
+          description: ID de la instancia de torneo
