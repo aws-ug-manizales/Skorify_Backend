@@ -11,7 +11,7 @@ export interface UserAttributes extends BaseAttributes {
 
 export class UserEntity extends Entity {
   name: string;
-  isActive: boolean;
+  isActive: boolean = false;
   notificationToken: string;
   email: string;
   image?: string;
