@@ -59,9 +59,14 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       return MatchCannotBeBetedDomainEvent();
     }
 
-    const predictionInDB = await this.predictionContract.getByUserAndMatch(userId, matchId);
+    const predictionInDB = await this.predictionContract.filter({
+      where: {
+        userId,
+        matchId,
+      },
+    });
 
-    if (predictionInDB) {
+    if (predictionInDB.length) {
       return UserAlreadyPredictedDomainEvent();
     }
 

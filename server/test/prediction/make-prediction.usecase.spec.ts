@@ -22,7 +22,7 @@ describe('MakePredictionUsecaseImpl', () => {
 
   type MockGetUserById = Pick<GetUserByIdUsecase, 'call'>;
   type MockGetMatchById = Pick<GetMatchByIdUsecase, 'call'>;
-  type MockPredictionContract = Pick<PredictionContract, 'getByUserAndMatch' | 'save'> &
+  type MockPredictionContract = Pick<PredictionContract, 'filter' | 'save'> &
     Partial<PredictionContract>;
 
   const defaultParam: MakePredictionParam = {
@@ -62,8 +62,8 @@ describe('MakePredictionUsecaseImpl', () => {
     };
     const getMatchByIdUsecase: MockGetMatchById = { call: jest.fn() };
     const predictionContract: MockPredictionContract = {
-      getByUserAndMatch: jest.fn(),
       save: jest.fn(),
+      filter: jest.fn(),
     };
 
     const uc = new MakePredictionUsecaseImpl(
@@ -85,8 +85,8 @@ describe('MakePredictionUsecaseImpl', () => {
       call: jest.fn().mockResolvedValue(MatchDoesNotExistDomainEvent()),
     };
     const predictionContract: MockPredictionContract = {
-      getByUserAndMatch: jest.fn(),
       save: jest.fn(),
+      filter: jest.fn(),
     };
 
     const uc = new MakePredictionUsecaseImpl(
@@ -109,8 +109,8 @@ describe('MakePredictionUsecaseImpl', () => {
       call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match.payload)),
     };
     const predictionContract: MockPredictionContract = {
-      getByUserAndMatch: jest.fn(),
       save: jest.fn(),
+      filter: jest.fn(),
     };
 
     const uc = new MakePredictionUsecaseImpl(
@@ -133,8 +133,8 @@ describe('MakePredictionUsecaseImpl', () => {
       call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match.payload)),
     };
     const predictionContract: MockPredictionContract = {
-      getByUserAndMatch: jest.fn().mockResolvedValue(null),
       save: jest.fn().mockImplementation(async (p: PredictionEntity) => p),
+      filter: jest.fn().mockResolvedValue([]),
     };
 
     const uc = new MakePredictionUsecaseImpl(
@@ -157,8 +157,8 @@ describe('MakePredictionUsecaseImpl', () => {
       call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match.payload)),
     };
     const predictionContract: MockPredictionContract = {
-      getByUserAndMatch: jest.fn().mockResolvedValue(null),
       save: jest.fn().mockResolvedValue(null),
+      filter: jest.fn().mockResolvedValue([]),
     };
 
     const uc = new MakePredictionUsecaseImpl(
