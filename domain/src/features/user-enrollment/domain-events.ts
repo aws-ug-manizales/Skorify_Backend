@@ -1,46 +1,38 @@
-import { DomainEventKind } from "../../core";
-import { UserEnrollmentEntity } from "./user-enrollment.entity";
+import { DomainEventKind } from '../../core';
+import { UserEnrollmentEntity } from './user-enrollment.entity';
 
 // params no corresponden con lo esperado
 export const UserEnrollmentParamsNotValidDomainEvent = DomainEventKind(
-  "UserEnrollmentParamsNotValidDomainEvent",
+  'UserEnrollmentParamsNotValidDomainEvent',
 );
 
 // Domain events related to got a user enrollment by id
 export const NotGottenUserEnrollmentDomainEvent = DomainEventKind(
-  "NotGottenUserEnrollmentDomainEvent",
+  'NotGottenUserEnrollmentDomainEvent',
 );
 
 // Domain events related to got all user enrollments by userId
 export const NotGottenUserEnrollmentsDomainEvent = DomainEventKind(
-  "NotGottenUserEnrollmentsDomainEvent",
+  'NotGottenUserEnrollmentsDomainEvent',
 );
 
 export const GottenUserEnrollmentsDomainEvent = DomainEventKind<UserEnrollmentEntity[]>(
-  "GottenUserEnrollmentsDomainEvent",
+  'GottenUserEnrollmentsDomainEvent',
 );
 
 export const GottenUserEnrollmentDomainEvent = DomainEventKind<UserEnrollmentEntity>(
-  "GottenUserEnrollmentDomainEvent",
+  'GottenUserEnrollmentDomainEvent',
 );
 
 export const UserEnrollmentAlreadyExistsDomainEvent = DomainEventKind<{
-  userEnrollmentId: UserEnrollmentEntity["id"];
-}>(
-  "UserEnrollmentAlreadyExistsDomainEvent",
-);
-
-// Domain events related to instanciating a user enrollment entity.
-export const UserEnrollmentEntityNotInstanciableDomainEvent = DomainEventKind(
-  "UserEnrollmentEntityNotInstanciableDomainEvent",
-);
+  userEnrollmentId: UserEnrollmentEntity['id'];
+}>('UserEnrollmentAlreadyExistsDomainEvent');
 
 // Domain events related to saving a user enrollment.
 export const NotSavedUserEnrollmentDomainEvent = DomainEventKind(
-  "NotSavedUserEnrollmentDomainEvent"
+  'NotSavedUserEnrollmentDomainEvent',
 );
 
 export const SavedUserEnrollmentDomainEvent = DomainEventKind<UserEnrollmentEntity>(
-  "SavedUserEnrollmentDomainEvent"
+  'SavedUserEnrollmentDomainEvent',
 );
-

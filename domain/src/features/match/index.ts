@@ -1,13 +1,11 @@
-export { MatchEntity, MatchStage } from './match.entity';
+export { MatchAttributes, MatchEntity, MatchStage } from './match.entity';
 export {
   CancelledState,
   DraftState,
   FinishedState,
   InProgressState,
-  MatchState,
-  MatchStatus,
-  ScheduledState,
-  matchStateCollection,
+  MatchState, matchStateCollection, MatchStatus,
+  ScheduledState
 } from './match.state';
 
 export * from './domain-events';
@@ -29,5 +27,9 @@ export { EditMatchUsecase } from './usecases/edit-match/edit-match.usecase';
 export { CloseMatchParam } from './usecases/close-match/close-match.param';
 export { CloseMatchUsecase } from './usecases/close-match/close-match.usecase';
 
+export { CloseMatchesParam } from './usecases/close-matches/close-matches.param';
+export { CloseMatchesUsecase } from './usecases/close-matches/close-matches.usecase';
+
 export { GetMatchesByTournamentIdParam } from './usecases/get-matches-by-tournament-id/get-matches-by-tournament-id.param';
 export { GetMatchesByTournamentIdUsecase } from './usecases/get-matches-by-tournament-id/get-matches-by-tournament-id.usecase';
+

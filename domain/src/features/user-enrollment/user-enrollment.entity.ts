@@ -1,6 +1,7 @@
-import { Entity, Id } from "../../core/entity";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { Entity, Id } from '../../core/entity';
 
-export interface UserEnrollmentAttributes{
+export interface UserEnrollmentAttributes {
   id: Id;
   userId: Id;
   tournamentInstanceId: Id;
@@ -32,7 +33,7 @@ export class UserEnrollmentEntity extends Entity {
       lastPosition,
       currentPosition,
       currentScore,
-      streak
+      streak,
     } = attributes;
     super(id, new Date());
     this.userId = userId;
@@ -45,7 +46,7 @@ export class UserEnrollmentEntity extends Entity {
     this.streak = streak;
   }
 
-  static build(params: UserEnrollmentAttributes): UserEnrollmentEntity {
-    return new UserEnrollmentEntity(params);
+  static build(params: UserEnrollmentAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new UserEnrollmentEntity(params));
   }
 }

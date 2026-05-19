@@ -1,4 +1,5 @@
-import { Entity, Id } from "../../core/entity";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { Entity, Id } from '../../core/entity';
 
 export interface TeamAttributes {
   id: Id;
@@ -16,7 +17,7 @@ export class TeamEntity extends Entity {
     this.shieldUrl = params.shieldUrl;
   }
 
-  static build(params: TeamAttributes): TeamEntity | null{
-    return new TeamEntity(params);
+  static build(params: TeamAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new TeamEntity(params));
   }
 }

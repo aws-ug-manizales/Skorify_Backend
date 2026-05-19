@@ -1,13 +1,14 @@
-import { CreateTournamentUsecaseImpl } from "../../../../src/features/tournament/usecases/create-tournament.usecase-impl";
+import { DomainEvent } from "@skorify/domain/core";
+import type { CreateTournamentParam } from "@skorify/domain/tournament";
 import {
+  EntityNotInstanciableDomainEvent,
+  MatchType,
   TournamentContract,
   TournamentEntity,
-  MatchType,
-  TournamentSavedDomainEvent,
   TournamentNotSavedDomainEvent,
-  EntityNotInstanciableDomainEvent,
+  TournamentSavedDomainEvent,
 } from "@skorify/domain/tournament";
-import type { CreateTournamentParam } from "@skorify/domain/tournament";
+import { CreateTournamentUsecaseImpl } from "../../../../src/features/tournament/usecases/create-tournament.usecase-impl";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -20,7 +21,7 @@ const validParam: CreateTournamentParam = {
   endDate: new Date("2026-07-15"),
 };
 
-function buildFakeTournament(): TournamentEntity {
+function buildFakeTournament(): DomainEvent {
   return TournamentEntity.build({
     id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
     name: "World Cup 2026",
@@ -57,7 +58,7 @@ describe("CreateTournamentUsecaseImpl", () => {
 
   describe("when the tournament is saved successfully", () => {
     it("returns TournamentSavedDomainEvent with the saved entity", async () => {
-      const saved = buildFakeTournament();
+      const saved = buildFakeTournament().payload;
       const contract = makeMockContract({
         save: jest.fn().mockResolvedValue(saved),
       });
@@ -85,7 +86,7 @@ describe("CreateTournamentUsecaseImpl", () => {
 
   describe("when the entity cannot be instantiated", () => {
     it("returns EntityNotInstanciableDomainEvent and skips save", async () => {
-      jest.spyOn(TournamentEntity, "build").mockReturnValueOnce(null);
+      jest.spyOn(TournamentEntity, "build").mockReturnValueOnce(EntityNotInstanciableDomainEvent());
       const contract = makeMockContract();
       const usecase = new CreateTournamentUsecaseImpl(contract);
 

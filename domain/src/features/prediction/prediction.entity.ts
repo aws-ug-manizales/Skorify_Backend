@@ -1,8 +1,19 @@
-import { Entity, Id } from "../../core/entity";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { Entity, Id } from '../../core/entity';
 import {
   PredictionScoreResult,
   PredictionScoreRuleset,
-} from "./scoreRules/prediction-score.ruleset";
+} from './scoreRules/prediction-score.ruleset';
+
+export interface PredictionAttributes {
+  id: Id;
+  userId: Id;
+  instancePlayerId: Id;
+  matchId: Id;
+  awayTeamScore: number;
+  localTeamScore: number;
+  score: number;
+}
 
 export class PredictionEntity extends Entity {
   userId: Id;
@@ -12,7 +23,14 @@ export class PredictionEntity extends Entity {
   localTeamScore: number;
   score: number;
 
-  private constructor(id: Id, userId: Id, instancePlayerId: Id, matchId: Id, awayTeamScore: number, localTeamScore: number) {
+  private constructor(
+    id: Id,
+    userId: Id,
+    instancePlayerId: Id,
+    matchId: Id,
+    awayTeamScore: number,
+    localTeamScore: number,
+  ) {
     super(id, new Date());
     this.userId = userId;
     this.instancePlayerId = instancePlayerId;
@@ -22,14 +40,20 @@ export class PredictionEntity extends Entity {
     this.score = 0;
   }
 
-  static build(params: { id: Id; userId: Id; instancePlayerId: Id; matchId: Id; awayTeamScore: number; localTeamScore: number }): PredictionEntity {
-    return new PredictionEntity(params.id, params.userId, params.instancePlayerId, params.matchId, params.awayTeamScore, params.localTeamScore);
+  static build(params: PredictionAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(
+      new PredictionEntity(
+        params.id,
+        params.userId,
+        params.instancePlayerId,
+        params.matchId,
+        params.awayTeamScore,
+        params.localTeamScore,
+      ),
+    );
   }
 
-  calculateScore(
-    awayTeamScore: number,
-    localTeamScore: number,
-  ): PredictionScoreResult {
+  calculateScore(awayTeamScore: number, localTeamScore: number): PredictionScoreResult {
     const ruleset = PredictionScoreRuleset.default();
 
     const result = ruleset.calculateWithBreakdown({

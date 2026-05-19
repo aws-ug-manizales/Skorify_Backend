@@ -1,13 +1,12 @@
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
 import {
   CreateTournamentParam,
   CreateTournamentUsecase,
-  EntityNotInstanciableDomainEvent,
   TournamentContract,
   TournamentEntity,
   TournamentNotSavedDomainEvent,
   TournamentSavedDomainEvent,
-} from "@skorify/domain/tournament";
-import { DomainEvent } from "@skorify/domain/core";
+} from '@skorify/domain/tournament';
 
 export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
   constructor(private tournamentContract: TournamentContract) {
@@ -17,19 +16,20 @@ export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
   async call(param: CreateTournamentParam): Promise<DomainEvent> {
     const { endDate, name, startDate, matchType } = param;
 
-    const tournament = TournamentEntity.build({
+    const tournamentDE = TournamentEntity.build({
       endDate,
       id: crypto.randomUUID(),
       name,
       startDate,
-      matchType,  
+      matchType,
       token: crypto.randomUUID(),
     });
 
-    if (!tournament) {
-      return EntityNotInstanciableDomainEvent();
+    if (tournamentDE.isNot(BuiltEntityDomainEvent)) {
+      return tournamentDE;
     }
 
+    const tournament = tournamentDE.payload;
     const saved = await this.tournamentContract.save(tournament);
 
     if (!saved) {

@@ -1,4 +1,4 @@
-export { PredictionEntity } from './prediction.entity';
+export { PredictionAttributes, PredictionEntity } from './prediction.entity';
 
 export * from './domain-events';
 export * from './prediction.rule';
@@ -19,3 +19,4 @@ export { CheckMatchCanBetUsecase } from './usecases/check-match-can-bet/check-ma
 export { PredictionContract } from './prediction.contract';
 export { GetPredictionsByMatchParam } from './usecases/get-predictions-by-match/get-predictions-by-match.param';
 export { GetPredictionsByMatchUsecase } from './usecases/get-predictions-by-match/get-predictions-by-match.usecase';
+

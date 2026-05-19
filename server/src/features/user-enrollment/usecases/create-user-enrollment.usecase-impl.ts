@@ -1,15 +1,14 @@
-import { DomainEvent } from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
 
 import {
   CreateUserEnrollmentParam,
   CreateUserEnrollmentUsecase,
-  UserEnrollmentContract,
-  UserEnrollmentEntity,
-  UserEnrollmentEntityNotInstanciableDomainEvent,
   NotSavedUserEnrollmentDomainEvent,
   SavedUserEnrollmentDomainEvent,
-  UserEnrollmentParamsNotValidDomainEvent,
   UserEnrollmentAlreadyExistsDomainEvent,
+  UserEnrollmentContract,
+  UserEnrollmentEntity,
+  UserEnrollmentParamsNotValidDomainEvent,
 } from '@skorify/domain/user-enrollment';
 
 import {
@@ -84,16 +83,17 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       streak: 0,
     });
 
-    if (!userEnrollmentDE) {
-      return UserEnrollmentEntityNotInstanciableDomainEvent();
+    if (userEnrollmentDE.isNot(BuiltEntityDomainEvent)) {
+      return userEnrollmentDE;
     }
+    const userEnrollment = userEnrollmentDE.payload;
 
-    const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollmentDE);
+    const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollment);
 
     if (!userEnrollmentInDB) {
       return NotSavedUserEnrollmentDomainEvent();
     }
 
-    return SavedUserEnrollmentDomainEvent(userEnrollmentDE);
+    return SavedUserEnrollmentDomainEvent(userEnrollment);
   }
 }

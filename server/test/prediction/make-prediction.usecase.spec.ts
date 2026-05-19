@@ -1,4 +1,4 @@
-import type { Id } from '@skorify/domain/core';
+import { DomainEvent, type Id } from '@skorify/domain/core';
 import {
   GottenMatchDomainEvent,
   MatchDoesNotExistDomainEvent,
@@ -44,7 +44,7 @@ describe('MakePredictionUsecaseImpl', () => {
     });
   }
 
-  function makeMatch(status = MatchStatus.Scheduled, kickOff?: Date) {
+  function makeMatch(status = MatchStatus.Scheduled, kickOff?: Date): DomainEvent {
     return MatchEntity.build({
       id: matchId,
       awayTeamId,
@@ -58,7 +58,7 @@ describe('MakePredictionUsecaseImpl', () => {
 
   it('returns user not active when user is inactive', async () => {
     const getUserByIdUsecase: MockGetUserById = {
-      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(false))),
+      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(false).payload)),
     };
     const getMatchByIdUsecase: MockGetMatchById = { call: jest.fn() };
     const predictionContract: MockPredictionContract = {
@@ -79,7 +79,7 @@ describe('MakePredictionUsecaseImpl', () => {
 
   it('returns match not found when match does not exist', async () => {
     const getUserByIdUsecase: MockGetUserById = {
-      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true))),
+      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true).payload)),
     };
     const getMatchByIdUsecase: MockGetMatchById = {
       call: jest.fn().mockResolvedValue(MatchDoesNotExistDomainEvent()),
@@ -102,11 +102,11 @@ describe('MakePredictionUsecaseImpl', () => {
 
   it('returns MatchCannotBeBetedDomainEvent when match cannot be bet', async () => {
     const getUserByIdUsecase: MockGetUserById = {
-      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true))),
+      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true).payload)),
     };
     const match = makeMatch(MatchStatus.InProgress);
     const getMatchByIdUsecase: MockGetMatchById = {
-      call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match)),
+      call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match.payload)),
     };
     const predictionContract: MockPredictionContract = {
       getByUserAndMatch: jest.fn(),
@@ -126,11 +126,11 @@ describe('MakePredictionUsecaseImpl', () => {
 
   it('creates prediction successfully', async () => {
     const getUserByIdUsecase: MockGetUserById = {
-      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true))),
+      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true).payload)),
     };
     const match = makeMatch(MatchStatus.Scheduled, new Date(Date.now() + 1000 * 60 * 60));
     const getMatchByIdUsecase: MockGetMatchById = {
-      call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match)),
+      call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match.payload)),
     };
     const predictionContract: MockPredictionContract = {
       getByUserAndMatch: jest.fn().mockResolvedValue(null),
@@ -150,11 +150,11 @@ describe('MakePredictionUsecaseImpl', () => {
 
   it('returns PredictionNotCreatedDomainEvent when save fails', async () => {
     const getUserByIdUsecase: MockGetUserById = {
-      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true))),
+      call: jest.fn().mockResolvedValue(GottenUserDomainEvent(makeUser(true).payload)),
     };
     const match = makeMatch(MatchStatus.Scheduled, new Date(Date.now() + 1000 * 60 * 60));
     const getMatchByIdUsecase: MockGetMatchById = {
-      call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match)),
+      call: jest.fn().mockResolvedValue(GottenMatchDomainEvent(match.payload)),
     };
     const predictionContract: MockPredictionContract = {
       getByUserAndMatch: jest.fn().mockResolvedValue(null),

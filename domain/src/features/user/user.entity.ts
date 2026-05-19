@@ -1,4 +1,5 @@
-import { BaseAttributes, Entity, Id } from "../../core/entity";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { BaseAttributes, Entity, Id } from '../../core/entity';
 
 export interface UserAttributes extends BaseAttributes {
   id: Id;
@@ -23,7 +24,7 @@ export class UserEntity extends Entity {
     this.email = email;
   }
 
-  static build(params: UserAttributes): UserEntity {
-    return new UserEntity(params);
+  static build(params: UserAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new UserEntity(params));
   }
 }

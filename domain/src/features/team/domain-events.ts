@@ -1,7 +1,6 @@
 import { DomainEventKind } from '../../core';
 import { TeamEntity } from './team.entity';
 
-export const EntityNotInstanciableDomainEvent = DomainEventKind('EntityNotInstanciableDomainEvent');
 export const TeamWithThatNameAlreadyExistsDomainEvent = DomainEventKind<TeamEntity>(
   'TeamWithThatNameAlreadyExistsDomainEvent',
 );

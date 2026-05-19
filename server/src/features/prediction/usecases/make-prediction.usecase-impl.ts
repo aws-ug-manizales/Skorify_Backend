@@ -1,20 +1,21 @@
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
 import {
+  GetMatchByIdUsecase,
+  GottenMatchDomainEvent,
+  MatchCannotBeBetedDomainEvent,
+  MatchEntity,
+} from '@skorify/domain/match';
+import {
+  MakePredictionParam,
+  MakePredictionUsecase,
   PredictionContract,
   PredictionCreatedDomainEvent,
   PredictionEntity,
   PredictionNotCreatedDomainEvent,
-  MakePredictionParam,
-  MakePredictionUsecase,
   UserAlreadyPredictedDomainEvent,
   UserNotActiveDomainEvent,
-} from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
-import {
-  GetUserByIdUsecase,
-  GottenUserDomainEvent,
-  UserEntity,
-} from "@skorify/domain/user";
-import { GetMatchByIdUsecase, GottenMatchDomainEvent, MatchCannotBeBetedDomainEvent, MatchEntity } from "@skorify/domain/match";
+} from '@skorify/domain/prediction';
+import { GetUserByIdUsecase, GottenUserDomainEvent, UserEntity } from '@skorify/domain/user';
 
 export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
   constructor(
@@ -64,15 +65,21 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       return UserAlreadyPredictedDomainEvent();
     }
 
-    const prediction = PredictionEntity.build({
+    const predictionDE = PredictionEntity.build({
       id: crypto.randomUUID(),
-      userId: userId as PredictionEntity["userId"],
-      instancePlayerId: instanceId as PredictionEntity["instancePlayerId"],
-      matchId: matchId as PredictionEntity["matchId"],
+      userId: userId as PredictionEntity['userId'],
+      instancePlayerId: instanceId as PredictionEntity['instancePlayerId'],
+      matchId: matchId as PredictionEntity['matchId'],
       awayTeamScore,
       localTeamScore,
+      score: 0,
     });
 
+    if (predictionDE.isNot(BuiltEntityDomainEvent)) {
+      return predictionDE;
+    }
+
+    const prediction = predictionDE.payload;
     const savedPrediction = await this.predictionContract.save(prediction);
 
     if (!savedPrediction) {

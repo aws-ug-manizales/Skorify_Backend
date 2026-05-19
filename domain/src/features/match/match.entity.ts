@@ -1,7 +1,8 @@
-import { Entity, Id } from "../../core/entity";
-import { matchStateCollection, MatchState, MatchStatus } from "./match.state";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { Entity, Id } from '../../core/entity';
+import { MatchState, matchStateCollection, MatchStatus } from './match.state';
 
-export type MatchStage = "group" | "finals";
+export type MatchStage = 'group' | 'finals';
 
 export interface MatchAttributes {
   id: Id;
@@ -30,7 +31,7 @@ export class MatchEntity extends Entity {
   venue?: string | null;
   private _status: MatchStatus;
   private _state: MatchState;
-  private _timeToCloseInMinutes: number;  
+  private _timeToCloseInMinutes: number;
 
   private constructor(attributes: MatchAttributes) {
     super(attributes.id, new Date());
@@ -47,11 +48,13 @@ export class MatchEntity extends Entity {
     this._state = matchStateCollection[attributes.status!];
   }
 
-  static build(params: MatchAttributes): MatchEntity {
-    return new MatchEntity({
-      ...params,
-      status: params.status ?? MatchStatus.Draft,
-    });
+  static build(params: MatchAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(
+      new MatchEntity({
+        ...params,
+        status: params.status ?? MatchStatus.Draft,
+      }),
+    );
   }
 
   get status(): MatchStatus {
