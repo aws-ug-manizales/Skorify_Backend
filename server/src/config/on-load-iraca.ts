@@ -1,17 +1,19 @@
-import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
-import { DBClient } from "@skorify/data";
-import { MatchEntity } from "@skorify/domain/match";
-import { PredictionEntity } from "@skorify/domain/prediction";
-import { TeamEntity } from "@skorify/domain/team";
-import { TournamentEntity } from "@skorify/domain/tournament";
-import { TournamentInstanceEntity } from "@skorify/domain/tournament-instance";
-import { UserEntity } from "@skorify/domain/user";
-import { join } from "path";
+import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
+import { EventBusContract, StorageContract } from '@skorify/domain/core';
+import { EditPredictionUsecase, PredictionEntity } from '@skorify/domain/prediction';
 import {
-  UserPostgresDataSource,
-  MatchPostgresDataSource,
-  JsonDataSource,
-} from "@skorify/shared";
+  CalculateMatchScoreUsecase,
+  MatchEntity,
+  ReactiveClosedMatchDomainEvent,
+} from '@skorify/domain/match';
+import { TeamEntity } from '@skorify/domain/team';
+import { TournamentEntity } from '@skorify/domain/tournament';
+import { TournamentInstanceEntity } from '@skorify/domain/tournament-instance';
+import { UserEntity } from '@skorify/domain/user';
+import { UserEnrollmentEntity } from '@skorify/domain/user-enrollment';
+import { EditPredictionUsecaseImpl } from '../features/prediction/usecases/edit-prediction.usecase-impl';
+import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl } from '@skorify/shared';
+import { join } from 'path';
 
 type DatabaseConfig = {
   host: string;
@@ -25,16 +27,9 @@ type Injections = {
   database: DatabaseConfig;
   [key: string]: unknown;
 };
-export const onLoadIraca = async (
-  container: IracaContainer,
-  injections: Injections,
-) => {
-  const { database } = injections;
-  const { host, port, username, password, name, logging } = database;
-  console.log(database);
-
-  // Base path para los archivos JSON en shared/src/data
-  const dataPath = join(__dirname, "../../../shared/src/data");
+export const onLoadIraca = async (container: IracaContainer, injections: Injections) => {
+  void injections;
+  const dataPath = join(__dirname, '../../../shared/src/data');
 
   // const dbClient = new DBClient({
   //   type: "postgres",
@@ -61,12 +56,16 @@ export const onLoadIraca = async (
   //   value: dbClient,
   // });
   container.addValue({
-    id: "MatchDatasource",
-    value: new JsonDataSource<MatchEntity>("matches.json", dataPath),
+    id: 'MatchDatasource',
+    value: new JsonDataSource<MatchEntity>('matches.json', dataPath),
   });
   container.addValue({
-    id: "UserDatasource",
-    value: new JsonDataSource<UserEntity>("users.json", dataPath),
+    id: 'UserDatasource',
+    value: new JsonDataSource<UserEntity>('users.json', dataPath),
+  });
+  container.addValue({
+    id: 'UserEnrollmentDatasource',
+    value: new JsonDataSource<UserEnrollmentEntity>('user-enrollments.json', dataPath),
   });
   // container.addValue({
   //   id: "MatchDatasource",
@@ -77,22 +76,67 @@ export const onLoadIraca = async (
   //   value: new UserPostgresDataSource(dbClient),
   // });
   container.addValue({
-    id: "PredictionDatasource",
-    value: new JsonDataSource<PredictionEntity>("predictions.json", dataPath),
+    id: 'PredictionDatasource',
+    value: new JsonDataSource<PredictionEntity>('predictions.json', dataPath),
   });
   container.addValue({
-    id: "TournamentDatasource",
-    value: new JsonDataSource<TournamentEntity>("tournaments.json", dataPath),
+    id: 'TournamentDatasource',
+    value: new JsonDataSource<TournamentEntity>('tournaments.json', dataPath),
   });
   container.addValue({
-    id: "TournamentInstanceDatasource",
-    value: new JsonDataSource<TournamentInstanceEntity>(
-      "tournament-intances.json",
-      dataPath,
-    ),
+    id: 'TournamentInstanceDatasource',
+    value: new JsonDataSource<TournamentInstanceEntity>('tournament-instances.json', dataPath),
   });
   container.addValue({
-    id: "TeamDatasource",
-    value: new JsonDataSource<TeamEntity>("teams.json", dataPath),
+    id: 'TeamDatasource',
+    value: new JsonDataSource<TeamEntity>('teams.json', dataPath),
+  });
+
+  const queue = new Queue();
+
+  queue.subscribe(ReactiveClosedMatchDomainEvent.eventName, async (data) => {
+    console.log('Hola mundo', data);
+
+    const usecase = await container.getInstance<CalculateMatchScoreUsecase>(
+      CalculateMatchScoreUsecase,
+    );
+    if (usecase) {
+      await usecase.call({
+        matchId: data.match.id,
+        tournamentInstanceId: data.tournamentInstance.id,
+      });
+    }
+  });
+
+  container.addValue({
+    id: 'Queue',
+    value: queue,
+  });
+
+  container.add({
+    abstraction: EventBusContract,
+    implementation: EventBusMemoryImpl,
+    dependencies: ['Queue'],
+  });
+
+  container.addValue({
+    id: 'rootFolder',
+    value: join(__dirname, '../../../shared/src/storage'),
+  });
+  container.add({
+    abstraction: StorageContract,
+    implementation: StorageMemoryImpl,
+    dependencies: ['rootFolder'],
+  });
+
+  container.add({
+    abstraction: EditPredictionUsecase,
+    implementation: EditPredictionUsecaseImpl,
+    dependencies: [
+      'GetPredictionByIdUsecase',
+      'GetMatchByIdUsecase',
+      'PredictionContract',
+      'predictionEditingWindow',
+    ],
   });
 };

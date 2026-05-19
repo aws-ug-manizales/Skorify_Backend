@@ -6,9 +6,11 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "paths": {
-      "@skorify/domain/core": ["./libs/domain/core/index.d.ts"],
-      "@skorify/domain/*": ["./libs/domain/features/*/index.d.ts"],
-      "@skorify/shared/*": ["./libs/shared/*"]
+      "@skorify/domain/core": ["../domain/src/core/index.ts"],
+      "@skorify/domain/*": ["../domain/src/features/*"],
+      "@skorify/domain/*/*": ["../domain/src/features/*/*"],
+      "@skorify/shared": ["../shared/src/index.ts"],
+      "@skorify/shared/*": ["../shared/src/*"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]

@@ -23,7 +23,7 @@ export class RegisterNotificationTokenUsecaseImpl extends RegisterNotificationTo
     }
 
     userInDB.notificationToken = token;
-    const savedUser = await this.userContract.save(userInDB);
+    const savedUser = await this.userContract.modifyById(userInDB.id, userInDB);
 
     if (!savedUser) {
       return NotificationTokenAssignmentFailedDomainEvent();
@@ -32,4 +32,3 @@ export class RegisterNotificationTokenUsecaseImpl extends RegisterNotificationTo
     return NotificationTokenAssignedDomainEvent(savedUser);
   }
 }
-

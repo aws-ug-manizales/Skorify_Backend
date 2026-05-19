@@ -14,12 +14,16 @@
     "seed:clean": "node src/fixtures/seed.js --clean"
   },
   "dependencies": {
-    "@skorify/domain": "../domain/dist",
-    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta"
+    "@aws-sdk/client-eventbridge": "^3.1047.0",
+    "@aws-sdk/client-s3": "^3.1047.0",
+    "@aws-sdk/s3-request-presigner": "^3.1047.0",
+    "@aws-sdk/client-sns": "^3.1047.0",
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.1.0-beta",
+    "@skorify/domain": "../domain/dist"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
     "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.2",
     "copyfiles": "^2.4.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",

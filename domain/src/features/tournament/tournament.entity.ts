@@ -1,8 +1,8 @@
-import { Entity, Id } from "../../core";
+import { BuiltEntityDomainEvent, DomainEvent, Entity, Id } from '../../core';
 
 export enum MatchType {
-  SingleMatchPerRound = "single_match_per_round",
-  HomeAndAwayPerRound = "home_and_away_per_round",
+  SingleMatchPerRound = 'single_match_per_round',
+  HomeAndAwayPerRound = 'home_and_away_per_round',
 }
 
 export interface TournamentAttributes {
@@ -31,7 +31,7 @@ export class TournamentEntity extends Entity {
     this.token = token;
   }
 
-  static build(params: TournamentAttributes): TournamentEntity | null {
-    return new TournamentEntity(params);
+  static build(params: TournamentAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new TournamentEntity(params));
   }
 }

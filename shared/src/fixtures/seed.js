@@ -58,7 +58,8 @@ function seedData() {
   // Generate empty files for other entities
   writeJsonFile("users.json", []);
   writeJsonFile("predictions.json", []);
-  writeJsonFile("tournament-intances.json", []);
+  writeJsonFile("tournament-instances.json", []);
+  writeJsonFile("user-enrollments.json", []);
 
   console.log("\nSeed completed successfully!");
   console.log(`Data files created in: ${DATA_DIR}`);

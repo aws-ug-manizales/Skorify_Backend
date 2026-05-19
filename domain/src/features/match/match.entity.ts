@@ -1,7 +1,8 @@
-import { Entity, Id } from "../../core/entity";
-import { matchStateCollection, MatchState, MatchStatus } from "./match.state";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { Entity, Id } from '../../core/entity';
+import { MatchState, matchStateCollection, MatchStatus } from './match.state';
 
-export type MatchStage = "group" | "finals";
+export type MatchStage = 'group' | 'finals';
 
 export interface MatchAttributes {
   id: Id;
@@ -9,8 +10,8 @@ export interface MatchAttributes {
   awayTeamId: Id;
   tournamentId: Id;
   kickOff: Date;
-  homeTeamScore?: number;
-  awayTeamScore?: number;
+  homeScore?: number;
+  awayScore?: number;
   status?: MatchStatus;
   stage?: MatchStage;
   venue?: string | null;
@@ -24,13 +25,13 @@ export class MatchEntity extends Entity {
   awayTeamId: Id;
   homeTeamId: Id;
   kickOff: Date;
-  awayTeamScore?: number;
-  homeTeamScore?: number;
+  awayScore?: number;
+  homeScore?: number;
   stage?: MatchStage;
   venue?: string | null;
   private _status: MatchStatus;
   private _state: MatchState;
-  private _timeToCloseInMinutes: number;  
+  private _timeToCloseInMinutes: number;
 
   private constructor(attributes: MatchAttributes) {
     super(attributes.id, new Date());
@@ -39,19 +40,21 @@ export class MatchEntity extends Entity {
     this.kickOff = attributes.kickOff;
     this.tournamentId = attributes.tournamentId;
     this._timeToCloseInMinutes = 10;
-    this.awayTeamScore = 0;
-    this.homeTeamScore = 0;
+    this.awayScore = 0;
+    this.homeScore = 0;
     this.stage = attributes.stage;
     this.venue = attributes.venue;
     this._status = attributes.status!;
     this._state = matchStateCollection[attributes.status!];
   }
 
-  static build(params: MatchAttributes): MatchEntity {
-    return new MatchEntity({
-      ...params,
-      status: params.status ?? MatchStatus.Draft,
-    });
+  static build(params: MatchAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(
+      new MatchEntity({
+        ...params,
+        status: params.status ?? MatchStatus.Draft,
+      }),
+    );
   }
 
   get status(): MatchStatus {
@@ -83,8 +86,8 @@ export class MatchEntity extends Entity {
     return this._state.isMatchClose(this);
   }
 
-  public setScores(awayTeamScore: number, localTeamScore: number): void {
-    this.awayTeamScore = awayTeamScore;
-    this.homeTeamScore = localTeamScore;
+  public setScores(awayScore: number, homeScore: number): void {
+    this.awayScore = awayScore;
+    this.homeScore = homeScore;
   }
 }

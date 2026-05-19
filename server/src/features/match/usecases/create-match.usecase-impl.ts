@@ -1,25 +1,24 @@
-import type { CreateMatchParam } from "@skorify/domain/match";
+import {
+  BuiltEntityDomainEvent,
+  type DomainEvent
+} from '@skorify/domain/core';
+import type { CreateMatchParam } from '@skorify/domain/match';
 import {
   CreateMatchUsecase,
+  MatchAlreadyExistsInSameTournamentStageDomainEvent,
   MatchContract,
   MatchEntity,
-  EntityNotInstanciableDomainEvent,
   MatchNotSavedDomainEvent,
   MatchSavedDomainEvent,
-  MatchAlreadyExistsInSameTournamentStageDomainEvent,
   MatchTeamDoesNotExistDomainEvent,
   MatchTeamIsTheSameDomainEvent,
-} from "@skorify/domain/match";
+} from '@skorify/domain/match';
+import { GetTeamByIdUsecase, GottenTeamDomainEvent } from '@skorify/domain/team';
 import {
   GetTournamentByIdUsecase,
   GottenTournamentDomainEvent,
-} from "@skorify/domain/tournament";
-import { MatchType } from "@skorify/domain/tournament";
-import {
-  GetTeamByIdUsecase,
-  GottenTeamDomainEvent,
-} from "@skorify/domain/team";
-import type { DomainEvent } from "@skorify/domain/core";
+  MatchType,
+} from '@skorify/domain/tournament';
 
 export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
   constructor(
@@ -37,7 +36,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       return MatchTeamIsTheSameDomainEvent();
     }
 
-    // Verify if the tournament instance exists. 
+    // Verify if the tournament instance exists.
     const tournamentDE = await this.getTournamentByIdUsecase.call({
       tournamentId,
     });
@@ -51,20 +50,19 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       this.getTeamByIdUsecase.call({ teamId: awayTeamId }),
     ]);
 
-    if (
-      homeTeamDE.isNot(GottenTeamDomainEvent) ||
-      awayTeamDE.isNot(GottenTeamDomainEvent)
-    ) {
+    if (homeTeamDE.isNot(GottenTeamDomainEvent) || awayTeamDE.isNot(GottenTeamDomainEvent)) {
       return MatchTeamDoesNotExistDomainEvent();
     }
-    
+
     const existingMatches = await this.matchContract.filter({
-      tournamentId,
-      homeTeamId,
-      awayTeamId,
-      stage,
+      where: {
+        tournamentId,
+        homeTeamId,
+        awayTeamId,
+        stage,
+      },
     });
-    
+
     if (existingMatches.length > 0) {
       return MatchAlreadyExistsInSameTournamentStageDomainEvent();
     }
@@ -73,10 +71,12 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     // reversed fixture (same teams inverted) in the same stage.
     if (tournamentDE.payload.matchType === MatchType.SingleMatchPerRound) {
       const reversedMatches = await this.matchContract.filter({
-        tournamentId,
-        homeTeamId: awayTeamId,
-        awayTeamId: homeTeamId,
-        stage,
+        where: {
+          tournamentId,
+          homeTeamId: awayTeamId,
+          awayTeamId: homeTeamId,
+          stage,
+        },
       });
 
       if (reversedMatches.length > 0) {
@@ -85,7 +85,7 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
     }
 
     // Create a new match entity using the provided parameters.
-    const match = MatchEntity.build({
+    const matchDE = MatchEntity.build({
       id: crypto.randomUUID(),
       tournamentId,
       awayTeamId,
@@ -95,15 +95,16 @@ export class CreateMatchUsecaseImpl extends CreateMatchUsecase {
       venue,
       createdAt: new Date(),
     });
-    
+
     //The entity can't be instatiated for any reason.
-    if (!match) {
-      return EntityNotInstanciableDomainEvent();
+    if (matchDE.isNot(BuiltEntityDomainEvent)) {
+      return matchDE;
     }
 
+    const match = matchDE.payload;
     const saved = await this.matchContract.save(match);
 
-     //The entity can't be saved for any reason.
+    //The entity can't be saved for any reason.
     if (!saved) {
       return MatchNotSavedDomainEvent();
     }

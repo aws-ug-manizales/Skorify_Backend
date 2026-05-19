@@ -1,23 +1,20 @@
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
+import { GetTournamentByIdUsecase, GottenTournamentDomainEvent } from '@skorify/domain/tournament';
 import {
   CreateTournamentInstanceParam,
   CreateTournamentInstanceUsecase,
-  EntityNotInstanciableDomainEvent,
   TournamentInstanceContract,
   TournamentInstanceEntity,
-  TournamentInstanceWithSameNameDomainEvent,
-  TournamentInstanceSavedDomainEvent,
   TournamentInstanceNotSavedDomainEvent,
-} from "@skorify/domain/tournament-instance";
-import { DomainEvent } from "@skorify/domain/core";
-import {
-  GetTournamentByIdUsecase,
-  GottenTournamentDomainEvent,
-  TournamentNotSavedDomainEvent,
-} from "@skorify/domain/tournament";
+  TournamentInstanceSavedDomainEvent,
+  TournamentInstanceWithSameNameDomainEvent,
+} from '@skorify/domain/tournament-instance';
+import { GetUserByIdUsecase, GottenUserDomainEvent } from '@skorify/domain/user';
 
 export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanceUsecase {
   constructor(
     private getTournamentByIdUsecase: GetTournamentByIdUsecase,
+    private getUserByIdUsecase: GetUserByIdUsecase,
 
     private tournamentInstanceContract: TournamentInstanceContract,
   ) {
@@ -25,7 +22,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
   }
 
   async call(param: CreateTournamentInstanceParam): Promise<DomainEvent> {
-    const { name, owner, tournamentId } = param;
+    const { name, ownerId, tournamentId } = param;
 
     const tournamentDE = await this.getTournamentByIdUsecase.call({
       tournamentId,
@@ -35,29 +32,40 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return tournamentDE;
     }
 
-    const exist = await this.tournamentInstanceContract.filter({ name });
+    const ownerDE = await this.getUserByIdUsecase.call({
+      userId: ownerId,
+    });
+
+    if (ownerDE.isNot(GottenUserDomainEvent)) {
+      return ownerDE;
+    }
+
+    const exist = await this.tournamentInstanceContract.filter({ where: { name } });
 
     if (exist.length) {
       return TournamentInstanceWithSameNameDomainEvent(exist);
     }
 
-    const tournamentInstance = TournamentInstanceEntity.build({
+    const tournamentInstanceDE = TournamentInstanceEntity.build({
       id: crypto.randomUUID(),
       name,
-      state: "active",
+      tournamentId,
+      ownerId,
+      state: 'active',
     });
 
-    if (!tournamentInstance) {
-      return EntityNotInstanciableDomainEvent();
+    if (tournamentInstanceDE.isNot(BuiltEntityDomainEvent)) {
+      return tournamentInstanceDE;
     }
 
-    const saved =
-      await this.tournamentInstanceContract.save(tournamentInstance);
+    const tournamentInstance = tournamentInstanceDE.payload;
+
+    const saved = await this.tournamentInstanceContract.save(tournamentInstance);
 
     if (!saved) {
       return TournamentInstanceNotSavedDomainEvent();
     }
 
-    return TournamentInstanceSavedDomainEvent();
+    return TournamentInstanceSavedDomainEvent(tournamentInstance);
   }
 }

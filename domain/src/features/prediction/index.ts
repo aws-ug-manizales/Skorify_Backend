@@ -1,4 +1,4 @@
-export { PredictionEntity } from "./prediction.entity";
+export { PredictionAttributes, PredictionEntity } from './prediction.entity';
 
 export * from "./domain-events";
 export * from "./prediction.rule";
@@ -13,8 +13,16 @@ export { GetPredictionByUserAndMatchUsecase } from "./usecases/get-prediction-by
 export { GetPredictionsByUserParam } from "./usecases/get-predictions-by-user/get-predictions-by-user.param";
 export { GetPredictionsByUserUsecase } from "./usecases/get-predictions-by-user/get-predictions-by-user.usecase";
 
-export { GetPredictionsByMatchParam } from "./usecases/get-predictions-by-match/get-predictions-by-match.param";
-export { GetPredictionsByMatchUsecase } from "./usecases/get-predictions-by-match/get-predictions-by-match.usecase";
+export { CheckMatchCanBetParam } from './usecases/check-match-can-bet/check-match-can-bet.param';
+export { CheckMatchCanBetUsecase } from './usecases/check-match-can-bet/check-match-can-bet.usecase';
 
-export { PredictionContract } from "./prediction.contract";
+export { PredictionContract } from './prediction.contract';
+export { GetPredictionsByMatchParam } from './usecases/get-predictions-by-match/get-predictions-by-match.param';
+export { GetPredictionsByMatchUsecase } from './usecases/get-predictions-by-match/get-predictions-by-match.usecase';
+
+export { EditPredictionParam } from './usecases/edit-prediction/edit-prediction.param';
+export { EditPredictionUsecase } from './usecases/edit-prediction/edit-prediction.usecase';
+
+export { GetPredictionByIdParam } from './usecases/get-prediction-by-id/get-prediction-by-id.param';
+export { GetPredictionByIdUsecase } from './usecases/get-prediction-by-id/get-prediction-by-id.usecase';
 

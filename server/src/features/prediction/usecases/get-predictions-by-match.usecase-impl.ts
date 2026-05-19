@@ -1,10 +1,10 @@
-import { DomainEvent } from "@skorify/domain/core";
 import {
-  GetPredictionsByMatchParam,
   GetPredictionsByMatchUsecase,
-  GottenPredictionsDomainEvent,
+  GetPredictionsByMatchParam,
   PredictionContract,
-} from "@skorify/domain/prediction";
+  GottenPredictionsByMatchDomainEvent,
+} from '@skorify/domain/prediction';
+import { DomainEvent } from '@skorify/domain/core';
 
 export class GetPredictionsByMatchUsecaseImpl extends GetPredictionsByMatchUsecase {
   constructor(private predictionContract: PredictionContract) {
@@ -13,9 +13,12 @@ export class GetPredictionsByMatchUsecaseImpl extends GetPredictionsByMatchUseca
 
   async call(param: GetPredictionsByMatchParam): Promise<DomainEvent> {
     const { matchId } = param;
-    const response = await this.predictionContract.filter({
-      matchId,
+
+    const predictions = await this.predictionContract.filter({
+      where: {
+        matchId,
+      },
     });
-    return GottenPredictionsDomainEvent(response);
+    return GottenPredictionsByMatchDomainEvent(predictions);
   }
 }

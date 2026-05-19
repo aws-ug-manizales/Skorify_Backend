@@ -1,0 +1,28 @@
+import { DomainEvent } from '@skorify/domain/core';
+import {
+  GetTeamsByQueryParam,
+  GetTeamsByQueryUsecase,
+  GottenTeamsDomainEvent,
+  TeamContract,
+} from '@skorify/domain/team';
+
+export class GetTeamsByQueryUsecaseImpl extends GetTeamsByQueryUsecase {
+  constructor(private teamContract: TeamContract) {
+    super();
+  }
+
+  async call(param: GetTeamsByQueryParam): Promise<DomainEvent> {
+    const { query } = param;
+
+    const teams = await this.teamContract.filter({
+      where: {
+        name: {
+          type: 'like',
+          value: query,
+        },
+      },
+    });
+
+    return GottenTeamsDomainEvent(teams);
+  }
+}
