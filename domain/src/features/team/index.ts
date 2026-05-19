@@ -15,3 +15,6 @@ export { CreateTeamUsecase } from './usecases/create-team/create-team.usecase';
 
 export { EditTeamParam } from './usecases/edit-team/edit-team.param';
 export { EditTeamUsecase } from './usecases/edit-team/edit-team.usecase';
+
+export { GetTeamsByQueryParam } from './usecases/get-teams-by-query/get-teams-by-query.param';
+export { GetTeamsByQueryUsecase } from './usecases/get-teams-by-query/get-teams-by-query.usecase';

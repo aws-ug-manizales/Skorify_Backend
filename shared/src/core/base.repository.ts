@@ -66,13 +66,79 @@ export class BaseRepository<T extends Entity, Attrs> extends BaseContract<T> {
   }
 
   async filter(filters: Filters): Promise<T[]> {
-    const where = filters.where;
-
     const items = await this.dataSource.read();
-    return items.filter((entity) =>
-      Object.entries(where).every(
-        ([key, value]) => (entity as Record<string, unknown>)[key] === value,
-      ),
-    );
+
+    const normalizedWhere = Array.isArray(filters.where)
+      ? filters.where
+      : Object.entries(filters.where).map(([attribute, value]) => {
+          if (typeof value === 'object' && value !== null && 'type' in value && 'value' in value) {
+            return {
+              attribute,
+              type: value.type,
+              value: value.value,
+            };
+          }
+
+          return {
+            attribute,
+            type: 'equals',
+            value,
+          };
+        });
+
+    let result = items.filter((entity) => {
+      return normalizedWhere.every((where) => {
+        const entityValue = (entity as Record<string, any>)[where.attribute];
+
+        switch (where.type) {
+          case 'equals':
+            return entityValue === where.value;
+
+          case 'like':
+            return String(entityValue).toLowerCase().includes(String(where.value).toLowerCase());
+
+          case 'moreThan':
+            return entityValue > (where.value ?? 0);
+
+          case 'lessThan':
+            return entityValue < (where.value ?? 0);
+
+          case 'in':
+            return Array.isArray(where.value) ? where.value.includes(entityValue) : false;
+
+          default:
+            return false;
+        }
+      });
+    });
+
+    if (filters.order) {
+      result = result.sort((a, b) => {
+        for (const [column, direction] of Object.entries(filters.order!)) {
+          const aValue = (a as Record<string, any>)[column];
+          const bValue = (b as Record<string, any>)[column];
+
+          if (aValue > bValue) {
+            return direction === 'ASC' ? 1 : -1;
+          }
+
+          if (aValue < bValue) {
+            return direction === 'ASC' ? -1 : 1;
+          }
+        }
+
+        return 0;
+      });
+    }
+
+    if (filters.skip !== undefined) {
+      result = result.slice(filters.skip);
+    }
+
+    if (filters.take !== undefined) {
+      result = result.slice(0, filters.take);
+    }
+
+    return result;
   }
 }
