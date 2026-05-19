@@ -15,3 +15,6 @@ export { GetTournamentInstancesByTournamentIdUsecase } from './usecases/get-tour
 
 export { GetTournamentInstanceByIdParam } from './usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.param';
 export { GetTournamentInstanceByIdUsecase } from './usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.usecase';
+
+export { GetTournamentInstancesByQueryParam } from './usecases/get-tournament-instances-by-query/get-tournament-instances-by-query.param';
+export { GetTournamentInstancesByQueryUsecase } from './usecases/get-tournament-instances-by-query/get-tournament-instances-by-query.usecase';
