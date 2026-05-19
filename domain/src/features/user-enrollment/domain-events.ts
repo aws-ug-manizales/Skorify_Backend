@@ -24,9 +24,13 @@ export const GottenUserEnrollmentDomainEvent = DomainEventKind<UserEnrollmentEnt
   'GottenUserEnrollmentDomainEvent',
 );
 
-export const UserEnrollmentAlreadyExistsDomainEvent = DomainEventKind<{
+export const UserIsInTournamentInstanceDomainEvent = DomainEventKind<{
   userEnrollmentId: UserEnrollmentEntity['id'];
-}>('UserEnrollmentAlreadyExistsDomainEvent');
+}>('UserIsInTournamentInstanceDomainEvent');
+
+export const UserIsNotInTournamentInstanceDomainEvent = DomainEventKind(
+  'UserIsNotInTournamentInstanceDomainEvent',
+);
 
 // Domain events related to saving a user enrollment.
 export const NotSavedUserEnrollmentDomainEvent = DomainEventKind(

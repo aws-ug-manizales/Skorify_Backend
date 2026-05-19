@@ -1,15 +1,15 @@
 import { DomainEvent } from '@skorify/domain/core';
 import { GetMatchByIdUsecase, MatchEntity } from '@skorify/domain/match';
 import {
-    EditPredictionParam,
-    EditPredictionUsecase,
-    GetPredictionByIdUsecase,
-    GottenPredictionDomainEvent,
-    NotEditedPredictionDomainEvent,
-    PassedPredictionWindowDomainEvent,
-    PredictionContract,
-    PredictionEditedDomainEvent,
-    PredictionEntity,
+  EditPredictionParam,
+  EditPredictionUsecase,
+  GetPredictionByIdUsecase,
+  GottenPredictionDomainEvent,
+  NotEditedPredictionDomainEvent,
+  PassedPredictionWindowDomainEvent,
+  PredictionContract,
+  PredictionEditedDomainEvent,
+  PredictionEntity,
 } from '@skorify/domain/prediction';
 
 export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
@@ -22,7 +22,7 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
     super();
   }
   async call(param: EditPredictionParam): Promise<DomainEvent> {
-    const { awayTeamScore, localTeamScore, predictionId } = param;
+    const { awayScore, homeScore, predictionId } = param;
 
     const prediontionDE = await this.getPredictionByIdUsecase.call({
       predictionId,
@@ -48,8 +48,8 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
       return PassedPredictionWindowDomainEvent();
     }
 
-    prediction.awayTeamScore = awayTeamScore;
-    prediction.localTeamScore = localTeamScore;
+    prediction.awayScore = awayScore;
+    prediction.homeScore = homeScore;
 
     const edited = await this.predictionContract.modifyById(prediction.id, prediction);
 

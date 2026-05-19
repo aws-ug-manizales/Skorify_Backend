@@ -15,6 +15,7 @@ export class UserEnrollmentMapper extends BaseMapper<UserEnrollmentAttributes> {
       currentPosition: json.currentPosition,
       currentScore: json.currentScore,
       streak: json.streak,
+      maxStreak: json.maxStreak,
     });
   }
 
@@ -29,6 +30,7 @@ export class UserEnrollmentMapper extends BaseMapper<UserEnrollmentAttributes> {
       currentPosition: entity.currentPosition,
       currentScore: entity.currentScore,
       streak: entity.streak,
+      maxStreak: entity.maxStreak,
     };
   }
 }

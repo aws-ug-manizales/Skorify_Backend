@@ -2,8 +2,8 @@ import { Id } from "../../../../core";
 
 export interface MakePredictionParam {
   userId: Id;
-  instanceId: Id;
+  tournamentInstanceId: Id;
   matchId: Id;
-  awayTeamScore: number;
-  localTeamScore: number;
+  awayScore: number;
+  homeScore: number;
 }

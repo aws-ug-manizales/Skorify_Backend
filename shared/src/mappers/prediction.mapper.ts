@@ -4,15 +4,7 @@ import { BaseMapper } from '../core/base.mapper';
 
 export class PredictionMapper extends BaseMapper<PredictionAttributes> {
   fromJson(json: Record<string, any>): DomainEvent {
-    const entity = PredictionEntity.build({
-      id: json.id,
-      userId: json.userId,
-      instancePlayerId: json.instancePlayerId,
-      matchId: json.matchId,
-      awayTeamScore: json.awayTeamScore,
-      localTeamScore: json.localTeamScore,
-      score: json.score,
-    });
+    const entity = PredictionEntity.build(json as PredictionAttributes);
 
     return entity;
   }
@@ -21,11 +13,14 @@ export class PredictionMapper extends BaseMapper<PredictionAttributes> {
     return {
       id: entity.id,
       userId: entity.userId,
-      instancePlayerId: entity.instancePlayerId,
+      tournamentInstanceId: entity.tournamentInstanceId,
       matchId: entity.matchId,
-      awayTeamScore: entity.awayTeamScore,
-      localTeamScore: entity.localTeamScore,
+      awayScore: entity.awayScore,
+      homeScore: entity.homeScore,
       score: entity.score,
+      earnedPoints: entity.earnedPoints,
+      hasExactResult: entity.hasExactResult,
+      userEnrollmentId: entity.userEnrollmentId,
     };
   }
 }

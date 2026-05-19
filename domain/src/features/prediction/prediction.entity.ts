@@ -1,6 +1,8 @@
 import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
 import { Entity, Id } from '../../core/entity';
+import { ExactScoreRule } from './scoreRules';
 import {
+  PredictionRuleBreakdown,
   PredictionScoreResult,
   PredictionScoreRuleset,
 } from './scoreRules/prediction-score.ruleset';
@@ -8,67 +10,69 @@ import {
 export interface PredictionAttributes {
   id: Id;
   userId: Id;
-  instancePlayerId: Id;
+  userEnrollmentId: Id;
+  tournamentInstanceId: Id;
   matchId: Id;
-  awayTeamScore: number;
-  localTeamScore: number;
+  awayScore: number;
+  homeScore: number;
   score: number;
+  earnedPoints: number;
+  hasExactResult: boolean;
 }
 
 export class PredictionEntity extends Entity {
   userId: Id;
-  instancePlayerId: Id;
+  userEnrollmentId: Id;
+  tournamentInstanceId: Id;
   matchId: Id;
-  awayTeamScore: number;
-  localTeamScore: number;
+  awayScore: number;
+  homeScore: number;
   score: number;
+  earnedPoints: number;
+  hasExactResult: boolean;
 
-  private constructor(
-    id: Id,
-    userId: Id,
-    instancePlayerId: Id,
-    matchId: Id,
-    awayTeamScore: number,
-    localTeamScore: number,
-  ) {
-    super(id, new Date());
-    this.userId = userId;
-    this.instancePlayerId = instancePlayerId;
-    this.matchId = matchId;
-    this.awayTeamScore = awayTeamScore;
-    this.localTeamScore = localTeamScore;
-    this.score = 0;
+  private constructor(attributes: PredictionAttributes) {
+    super(attributes.id, new Date());
+    this.userId = attributes.userId;
+    this.userEnrollmentId = attributes.userEnrollmentId;
+    this.tournamentInstanceId = attributes.tournamentInstanceId;
+    this.matchId = attributes.matchId;
+    this.awayScore = attributes.awayScore;
+    this.homeScore = attributes.homeScore;
+    this.earnedPoints = attributes.earnedPoints ?? 0;
+    this.hasExactResult = attributes.hasExactResult;
+    this.score = attributes.score;
   }
 
   static build(params: PredictionAttributes): DomainEvent {
-    return BuiltEntityDomainEvent(
-      new PredictionEntity(
-        params.id,
-        params.userId,
-        params.instancePlayerId,
-        params.matchId,
-        params.awayTeamScore,
-        params.localTeamScore,
-      ),
-    );
+    return BuiltEntityDomainEvent(new PredictionEntity(params));
   }
 
-  calculateScore(awayTeamScore: number, localTeamScore: number): PredictionScoreResult {
+  calculateScore(
+    matchAwayScore: number,
+    matchHomeScore: number,
+    streakBonusPoints: number,
+  ): PredictionScoreResult {
     const ruleset = PredictionScoreRuleset.default();
 
     const result = ruleset.calculateWithBreakdown({
       prediction: {
-        awayTeamScore: this.awayTeamScore,
-        localTeamScore: this.localTeamScore,
+        awayScore: this.awayScore,
+        homeScore: this.homeScore,
       },
       match: {
-        awayTeamScore,
-        localTeamScore,
+        awayScore: matchAwayScore,
+        homeScore: matchHomeScore,
       },
     });
 
-    this.score = result.total;
+    this.setHasExactResult(result.breakdown);
+    this.earnedPoints = result.total + streakBonusPoints;
 
     return result;
+  }
+
+  private setHasExactResult(rulesApplied: PredictionRuleBreakdown[]) {
+    this.hasExactResult = !!rulesApplied.find((r) => r.rule == ExactScoreRule.name);
   }
 }

@@ -75,8 +75,8 @@ describe('MatchRepository – save()', () => {
 
     const all = await repo.getAll();
     expect(all).toHaveLength(1);
-    expect(all[0].homeTeamScore).toBe(1);
-    expect(all[0].awayTeamScore).toBe(2);
+    expect(all[0].homeScore).toBe(1);
+    expect(all[0].awayScore).toBe(2);
   });
 });
 
@@ -163,8 +163,8 @@ describe('MatchRepository – modifyById()', () => {
     const updated = await repo.modifyById(id1, match);
 
     expect(updated).not.toBeNull();
-    expect(updated!.awayTeamScore).toBe(3);
-    expect(updated!.homeTeamScore).toBe(0);
+    expect(updated!.awayScore).toBe(3);
+    expect(updated!.homeScore).toBe(0);
   });
 
   it('returns null when the match does not exist', async () => {

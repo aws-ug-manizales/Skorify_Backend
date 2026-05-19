@@ -10,9 +10,9 @@ import {
 describe("score-rule.utils", () => {
   describe("goalDiff", () => {
     it("returns away-local difference", () => {
-      expect(goalDiff({ awayTeamScore: 2, localTeamScore: 1 })).toBe(1);
-      expect(goalDiff({ awayTeamScore: 0, localTeamScore: 3 })).toBe(-3);
-      expect(goalDiff({ awayTeamScore: 1, localTeamScore: 1 })).toBe(0);
+      expect(goalDiff({ awayScore: 2, homeScore: 1 })).toBe(1);
+      expect(goalDiff({ awayScore: 0, homeScore: 3 })).toBe(-3);
+      expect(goalDiff({ awayScore: 1, homeScore: 1 })).toBe(0);
     });
   });
 
@@ -20,8 +20,8 @@ describe("score-rule.utils", () => {
     it("returns true when both team scores match", () => {
       expect(
         isExactScore(
-          { awayTeamScore: 2, localTeamScore: 1 },
-          { awayTeamScore: 2, localTeamScore: 1 }
+          { awayScore: 2, homeScore: 1 },
+          { awayScore: 2, homeScore: 1 }
         )
       ).toBe(true);
     });
@@ -29,15 +29,15 @@ describe("score-rule.utils", () => {
     it("returns false when any team score differs", () => {
       expect(
         isExactScore(
-          { awayTeamScore: 2, localTeamScore: 1 },
-          { awayTeamScore: 2, localTeamScore: 0 }
+          { awayScore: 2, homeScore: 1 },
+          { awayScore: 2, homeScore: 0 }
         )
       ).toBe(false);
 
       expect(
         isExactScore(
-          { awayTeamScore: 2, localTeamScore: 1 },
-          { awayTeamScore: 1, localTeamScore: 1 }
+          { awayScore: 2, homeScore: 1 },
+          { awayScore: 1, homeScore: 1 }
         )
       ).toBe(false);
     });
@@ -45,15 +45,15 @@ describe("score-rule.utils", () => {
 
   describe("outcome", () => {
     it("returns 1 when away wins", () => {
-      expect(outcome({ awayTeamScore: 2, localTeamScore: 1 })).toBe(1);
+      expect(outcome({ awayScore: 2, homeScore: 1 })).toBe(1);
     });
 
     it("returns -1 when local wins", () => {
-      expect(outcome({ awayTeamScore: 0, localTeamScore: 1 })).toBe(-1);
+      expect(outcome({ awayScore: 0, homeScore: 1 })).toBe(-1);
     });
 
     it("returns 0 on draw", () => {
-      expect(outcome({ awayTeamScore: 3, localTeamScore: 3 })).toBe(0);
+      expect(outcome({ awayScore: 3, homeScore: 3 })).toBe(0);
     });
   });
 
@@ -61,15 +61,15 @@ describe("score-rule.utils", () => {
     it("returns true for same winner regardless of exact score", () => {
       expect(
         isSameOutcome(
-          { awayTeamScore: 2, localTeamScore: 0 },
-          { awayTeamScore: 1, localTeamScore: 0 }
+          { awayScore: 2, homeScore: 0 },
+          { awayScore: 1, homeScore: 0 }
         )
       ).toBe(true);
 
       expect(
         isSameOutcome(
-          { awayTeamScore: 0, localTeamScore: 1 },
-          { awayTeamScore: 1, localTeamScore: 3 }
+          { awayScore: 0, homeScore: 1 },
+          { awayScore: 1, homeScore: 3 }
         )
       ).toBe(true);
     });
@@ -77,8 +77,8 @@ describe("score-rule.utils", () => {
     it("returns true for draw vs draw", () => {
       expect(
         isSameOutcome(
-          { awayTeamScore: 0, localTeamScore: 0 },
-          { awayTeamScore: 2, localTeamScore: 2 }
+          { awayScore: 0, homeScore: 0 },
+          { awayScore: 2, homeScore: 2 }
         )
       ).toBe(true);
     });
@@ -86,15 +86,15 @@ describe("score-rule.utils", () => {
     it("returns false for different outcomes", () => {
       expect(
         isSameOutcome(
-          { awayTeamScore: 1, localTeamScore: 0 },
-          { awayTeamScore: 0, localTeamScore: 1 }
+          { awayScore: 1, homeScore: 0 },
+          { awayScore: 0, homeScore: 1 }
         )
       ).toBe(false);
 
       expect(
         isSameOutcome(
-          { awayTeamScore: 1, localTeamScore: 1 },
-          { awayTeamScore: 2, localTeamScore: 1 }
+          { awayScore: 1, homeScore: 1 },
+          { awayScore: 2, homeScore: 1 }
         )
       ).toBe(false);
     });
@@ -104,8 +104,8 @@ describe("score-rule.utils", () => {
     it("returns true when outcomes are inverse", () => {
       expect(
         isInverseOutcome(
-          { awayTeamScore: 2, localTeamScore: 0 },
-          { awayTeamScore: 0, localTeamScore: 2 }
+          { awayScore: 2, homeScore: 0 },
+          { awayScore: 0, homeScore: 2 }
         )
       ).toBe(true);
     });
@@ -113,8 +113,8 @@ describe("score-rule.utils", () => {
     it("returns false when outcomes are same", () => {
       expect(
         isInverseOutcome(
-          { awayTeamScore: 2, localTeamScore: 0 },
-          { awayTeamScore: 3, localTeamScore: 1 }
+          { awayScore: 2, homeScore: 0 },
+          { awayScore: 3, homeScore: 1 }
         )
       ).toBe(false);
     });
@@ -122,15 +122,15 @@ describe("score-rule.utils", () => {
     it("returns false when any outcome is a draw", () => {
       expect(
         isInverseOutcome(
-          { awayTeamScore: 1, localTeamScore: 1 },
-          { awayTeamScore: 0, localTeamScore: 2 }
+          { awayScore: 1, homeScore: 1 },
+          { awayScore: 0, homeScore: 2 }
         )
       ).toBe(false);
 
       expect(
         isInverseOutcome(
-          { awayTeamScore: 0, localTeamScore: 2 },
-          { awayTeamScore: 1, localTeamScore: 1 }
+          { awayScore: 0, homeScore: 2 },
+          { awayScore: 1, homeScore: 1 }
         )
       ).toBe(false);
     });
@@ -138,8 +138,8 @@ describe("score-rule.utils", () => {
 
   describe("totalGoals", () => {
     it("returns the sum of both teams goals", () => {
-      expect(totalGoals({ awayTeamScore: 2, localTeamScore: 1 })).toBe(3);
-      expect(totalGoals({ awayTeamScore: 0, localTeamScore: 0 })).toBe(0);
+      expect(totalGoals({ awayScore: 2, homeScore: 1 })).toBe(3);
+      expect(totalGoals({ awayScore: 0, homeScore: 0 })).toBe(0);
     });
   });
 });

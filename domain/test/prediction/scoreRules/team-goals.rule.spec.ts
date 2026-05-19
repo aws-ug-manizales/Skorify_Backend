@@ -5,8 +5,8 @@ describe("TeamGoalsRule", () => {
     const rule = new TeamGoalsRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 0, localTeamScore: 0 },
-      match: { awayTeamScore: 2, localTeamScore: 1 },
+      prediction: { awayScore: 0, homeScore: 0 },
+      match: { awayScore: 2, homeScore: 1 },
     });
 
     expect(score).toBe(0);
@@ -16,8 +16,8 @@ describe("TeamGoalsRule", () => {
     const rule = new TeamGoalsRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 2, localTeamScore: 0 },
-      match: { awayTeamScore: 2, localTeamScore: 3 },
+      prediction: { awayScore: 2, homeScore: 0 },
+      match: { awayScore: 2, homeScore: 3 },
     });
 
     expect(score).toBe(1);
@@ -27,8 +27,8 @@ describe("TeamGoalsRule", () => {
     const rule = new TeamGoalsRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 0, localTeamScore: 3 },
-      match: { awayTeamScore: 2, localTeamScore: 3 },
+      prediction: { awayScore: 0, homeScore: 3 },
+      match: { awayScore: 2, homeScore: 3 },
     });
 
     expect(score).toBe(1);
@@ -38,8 +38,8 @@ describe("TeamGoalsRule", () => {
     const rule = new TeamGoalsRule();
 
     const score = rule.calculateScore({
-      prediction: { awayTeamScore: 2, localTeamScore: 3 },
-      match: { awayTeamScore: 2, localTeamScore: 3 },
+      prediction: { awayScore: 2, homeScore: 3 },
+      match: { awayScore: 2, homeScore: 3 },
     });
 
     expect(score).toBe(1);

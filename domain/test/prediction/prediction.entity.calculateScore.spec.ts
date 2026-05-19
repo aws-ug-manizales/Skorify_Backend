@@ -6,16 +6,18 @@ function makePrediction(params: {
   userId: string;
   instanceId: string;
   matchId: string;
-  awayTeamScore: number;
-  localTeamScore: number;
+  awayScore: number;
+  homeScore: number;
 }): PredictionEntity {
   return PredictionEntity.build({
     id: params.predictionId as any,
-    userId: params.userId as any,
+    userEnrollmentId: params.userId as any,
     instancePlayerId: params.instanceId as any,
     matchId: params.matchId as any,
-    awayTeamScore: params.awayTeamScore,
-    localTeamScore: params.localTeamScore,
+    tournamentInstanceId: "ti-1111-1111" as any,
+    awayScore: params.awayScore,
+    homeScore: params.homeScore,
+    hasExactResult: false
   });
 }
 
@@ -37,16 +39,16 @@ describe("PredictionEntity.calculateScore", () => {
   const cases: Array<{
     description: string;
     appliedRules: string[];
-    prediction: { awayTeamScore: number; localTeamScore: number };
-    match: { awayTeamScore: number; localTeamScore: number };
+    prediction: { awayScore: number; homeScore: number };
+    match: { awayScore: number; homeScore: number };
     expectedScore: number;
     expectedBreakdown: Record<string, number>;
   }> = [
     {
       description: "exact score + outcome correct",
       appliedRules: ["WinnerDraw (+2)", "TeamGoals (+1 if any team goals match)", "ExactScore (+1)"],
-      prediction: { awayTeamScore: 2, localTeamScore: 1 },
-      match: { awayTeamScore: 2, localTeamScore: 1 },
+      prediction: { awayScore: 2, homeScore: 1 },
+      match: { awayScore: 2, homeScore: 1 },
       expectedScore: 4,
       expectedBreakdown: {
         WinnerDrawRule: 2,
@@ -57,8 +59,8 @@ describe("PredictionEntity.calculateScore", () => {
     {
       description: "correct outcome only (away wins) does NOT get high scoring bonus unless exact score",
       appliedRules: ["WinnerDraw (+2)"],
-      prediction: { awayTeamScore: 1, localTeamScore: 0 },
-      match: { awayTeamScore: 3, localTeamScore: 1 },
+      prediction: { awayScore: 1, homeScore: 0 },
+      match: { awayScore: 3, homeScore: 1 },
       expectedScore: 2,
       expectedBreakdown: {
         WinnerDrawRule: 2,
@@ -72,8 +74,8 @@ describe("PredictionEntity.calculateScore", () => {
         "ExactScore (+1)",
         "HighScoringMatch (+1 if 4+ goals and exact score)",
       ],
-      prediction: { awayTeamScore: 3, localTeamScore: 1 },
-      match: { awayTeamScore: 3, localTeamScore: 1 },
+      prediction: { awayScore: 3, homeScore: 1 },
+      match: { awayScore: 3, homeScore: 1 },
       expectedScore: 5,
       expectedBreakdown: {
         WinnerDrawRule: 2,
@@ -85,8 +87,8 @@ describe("PredictionEntity.calculateScore", () => {
     {
       description: "one team goals correct, outcome wrong, but inverse consolation",
       appliedRules: ["TeamGoals (+1 if any team goals match)", "InverseResult (+1)"],
-      prediction: { awayTeamScore: 2, localTeamScore: 0 },
-      match: { awayTeamScore: 2, localTeamScore: 3 },
+      prediction: { awayScore: 2, homeScore: 0 },
+      match: { awayScore: 2, homeScore: 3 },
       expectedScore: 2,
       expectedBreakdown: {
         TeamGoalsRule: 1,
@@ -96,8 +98,8 @@ describe("PredictionEntity.calculateScore", () => {
     {
       description: "inverse outcome consolation only",
       appliedRules: ["InverseResult (+1)"],
-      prediction: { awayTeamScore: 0, localTeamScore: 2 },
-      match: { awayTeamScore: 3, localTeamScore: 1 },
+      prediction: { awayScore: 0, homeScore: 2 },
+      match: { awayScore: 3, homeScore: 1 },
       expectedScore: 1,
       expectedBreakdown: {
         InverseResultRule: 1,
@@ -106,8 +108,8 @@ describe("PredictionEntity.calculateScore", () => {
     {
       description: "draw predicted and draw happens",
       appliedRules: ["WinnerDraw (+2)"],
-      prediction: { awayTeamScore: 1, localTeamScore: 1 },
-      match: { awayTeamScore: 0, localTeamScore: 0 },
+      prediction: { awayScore: 1, homeScore: 1 },
+      match: { awayScore: 0, homeScore: 0 },
       expectedScore: 2,
       expectedBreakdown: {
         WinnerDrawRule: 2,
@@ -116,8 +118,8 @@ describe("PredictionEntity.calculateScore", () => {
     {
       description: "high scoring match bonus only when match has 4+ goals and outcome correct",
       appliedRules: ["WinnerDraw (+2)", "HighScoringMatch (+1 if 4+ goals and outcome correct)"],
-      prediction: { awayTeamScore: 4, localTeamScore: 0 },
-      match: { awayTeamScore: 3, localTeamScore: 1 },
+      prediction: { awayScore: 4, homeScore: 0 },
+      match: { awayScore: 3, homeScore: 1 },
       expectedScore: 2,
       expectedBreakdown: {
         WinnerDrawRule: 2,
@@ -129,15 +131,30 @@ describe("PredictionEntity.calculateScore", () => {
     it(`${testCase.description} | rules: ${testCase.appliedRules.join(" + ")}`, () => {
       const prediction = makePrediction({
         ...ids,
-        awayTeamScore: testCase.prediction.awayTeamScore,
-        localTeamScore: testCase.prediction.localTeamScore,
+        awayScore: testCase.prediction.awayScore,
+        homeScore: testCase.prediction.homeScore,
       });
 
-      const result = prediction.calculateScore(testCase.match.awayTeamScore, testCase.match.localTeamScore);
+      const result = prediction.calculateScore(testCase.match.awayScore, testCase.match.homeScore, 0);
 
-      expect(prediction.score).toBe(testCase.expectedScore);
+      expect(prediction.earnedPoints).toBe(testCase.expectedScore);
       expect(result.total).toBe(testCase.expectedScore);
       expect(asMap(result.breakdown)).toEqual(testCase.expectedBreakdown);
     });
   }
+
+  it("should add streak bonus points to earnedPoints", () => {
+    const prediction = makePrediction({
+        ...ids,
+        awayScore: 2,
+        homeScore: 1,
+      });
+
+      const streakBonus = 2;
+      const result = prediction.calculateScore(2, 1, streakBonus);
+
+      // 4 (exact) + 2 (streak) = 6
+      expect(prediction.earnedPoints).toBe(6);
+      expect(result.total).toBe(4); // result.total is just ruleset total
+  });
 });

@@ -16,18 +16,25 @@ import {
   UserNotActiveDomainEvent,
 } from '@skorify/domain/prediction';
 import { GetUserByIdUsecase, GottenUserDomainEvent, UserEntity } from '@skorify/domain/user';
+import {
+  GetUserEnrollmentsByUserIdParam,
+  IsAUserInTournamentInstanceUsecase,
+  UserEnrollmentEntity,
+  UserIsInTournamentInstanceDomainEvent,
+} from '@skorify/domain/user-enrollment';
 
 export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
   constructor(
     private getUserByIdUsecase: GetUserByIdUsecase,
     private getMatchByIdUsecase: GetMatchByIdUsecase,
     private predictionContract: PredictionContract,
+    private isAUserInTournamentInstanceUsecase: IsAUserInTournamentInstanceUsecase,
   ) {
     super();
   }
 
   async call(param: MakePredictionParam): Promise<DomainEvent> {
-    const { awayTeamScore, instanceId, localTeamScore, matchId, userId } = param;
+    const { awayScore, tournamentInstanceId, homeScore, matchId, userId } = param;
 
     // 1. Validación de que dalia exista
     const userDE = await this.getUserByIdUsecase.call({
@@ -38,12 +45,22 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       return userDE;
     }
 
-    const user = userDE.payload as UserEntity;
+    const user: UserEntity = userDE.payload;
 
     if (!user.isActive) {
       return UserNotActiveDomainEvent();
     }
 
+    const userEnrollmentExistDE = await this.isAUserInTournamentInstanceUsecase.call({
+      userId,
+      tournamentInstanceId,
+    });
+
+    if (userEnrollmentExistDE.isNot(UserIsInTournamentInstanceDomainEvent)) {
+      return userEnrollmentExistDE;
+    }
+
+    const userEnrollment: UserEnrollmentEntity = userEnrollmentExistDE.payload;
     // 2. Valida el partido
     const matchDE = await this.getMatchByIdUsecase.call({
       matchId,
@@ -53,7 +70,7 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       return matchDE;
     }
 
-    const match = matchDE.payload as MatchEntity;
+    const match: MatchEntity = matchDE.payload;
 
     if (!match.canBet()) {
       return MatchCannotBeBetedDomainEvent();
@@ -72,12 +89,15 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
 
     const predictionDE = PredictionEntity.build({
       id: crypto.randomUUID(),
-      userId: userId as PredictionEntity['userId'],
-      instancePlayerId: instanceId as PredictionEntity['instancePlayerId'],
-      matchId: matchId as PredictionEntity['matchId'],
-      awayTeamScore,
-      localTeamScore,
+      userId: userId,
+      tournamentInstanceId: tournamentInstanceId,
+      matchId: matchId,
+      awayScore,
+      homeScore,
       score: 0,
+      earnedPoints: 0,
+      hasExactResult: false,
+      userEnrollmentId: userEnrollment.id,
     });
 
     if (predictionDE.isNot(BuiltEntityDomainEvent)) {

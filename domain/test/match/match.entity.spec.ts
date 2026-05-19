@@ -40,11 +40,11 @@ describe("MatchEntity – build()", () => {
     expect(match.status).toBe(MatchStatus.Draft);
   });
 
-  it("initialises homeTeamScore and awayTeamScore to 0", () => {
+  it("initialises homeScore and awayScore to 0", () => {
     const match = buildMatch(MatchStatus.Draft);
 
-    expect(match.homeTeamScore).toBe(0);
-    expect(match.awayTeamScore).toBe(0);
+    expect(match.homeScore).toBe(0);
+    expect(match.awayScore).toBe(0);
   });
 
   it("stores the provided IDs and kickOff correctly", () => {
@@ -159,12 +159,12 @@ describe("MatchEntity – isMatchClose()", () => {
 // setScores()
 // ---------------------------------------------------------------------------
 describe("MatchEntity – setScores()", () => {
-  it("updates awayTeamScore and homeTeamScore", () => {
+  it("updates awayScore and homeScore", () => {
     const match = buildMatch(MatchStatus.Finished);
     match.setScores(2, 3);
 
-    expect(match.awayTeamScore).toBe(2);
-    expect(match.homeTeamScore).toBe(3);
+    expect(match.awayScore).toBe(2);
+    expect(match.homeScore).toBe(3);
   });
 
   it("allows setting scores to zero", () => {
@@ -172,8 +172,8 @@ describe("MatchEntity – setScores()", () => {
     match.setScores(1, 1);
     match.setScores(0, 0);
 
-    expect(match.awayTeamScore).toBe(0);
-    expect(match.homeTeamScore).toBe(0);
+    expect(match.awayScore).toBe(0);
+    expect(match.homeScore).toBe(0);
   });
 });
 

@@ -10,8 +10,8 @@ export interface MatchAttributes {
   awayTeamId: Id;
   tournamentId: Id;
   kickOff: Date;
-  homeTeamScore?: number;
-  awayTeamScore?: number;
+  homeScore?: number;
+  awayScore?: number;
   status?: MatchStatus;
   stage?: MatchStage;
   venue?: string | null;
@@ -25,8 +25,8 @@ export class MatchEntity extends Entity {
   awayTeamId: Id;
   homeTeamId: Id;
   kickOff: Date;
-  awayTeamScore?: number;
-  homeTeamScore?: number;
+  awayScore?: number;
+  homeScore?: number;
   stage?: MatchStage;
   venue?: string | null;
   private _status: MatchStatus;
@@ -40,8 +40,8 @@ export class MatchEntity extends Entity {
     this.kickOff = attributes.kickOff;
     this.tournamentId = attributes.tournamentId;
     this._timeToCloseInMinutes = 10;
-    this.awayTeamScore = 0;
-    this.homeTeamScore = 0;
+    this.awayScore = 0;
+    this.homeScore = 0;
     this.stage = attributes.stage;
     this.venue = attributes.venue;
     this._status = attributes.status!;
@@ -86,8 +86,8 @@ export class MatchEntity extends Entity {
     return this._state.isMatchClose(this);
   }
 
-  public setScores(awayTeamScore: number, localTeamScore: number): void {
-    this.awayTeamScore = awayTeamScore;
-    this.homeTeamScore = localTeamScore;
+  public setScores(awayScore: number, homeScore: number): void {
+    this.awayScore = awayScore;
+    this.homeScore = homeScore;
   }
 }

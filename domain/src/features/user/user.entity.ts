@@ -7,21 +7,25 @@ export interface UserAttributes extends BaseAttributes {
   isActive: boolean;
   notificationToken: string;
   email: string;
+  image?: string;
 }
 
 export class UserEntity extends Entity {
   name: string;
-  isActive: boolean;
+  isActive: boolean = false;
   notificationToken: string;
   email: string;
+  image?: string;
 
   private constructor(attributes: UserAttributes) {
-    const { id, name, notificationToken, isActive, email } = attributes;
+    const { id, name, notificationToken, email, image, isActive } = attributes;
     super(id, new Date());
     this.name = name;
-    this.isActive = isActive;
+    this.email = email;
+    this.image = image;
     this.notificationToken = notificationToken;
     this.email = email;
+    this.isActive = isActive;
   }
 
   static build(params: UserAttributes): DomainEvent {

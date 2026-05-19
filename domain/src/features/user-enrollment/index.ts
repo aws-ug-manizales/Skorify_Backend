@@ -17,3 +17,12 @@ export { GetUserEnrollmentsByTournamentIdUsecase } from './usecases/get-user-enr
 
 export { GetUserEnrollmentsByTournamentInstanceIdParam } from './usecases/get-user-enrollments-by-tournament-instance-id/get-user-enrollments-by-tournament-instance-id.param';
 export { GetUserEnrollmentsByTournamentInstanceIdUsecase } from './usecases/get-user-enrollments-by-tournament-instance-id/get-user-enrollments-by-tournament-instance-id.usecase';
+
+export { UpdateUserEnrollmentParam } from './usecases/update-user-enrollment/update-user-enrollment.param';
+export { UpdateUserEnrollmentUsecase } from './usecases/update-user-enrollment/update-user-enrollment.usecase';
+
+export { GetEnrollmentsWithoutPredictionParam } from './usecases/get-enrollments-without-prediction/get-enrollments-without-prediction.param';
+export { GetEnrollmentsWithoutPredictionUsecase } from './usecases/get-enrollments-without-prediction/get-enrollments-without-prediction.usecase';
+
+export { IsAUserInTournamentInstanceParam } from './usecases/is-a-user-in-tournament-instance/is-a-user-in-tournament-instance.param';
+export { IsAUserInTournamentInstanceUsecase } from './usecases/is-a-user-in-tournament-instance/is-a-user-in-tournament-instance.usecase';
