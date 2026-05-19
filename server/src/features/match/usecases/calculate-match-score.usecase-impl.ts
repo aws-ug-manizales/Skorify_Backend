@@ -69,11 +69,11 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
         userEnrollmentId: prediction.userEnrollmentId,
       });
 
-      if (!userEnrollmentDE.is(GottenUserEnrollmentDomainEvent)) {
+      if (userEnrollmentDE.isNot(GottenUserEnrollmentDomainEvent)) {
         continue;
       }
 
-      const userEnrollment: UserEnrollmentEntity = userEnrollmentDE.payload as any;
+      const userEnrollment: UserEnrollmentEntity = userEnrollmentDE.payload as UserEnrollmentEntity;
       const streakBonusPoints = userEnrollment.getStreakBonusPoints();
 
       // Calculate prediction score
@@ -101,7 +101,8 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     });
 
     if (missingEnrollmentsDE.is(GottenUserEnrollmentsDomainEvent)) {
-      const enrollments: UserEnrollmentEntity[] = missingEnrollmentsDE.payload as any;
+      const enrollments: UserEnrollmentEntity[] =
+        missingEnrollmentsDE.payload as UserEnrollmentEntity[];
       for (const enrollment of enrollments) {
         await this.updateUserEnrollmentUsecase.call({
           userEnrollmentId: enrollment.id,

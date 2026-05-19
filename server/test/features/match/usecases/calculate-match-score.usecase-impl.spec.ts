@@ -73,14 +73,12 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
       homeScore: homeScore ?? 0,
       awayScore: awayScore ?? 0,
       createdAt: new Date(),
-    } as any).payload;
+    }).payload;
 
     if (awayScore === undefined) {
-      // @ts-ignore
       match.awayScore = undefined;
     }
     if (homeScore === undefined) {
-      // @ts-ignore
       match.homeScore = undefined;
     }
 
@@ -96,13 +94,14 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
       awayScore: 2,
       homeScore: 1,
       hasExactResult: false,
-    } as any).payload;
-    // @ts-ignore
+      earnedPoints: 0,
+      score: 0,
+      userId: '' as Id,
+    }).payload;
     pred.earnedPoints = 4;
     pred.calculateScore = jest
       .fn()
       .mockReturnValue({ total: 4, breakdown: [{ rule: 'ExactScoreRule', points: 1 }] });
-    // @ts-ignore
     pred.hasExactResult = true;
     return pred;
   }
@@ -119,7 +118,7 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
       currentScore: 0,
       streak: 0,
       maxStreak: 0,
-    } as any).payload;
+    }).payload;
   }
 
   it('should calculate score for participants and reset streak for non-participants', async () => {
@@ -164,13 +163,23 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
   });
 
   it('should return MatchDoesNotExistDomainEvent if match is not found', async () => {
+    const prediction = buildFakePrediction();
+    const activeEnrollment = buildFakeEnrollment(enrollmentId);
+    const missingEnrollment = buildFakeEnrollment(missingEnrollmentId);
+
     const matchContract = makeMockMatchContract(null);
+    const predictionContract = makeMockPredictionContract([prediction]);
+    const getUserEnrollment = makeMockGetUserEnrollmentUsecase(activeEnrollment);
+    const updateUserEnrollment = makeMockUpdateUserEnrollmentUsecase();
+    const getMissingEnrollments = makeMockGetEnrollmentsWithoutPredictionUsecase([
+      missingEnrollment,
+    ]);
     const usecase = new CalculateMatchScoreUsecaseImpl(
       matchContract,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
+      predictionContract,
+      getUserEnrollment,
+      updateUserEnrollment,
+      getMissingEnrollments,
     );
 
     const result = await usecase.call({ matchId, tournamentInstanceId: tiId });
