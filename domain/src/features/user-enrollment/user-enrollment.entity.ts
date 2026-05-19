@@ -7,8 +7,8 @@ export interface UserEnrollmentAttributes {
   tournamentInstanceId: Id;
   tournamentId: Id;
   joinedAt: Date;
-  lastPosition: number;
-  currentPosition: number;
+  lastPosition: null | number;
+  currentPosition: null | number;
   currentScore: number;
   streak: number;
   maxStreak: number;
@@ -19,12 +19,12 @@ export class UserEnrollmentEntity extends Entity {
   tournamentInstanceId: Id;
   tournamentId: Id;
   joinedAt: Date;
-  lastPosition: number;
-  currentPosition: number;
+  lastPosition: null | number;
+  currentPosition: null | number;
   currentScore: number;
   streak: number;
   maxStreak: number;
-  
+
   private streakBonusRules: Map<number, number> = new Map<number, number>();
 
   private constructor(attributes: UserEnrollmentAttributes) {
@@ -38,7 +38,7 @@ export class UserEnrollmentEntity extends Entity {
       currentPosition,
       currentScore,
       streak,
-      maxStreak
+      maxStreak,
     } = attributes;
     super(id, new Date());
     this.userId = userId;
@@ -61,8 +61,8 @@ export class UserEnrollmentEntity extends Entity {
     return BuiltEntityDomainEvent(new UserEnrollmentEntity(params));
   }
 
-  getStreakBonusPoints(): number{
-    return this.streakBonusRules.get(this.streak) ?? 0
+  getStreakBonusPoints(): number {
+    return this.streakBonusRules.get(this.streak) ?? 0;
   }
 
   applyScore(points: number, isExact: boolean): void {
@@ -75,9 +75,8 @@ export class UserEnrollmentEntity extends Entity {
   }
 
   verifyMaxStreak(): void {
-    if(this.streak > this.maxStreak){
+    if (this.streak > this.maxStreak) {
       this.maxStreak = this.streak;
     }
   }
-
 }
