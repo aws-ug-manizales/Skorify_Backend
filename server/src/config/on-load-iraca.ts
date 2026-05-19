@@ -1,18 +1,15 @@
 import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
+import { EventBusContract, StorageContract } from '@skorify/domain/core';
 import { MatchEntity } from '@skorify/domain/match';
-import { PredictionEntity } from '@skorify/domain/prediction';
+import { EditPredictionUsecase, PredictionEntity } from '@skorify/domain/prediction';
 import { TeamEntity } from '@skorify/domain/team';
 import { TournamentEntity } from '@skorify/domain/tournament';
 import { TournamentInstanceEntity } from '@skorify/domain/tournament-instance';
 import { UserEntity } from '@skorify/domain/user';
 import { UserEnrollmentEntity } from '@skorify/domain/user-enrollment';
+import { EventBusImpl, JsonDataSource, StorageImpl } from '@skorify/shared';
 import { join } from 'path';
-import {
-  JsonDataSource,
-  EventBusImpl,
-  StorageImpl,
-} from '@skorify/shared';
-import { EventBusContract, StorageContract } from '@skorify/domain/core';
+import { EditPredictionUsecaseImpl } from '../features/prediction/usecases/edit-prediction.usecase-impl';
 
 type DatabaseConfig = {
   host: string;
@@ -101,5 +98,16 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
     abstraction: StorageContract,
     implementation: StorageImpl,
     dependencies: ['storage'],
+  });
+
+  container.add({
+    abstraction: EditPredictionUsecase,
+    implementation: EditPredictionUsecaseImpl,
+    dependencies: [
+      'GetPredictionByIdUsecase',
+      'GetMatchByIdUsecase',
+      'PredictionContract',
+      'predictionEditingWindow',
+    ],
   });
 };

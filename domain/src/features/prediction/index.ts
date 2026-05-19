@@ -20,3 +20,9 @@ export { PredictionContract } from './prediction.contract';
 export { GetPredictionsByMatchParam } from './usecases/get-predictions-by-match/get-predictions-by-match.param';
 export { GetPredictionsByMatchUsecase } from './usecases/get-predictions-by-match/get-predictions-by-match.usecase';
 
+export { EditPredictionParam } from './usecases/edit-prediction/edit-prediction.param';
+export { EditPredictionUsecase } from './usecases/edit-prediction/edit-prediction.usecase';
+
+export { GetPredictionByIdParam } from './usecases/get-prediction-by-id/get-prediction-by-id.param';
+export { GetPredictionByIdUsecase } from './usecases/get-prediction-by-id/get-prediction-by-id.usecase';
+
