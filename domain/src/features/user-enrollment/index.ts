@@ -23,3 +23,6 @@ export { UpdateUserEnrollmentUsecase } from './usecases/update-user-enrollment/u
 
 export { GetEnrollmentsWithoutPredictionParam } from './usecases/get-enrollments-without-prediction/get-enrollments-without-prediction.param';
 export { GetEnrollmentsWithoutPredictionUsecase } from './usecases/get-enrollments-without-prediction/get-enrollments-without-prediction.usecase';
+
+export { IsAUserInTournamentInstanceParam } from './usecases/is-a-user-in-tournament-instance/is-a-user-in-tournament-instance.param';
+export { IsAUserInTournamentInstanceUsecase } from './usecases/is-a-user-in-tournament-instance/is-a-user-in-tournament-instance.usecase';

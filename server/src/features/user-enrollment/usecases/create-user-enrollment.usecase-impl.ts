@@ -1,15 +1,16 @@
-import { DomainEvent } from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
 
 import {
   CreateUserEnrollmentParam,
   CreateUserEnrollmentUsecase,
-  UserEnrollmentContract,
-  UserEnrollmentEntity,
-  UserEnrollmentEntityNotInstanciableDomainEvent,
+  IsAUserInTournamentInstanceUsecase,
   NotSavedUserEnrollmentDomainEvent,
   SavedUserEnrollmentDomainEvent,
+  UserIsInTournamentInstanceDomainEvent,
+  UserEnrollmentContract,
+  UserEnrollmentEntity,
   UserEnrollmentParamsNotValidDomainEvent,
-  UserEnrollmentAlreadyExistsDomainEvent,
+  UserIsNotInTournamentInstanceDomainEvent,
 } from '@skorify/domain/user-enrollment';
 
 import {
@@ -31,6 +32,7 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
 
     private getUserByIdUsecase: GetUserByIdUsecase,
     private getTournamentInstanceByIdUsecase: GetTournamentInstanceByIdUsecase,
+    private isAUserInTournamentInstanceUsecase: IsAUserInTournamentInstanceUsecase,
   ) {
     super();
   }
@@ -55,21 +57,17 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
     });
 
     if (tournamentInstanceDE.isNot(GottenTournamentInstanceDomainEvent)) {
-      return NotGottenTournamentInstanceDomainEvent();
+      return tournamentInstanceDE;
     }
     const tournamentInstance: TournamentInstanceEntity = tournamentInstanceDE.payload;
 
-    const userEnrollmentExist = await this.userEnrollmentContract.filter({
-      where: {
-        userId,
-        tournamentInstanceId,
-      },
+    const userEnrollmentExistDE = await this.isAUserInTournamentInstanceUsecase.call({
+      userId,
+      tournamentInstanceId,
     });
 
-    if (userEnrollmentExist.length > 0) {
-      return UserEnrollmentAlreadyExistsDomainEvent({
-        userEnrollmentId: userEnrollmentExist[0].id,
-      });
+    if (userEnrollmentExistDE.isNot(UserIsNotInTournamentInstanceDomainEvent)) {
+      return userEnrollmentExistDE;
     }
 
     const userEnrollmentDE = UserEnrollmentEntity.build({
@@ -77,6 +75,7 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       userId: userId,
       tournamentInstanceId: tournamentInstanceId,
       tournamentId: tournamentInstance.tournamentId,
+      maxStreak: 0,
       joinedAt: new Date(),
       lastPosition: 0,
       currentPosition: 0,
@@ -84,16 +83,17 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       streak: 0,
     });
 
-    if (!userEnrollmentDE) {
-      return UserEnrollmentEntityNotInstanciableDomainEvent();
+    if (userEnrollmentDE.isNot(BuiltEntityDomainEvent)) {
+      return userEnrollmentDE;
     }
+    const userEnrollment = userEnrollmentDE.payload;
 
-    const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollmentDE);
+    const userEnrollmentInDB = await this.userEnrollmentContract.save(userEnrollment);
 
     if (!userEnrollmentInDB) {
       return NotSavedUserEnrollmentDomainEvent();
     }
 
-    return SavedUserEnrollmentDomainEvent(userEnrollmentDE);
+    return SavedUserEnrollmentDomainEvent(userEnrollment);
   }
 }

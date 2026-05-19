@@ -1,4 +1,8 @@
-import { DomainEvent, StorageContract } from '@skorify/domain/core';
+import {
+  BuiltEntityDomainEvent,
+  DomainEvent
+} from '@skorify/domain/core';
+import {  StorageContract } from '@skorify/domain/core';
 import {
   CreateUserParam,
   CreateUserUsecase,
@@ -30,7 +34,7 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       return UserWithEmailAlreadyExistDomainEvent(users[0]);
     }
 
-    const user = UserEntity.build({
+    const userDE = UserEntity.build({
       id: crypto.randomUUID(),
       name,
       email,
@@ -39,10 +43,11 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       createdAt: new Date(),
     });
 
-    if (!user) {
-      return UserWithEmailAlreadyExistDomainEvent(users[0]);
+    if (userDE.isNot(BuiltEntityDomainEvent)) {
+      return userDE;
     }
 
+    const user = users[0];
     // Subir la imagen al storage si se proporciona
     let imageBuffer: Buffer | undefined;
     if (image) {

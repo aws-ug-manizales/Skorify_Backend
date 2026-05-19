@@ -1,8 +1,9 @@
-import { MatchEntity } from "@skorify/domain/match";
-import { BaseRepository, DataSource } from "../core";
+import { MatchAttributes, MatchEntity } from '@skorify/domain/match';
+import { BaseRepository, DataSource } from '../core';
+import { MatchMapper } from '../mappers/match.mapper';
 
-export class MatchRepository extends BaseRepository<MatchEntity> {
-  constructor(ds: DataSource<MatchEntity>) {
-    super(ds);
+export class MatchRepository extends BaseRepository<MatchEntity, MatchAttributes> {
+  constructor(ds: DataSource<MatchEntity>, mapper: MatchMapper) {
+    super(ds, mapper);
   }
 }

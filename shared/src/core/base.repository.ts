@@ -1,12 +1,16 @@
-import { BaseContract, Entity, Filters } from "@skorify/domain/core";
-import { DataSource } from "./data-source.interface";
+import { BaseContract, Entity, Filters } from '@skorify/domain/core';
+import { BaseMapper } from './base.mapper';
+import { DataSource } from './data-source.interface';
 
 /**
  * BaseRepository implementa las operaciones CRUD del BaseContract.
  * Recibe un DataSource que define de dónde vienen los datos (JSON, DB, etc.)
  */
-export class BaseRepository<T extends Entity> extends BaseContract<T> {
-  constructor(protected dataSource: DataSource<T>) {
+export class BaseRepository<T extends Entity, Attrs> extends BaseContract<T> {
+  constructor(
+    protected dataSource: DataSource<T>,
+    protected mapper: BaseMapper<Attrs>,
+  ) {
     super();
   }
 
@@ -62,7 +66,7 @@ export class BaseRepository<T extends Entity> extends BaseContract<T> {
   }
 
   async filter(filters: Filters): Promise<T[]> {
-    const where = filters.where
+    const where = filters.where;
 
     const items = await this.dataSource.read();
     return items.filter((entity) =>

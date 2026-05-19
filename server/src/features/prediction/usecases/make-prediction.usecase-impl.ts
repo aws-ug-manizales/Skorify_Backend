@@ -1,32 +1,40 @@
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
 import {
+  GetMatchByIdUsecase,
+  GottenMatchDomainEvent,
+  MatchCannotBeBetedDomainEvent,
+  MatchEntity,
+} from '@skorify/domain/match';
+import {
+  MakePredictionParam,
+  MakePredictionUsecase,
   PredictionContract,
   PredictionCreatedDomainEvent,
   PredictionEntity,
   PredictionNotCreatedDomainEvent,
-  MakePredictionParam,
-  MakePredictionUsecase,
   UserAlreadyPredictedDomainEvent,
   UserNotActiveDomainEvent,
-} from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
+} from '@skorify/domain/prediction';
+import { GetUserByIdUsecase, GottenUserDomainEvent, UserEntity } from '@skorify/domain/user';
 import {
-  GetUserByIdUsecase,
-  GottenUserDomainEvent,
-  UserEntity,
-} from "@skorify/domain/user";
-import { GetMatchByIdUsecase, GottenMatchDomainEvent, MatchCannotBeBetedDomainEvent, MatchEntity } from "@skorify/domain/match";
+  GetUserEnrollmentsByUserIdParam,
+  IsAUserInTournamentInstanceUsecase,
+  UserEnrollmentEntity,
+  UserIsInTournamentInstanceDomainEvent,
+} from '@skorify/domain/user-enrollment';
 
 export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
   constructor(
     private getUserByIdUsecase: GetUserByIdUsecase,
     private getMatchByIdUsecase: GetMatchByIdUsecase,
     private predictionContract: PredictionContract,
+    private isAUserInTournamentInstanceUsecase: IsAUserInTournamentInstanceUsecase,
   ) {
     super();
   }
 
   async call(param: MakePredictionParam): Promise<DomainEvent> {
-    const { awayTeamScore, instanceId, localTeamScore, matchId, userId } = param;
+    const { awayScore, tournamentInstanceId, homeScore, matchId, userId } = param;
 
     // 1. Validación de que dalia exista
     const userDE = await this.getUserByIdUsecase.call({
@@ -37,12 +45,22 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       return userDE;
     }
 
-    const user = userDE.payload as UserEntity;
+    const user: UserEntity = userDE.payload;
 
     if (!user.isActive) {
       return UserNotActiveDomainEvent();
     }
 
+    const userEnrollmentExistDE = await this.isAUserInTournamentInstanceUsecase.call({
+      userId,
+      tournamentInstanceId,
+    });
+
+    if (userEnrollmentExistDE.isNot(UserIsInTournamentInstanceDomainEvent)) {
+      return userEnrollmentExistDE;
+    }
+
+    const userEnrollment: UserEnrollmentEntity = userEnrollmentExistDE.payload;
     // 2. Valida el partido
     const matchDE = await this.getMatchByIdUsecase.call({
       matchId,
@@ -52,27 +70,41 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       return matchDE;
     }
 
-    const match = matchDE.payload as MatchEntity;
+    const match: MatchEntity = matchDE.payload;
 
     if (!match.canBet()) {
       return MatchCannotBeBetedDomainEvent();
     }
 
-    const predictionInDB = await this.predictionContract.getByUserAndMatch(userId, matchId);
+    const predictionInDB = await this.predictionContract.filter({
+      where: {
+        userId,
+        matchId,
+      },
+    });
 
-    if (predictionInDB) {
+    if (predictionInDB.length) {
       return UserAlreadyPredictedDomainEvent();
     }
 
-    const prediction = PredictionEntity.build({
+    const predictionDE = PredictionEntity.build({
       id: crypto.randomUUID(),
-      userId: userId as PredictionEntity["userId"],
-      instancePlayerId: instanceId as PredictionEntity["instancePlayerId"],
-      matchId: matchId as PredictionEntity["matchId"],
-      awayTeamScore,
-      localTeamScore,
+      userId: userId,
+      tournamentInstanceId: tournamentInstanceId,
+      matchId: matchId,
+      awayScore,
+      homeScore,
+      score: 0,
+      earnedPoints: 0,
+      hasExactResult: false,
+      userEnrollmentId: userEnrollment.id,
     });
 
+    if (predictionDE.isNot(BuiltEntityDomainEvent)) {
+      return predictionDE;
+    }
+
+    const prediction = predictionDE.payload;
     const savedPrediction = await this.predictionContract.save(prediction);
 
     if (!savedPrediction) {

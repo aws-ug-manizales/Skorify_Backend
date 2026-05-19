@@ -1,30 +1,27 @@
-import { CalculateMatchScoreUsecaseImpl } from "../../../../src/features/match/usecases/calculate-match-score.usecase-impl";
-import { 
-  MatchContract, 
+import { CalculateMatchScoreUsecaseImpl } from '../../../../src/features/match/usecases/calculate-match-score.usecase-impl';
+import {
+  MatchContract,
   MatchEntity,
   GottenMatchDomainEvent,
-  MatchDoesNotExistDomainEvent
-} from "@skorify/domain/match";
-import { 
-  PredictionContract, 
-  PredictionEntity,
-  BasicDomainEvent
-} from "@skorify/domain/prediction";
-import { 
-  GetUserEnrollmentByIdUsecase, 
+  MatchDoesNotExistDomainEvent,
+} from '@skorify/domain/match';
+import { PredictionContract, PredictionEntity } from '@skorify/domain/prediction';
+import {
+  GetUserEnrollmentByIdUsecase,
   UpdateUserEnrollmentUsecase,
   GetEnrollmentsWithoutPredictionUsecase,
   GottenUserEnrollmentDomainEvent,
   GottenUserEnrollmentsDomainEvent,
-  UserEnrollmentEntity
-} from "@skorify/domain/user-enrollment";
-import { Id } from "@skorify/domain/core";
+  UserEnrollmentEntity,
+  SavedUserEnrollmentDomainEvent,
+} from '@skorify/domain/user-enrollment';
+import { Id } from '@skorify/domain/core';
 
-describe("CalculateMatchScoreUsecaseImpl", () => {
-  const matchId = "11111111-1111-1111-1111-111111111111" as Id;
-  const tiId = "22222222-2222-2222-2222-222222222222" as Id;
-  const enrollmentId = "33333333-3333-3333-3333-333333333333" as Id;
-  const missingEnrollmentId = "44444444-4444-4444-4444-444444444444" as Id;
+describe('CalculateMatchScoreUsecaseImpl', () => {
+  const matchId = '11111111-1111-1111-1111-111111111111' as Id;
+  const tiId = '22222222-2222-2222-2222-222222222222' as Id;
+  const enrollmentId = '33333333-3333-3333-3333-333333333333' as Id;
+  const missingEnrollmentId = '44444444-4444-4444-4444-444444444444' as Id;
 
   function makeMockMatchContract(match: MatchEntity | null): MatchContract {
     return {
@@ -35,11 +32,15 @@ describe("CalculateMatchScoreUsecaseImpl", () => {
   function makeMockPredictionContract(predictions: PredictionEntity[]): PredictionContract {
     return {
       filter: jest.fn().mockResolvedValue(predictions),
-      modifyById: jest.fn().mockImplementation((id: string, ent: PredictionEntity) => Promise.resolve(ent)),
+      modifyById: jest
+        .fn()
+        .mockImplementation((id: string, ent: PredictionEntity) => Promise.resolve(ent)),
     } as unknown as PredictionContract;
   }
 
-  function makeMockGetUserEnrollmentUsecase(enrollment: UserEnrollmentEntity): GetUserEnrollmentByIdUsecase {
+  function makeMockGetUserEnrollmentUsecase(
+    enrollment: UserEnrollmentEntity,
+  ): GetUserEnrollmentByIdUsecase {
     return {
       call: jest.fn().mockResolvedValue(GottenUserEnrollmentDomainEvent(enrollment)),
     } as unknown as GetUserEnrollmentByIdUsecase;
@@ -47,11 +48,13 @@ describe("CalculateMatchScoreUsecaseImpl", () => {
 
   function makeMockUpdateUserEnrollmentUsecase(): UpdateUserEnrollmentUsecase {
     return {
-      call: jest.fn().mockResolvedValue(BasicDomainEvent),
+      call: jest.fn().mockResolvedValue(SavedUserEnrollmentDomainEvent),
     } as unknown as UpdateUserEnrollmentUsecase;
   }
 
-  function makeMockGetEnrollmentsWithoutPredictionUsecase(enrollments: UserEnrollmentEntity[]): GetEnrollmentsWithoutPredictionUsecase {
+  function makeMockGetEnrollmentsWithoutPredictionUsecase(
+    enrollments: UserEnrollmentEntity[],
+  ): GetEnrollmentsWithoutPredictionUsecase {
     return {
       call: jest.fn().mockResolvedValue(GottenUserEnrollmentsDomainEvent(enrollments)),
     } as unknown as GetEnrollmentsWithoutPredictionUsecase;
@@ -63,22 +66,20 @@ describe("CalculateMatchScoreUsecaseImpl", () => {
 
     const match = MatchEntity.build({
       id: matchId,
-      homeTeamId: "h-1" as Id,
-      awayTeamId: "a-1" as Id,
-      tournamentId: "t-1" as Id,
+      homeTeamId: 'h-1' as Id,
+      awayTeamId: 'a-1' as Id,
+      tournamentId: 't-1' as Id,
       kickOff: futureDate,
-      homeTeamScore: homeScore ?? 0,
-      awayTeamScore: awayScore ?? 0,
+      homeScore: homeScore ?? 0,
+      awayScore: awayScore ?? 0,
       createdAt: new Date(),
-    } as any);
+    }).payload;
 
     if (awayScore === undefined) {
-        // @ts-ignore
-        match.awayTeamScore = undefined;
+      match.awayScore = undefined;
     }
     if (homeScore === undefined) {
-        // @ts-ignore
-        match.homeTeamScore = undefined;
+      match.homeScore = undefined;
     }
 
     return match;
@@ -86,18 +87,21 @@ describe("CalculateMatchScoreUsecaseImpl", () => {
 
   function buildFakePrediction(): PredictionEntity {
     const pred = PredictionEntity.build({
-      id: "pred-1" as Id,
+      id: 'pred-1' as Id,
       userEnrollmentId: enrollmentId,
       matchId: matchId,
       tournamentInstanceId: tiId,
       awayScore: 2,
       homeScore: 1,
-      hasExactResult: false
-    } as any);
-    // @ts-ignore
+      hasExactResult: false,
+      earnedPoints: 0,
+      score: 0,
+      userId: '' as Id,
+    }).payload;
     pred.earnedPoints = 4;
-    pred.calculateScore = jest.fn().mockReturnValue({ total: 4, breakdown: [{ rule: 'ExactScoreRule', points: 1 }] });
-    // @ts-ignore
+    pred.calculateScore = jest
+      .fn()
+      .mockReturnValue({ total: 4, breakdown: [{ rule: 'ExactScoreRule', points: 1 }] });
     pred.hasExactResult = true;
     return pred;
   }
@@ -105,19 +109,19 @@ describe("CalculateMatchScoreUsecaseImpl", () => {
   function buildFakeEnrollment(id: Id): UserEnrollmentEntity {
     return UserEnrollmentEntity.build({
       id: id,
-      userId: "u-1" as Id,
+      userId: 'u-1' as Id,
       tournamentInstanceId: tiId,
-      tournamentId: "t-1" as Id,
+      tournamentId: 't-1' as Id,
       joinedAt: new Date(),
       lastPosition: 1,
       currentPosition: 1,
       currentScore: 0,
       streak: 0,
       maxStreak: 0,
-    } as any);
+    }).payload;
   }
 
-  it("should calculate score for participants and reset streak for non-participants", async () => {
+  it('should calculate score for participants and reset streak for non-participants', async () => {
     const match = buildFakeMatch(2, 1);
     const prediction = buildFakePrediction();
     const activeEnrollment = buildFakeEnrollment(enrollmentId);
@@ -127,43 +131,55 @@ describe("CalculateMatchScoreUsecaseImpl", () => {
     const predictionContract = makeMockPredictionContract([prediction]);
     const getUserEnrollment = makeMockGetUserEnrollmentUsecase(activeEnrollment);
     const updateUserEnrollment = makeMockUpdateUserEnrollmentUsecase();
-    const getMissingEnrollments = makeMockGetEnrollmentsWithoutPredictionUsecase([missingEnrollment]);
+    const getMissingEnrollments = makeMockGetEnrollmentsWithoutPredictionUsecase([
+      missingEnrollment,
+    ]);
 
     const usecase = new CalculateMatchScoreUsecaseImpl(
       matchContract,
       predictionContract,
       getUserEnrollment,
       updateUserEnrollment,
-      getMissingEnrollments
+      getMissingEnrollments,
     );
 
     const result = await usecase.call({ matchId, tournamentInstanceId: tiId });
 
     expect(result.is(GottenMatchDomainEvent)).toBe(true);
-    
+
     // Validar actualización de quien sí predijo
     expect(updateUserEnrollment.call).toHaveBeenCalledWith({
       userEnrollmentId: enrollmentId,
       points: prediction.earnedPoints,
-      isExact: true
+      isExact: true,
     });
 
     // Validar reinicio de racha de quien NO predijo
     expect(updateUserEnrollment.call).toHaveBeenCalledWith({
       userEnrollmentId: missingEnrollmentId,
       points: 0,
-      isExact: false
+      isExact: false,
     });
   });
 
-  it("should return MatchDoesNotExistDomainEvent if match is not found", async () => {
+  it('should return MatchDoesNotExistDomainEvent if match is not found', async () => {
+    const prediction = buildFakePrediction();
+    const activeEnrollment = buildFakeEnrollment(enrollmentId);
+    const missingEnrollment = buildFakeEnrollment(missingEnrollmentId);
+
     const matchContract = makeMockMatchContract(null);
+    const predictionContract = makeMockPredictionContract([prediction]);
+    const getUserEnrollment = makeMockGetUserEnrollmentUsecase(activeEnrollment);
+    const updateUserEnrollment = makeMockUpdateUserEnrollmentUsecase();
+    const getMissingEnrollments = makeMockGetEnrollmentsWithoutPredictionUsecase([
+      missingEnrollment,
+    ]);
     const usecase = new CalculateMatchScoreUsecaseImpl(
       matchContract,
-      null as any,
-      null as any,
-      null as any,
-      null as any
+      predictionContract,
+      getUserEnrollment,
+      updateUserEnrollment,
+      getMissingEnrollments,
     );
 
     const result = await usecase.call({ matchId, tournamentInstanceId: tiId });

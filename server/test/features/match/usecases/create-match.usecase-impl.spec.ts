@@ -42,7 +42,7 @@ const validParam: CreateMatchParam = {
 
 function buildFakeTournament(
   matchType: MatchType = MatchType.SingleMatchPerRound,
-): TournamentEntity {
+): DomainEvent {
   return TournamentEntity.build({
     id: tournamentId,
     name: "Champions League",
@@ -53,11 +53,11 @@ function buildFakeTournament(
   })!;
 }
 
-function buildFakeTeam(id: Id): TeamEntity {
+function buildFakeTeam(id: Id): DomainEvent {
   return TeamEntity.build({ id, name: "Team" })!;
 }
 
-function buildFakeMatch(): MatchEntity {
+function buildFakeMatch(): DomainEvent {
   return MatchEntity.build({
     id: "44444444-4444-4444-4444-444444444444",
     homeTeamId,
@@ -108,7 +108,7 @@ describe("CreateMatchUsecaseImpl", () => {
     it("returns MatchTeamIsTheSameDomainEvent without any further calls", async () => {
       const matchContract = makeMockMatchContract();
       const getTournamentUsecase = makeGetTournamentUsecase(
-        GottenTournamentDomainEvent(buildFakeTournament()),
+        GottenTournamentDomainEvent(buildFakeTournament().payload),
       );
       const getTeamUsecase = makeGetTeamUsecase();
       const usecase = new CreateMatchUsecaseImpl(
@@ -149,11 +149,11 @@ describe("CreateMatchUsecaseImpl", () => {
     it("returns MatchTeamDoesNotExistDomainEvent when the home team is not found", async () => {
       const matchContract = makeMockMatchContract();
       const getTournamentUsecase = makeGetTournamentUsecase(
-        GottenTournamentDomainEvent(buildFakeTournament()),
+        GottenTournamentDomainEvent(buildFakeTournament().payload),
       );
       const getTeamUsecase = makeGetTeamUsecase(
         NotGottenTeamDomainEvent(),
-        GottenTeamDomainEvent(buildFakeTeam(awayTeamId)),
+        GottenTeamDomainEvent(buildFakeTeam(awayTeamId).payload),
       );
       const usecase = new CreateMatchUsecaseImpl(
         matchContract,
@@ -169,10 +169,10 @@ describe("CreateMatchUsecaseImpl", () => {
     it("returns MatchTeamDoesNotExistDomainEvent when the away team is not found", async () => {
       const matchContract = makeMockMatchContract();
       const getTournamentUsecase = makeGetTournamentUsecase(
-        GottenTournamentDomainEvent(buildFakeTournament()),
+        GottenTournamentDomainEvent(buildFakeTournament().payload),
       );
       const getTeamUsecase = makeGetTeamUsecase(
-        GottenTeamDomainEvent(buildFakeTeam(homeTeamId)),
+        GottenTeamDomainEvent(buildFakeTeam(homeTeamId).payload),
         NotGottenTeamDomainEvent(),
       );
       const usecase = new CreateMatchUsecaseImpl(
@@ -193,11 +193,11 @@ describe("CreateMatchUsecaseImpl", () => {
         filter: jest.fn().mockResolvedValue([buildFakeMatch()]),
       });
       const getTournamentUsecase = makeGetTournamentUsecase(
-        GottenTournamentDomainEvent(buildFakeTournament()),
+        GottenTournamentDomainEvent(buildFakeTournament().payload),
       );
       const getTeamUsecase = makeGetTeamUsecase(
-        GottenTeamDomainEvent(buildFakeTeam(homeTeamId)),
-        GottenTeamDomainEvent(buildFakeTeam(awayTeamId)),
+        GottenTeamDomainEvent(buildFakeTeam(homeTeamId).payload),
+        GottenTeamDomainEvent(buildFakeTeam(awayTeamId).payload),
       );
       const usecase = new CreateMatchUsecaseImpl(
         matchContract,
@@ -221,12 +221,12 @@ describe("CreateMatchUsecaseImpl", () => {
       });
       const getTournamentUsecase = makeGetTournamentUsecase(
         GottenTournamentDomainEvent(
-          buildFakeTournament(MatchType.SingleMatchPerRound),
+          buildFakeTournament(MatchType.SingleMatchPerRound).payload,
         ),
       );
       const getTeamUsecase = makeGetTeamUsecase(
-        GottenTeamDomainEvent(buildFakeTeam(homeTeamId)),
-        GottenTeamDomainEvent(buildFakeTeam(awayTeamId)),
+        GottenTeamDomainEvent(buildFakeTeam(homeTeamId).payload),
+        GottenTeamDomainEvent(buildFakeTeam(awayTeamId).payload),
       );
       const usecase = new CreateMatchUsecaseImpl(
         matchContract,
@@ -246,11 +246,11 @@ describe("CreateMatchUsecaseImpl", () => {
     function setupValidMocks(matchType = MatchType.SingleMatchPerRound) {
       const matchContract = makeMockMatchContract();
       const getTournamentUsecase = makeGetTournamentUsecase(
-        GottenTournamentDomainEvent(buildFakeTournament(matchType)),
+        GottenTournamentDomainEvent(buildFakeTournament(matchType).payload),
       );
       const getTeamUsecase = makeGetTeamUsecase(
-        GottenTeamDomainEvent(buildFakeTeam(homeTeamId)),
-        GottenTeamDomainEvent(buildFakeTeam(awayTeamId)),
+        GottenTeamDomainEvent(buildFakeTeam(homeTeamId).payload),
+        GottenTeamDomainEvent(buildFakeTeam(awayTeamId).payload),
       );
       return { matchContract, getTournamentUsecase, getTeamUsecase };
     }

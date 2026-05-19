@@ -12,3 +12,6 @@ export { GetTeamByIdsUsecase } from './usecases/get-team-by-ids/get-team-by-ids.
 
 export { CreateTeamParam } from './usecases/create-team/create-team.param';
 export { CreateTeamUsecase } from './usecases/create-team/create-team.usecase';
+
+export { EditTeamParam } from './usecases/edit-team/edit-team.param';
+export { EditTeamUsecase } from './usecases/edit-team/edit-team.usecase';

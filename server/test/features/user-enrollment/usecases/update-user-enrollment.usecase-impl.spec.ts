@@ -1,19 +1,21 @@
-import { UpdateUserEnrollmentUsecaseImpl } from "../../../../src/features/user-enrollment/usecases/update-user-enrollment.usecase-impl";
-import { 
-  UserEnrollmentContract, 
+import { UpdateUserEnrollmentUsecaseImpl } from '../../../../src/features/user-enrollment/usecases/update-user-enrollment.usecase-impl';
+import {
+  UserEnrollmentContract,
   UserEnrollmentEntity,
   NotGottenUserEnrollmentDomainEvent,
-  SavedUserEnrollmentDomainEvent
-} from "@skorify/domain/user-enrollment";
-import { Id } from "@skorify/domain/core";
+  SavedUserEnrollmentDomainEvent,
+} from '@skorify/domain/user-enrollment';
+import { DomainEvent, Id } from '@skorify/domain/core';
 
-describe("UpdateUserEnrollmentUsecaseImpl", () => {
-  const enrollmentId = "11111111-1111-1111-1111-111111111111" as Id;
+describe('UpdateUserEnrollmentUsecaseImpl', () => {
+  const enrollmentId = '11111111-1111-1111-1111-111111111111' as Id;
 
   function makeMockContract(enrollment: UserEnrollmentEntity | null): UserEnrollmentContract {
     return {
       getById: jest.fn().mockResolvedValue(enrollment),
-      modifyById: jest.fn().mockImplementation((id: string, ent: UserEnrollmentEntity) => Promise.resolve(ent)),
+      modifyById: jest
+        .fn()
+        .mockImplementation((id: string, ent: UserEnrollmentEntity) => Promise.resolve(ent)),
       save: jest.fn(),
       deleteById: jest.fn(),
       getAll: jest.fn(),
@@ -22,12 +24,12 @@ describe("UpdateUserEnrollmentUsecaseImpl", () => {
     } as unknown as UserEnrollmentContract;
   }
 
-  function buildFakeEnrollment(): UserEnrollmentEntity {
+  function buildFakeEnrollment(): DomainEvent {
     return UserEnrollmentEntity.build({
       id: enrollmentId,
-      userId: "22222222-2222-2222-2222-222222222222" as Id,
-      tournamentInstanceId: "33333333-3333-3333-3333-333333333333" as Id,
-      tournamentId: "44444444-4444-4444-4444-444444444444" as Id,
+      userId: '22222222-2222-2222-2222-222222222222' as Id,
+      tournamentInstanceId: '33333333-3333-3333-3333-333333333333' as Id,
+      tournamentId: '44444444-4444-4444-4444-444444444444' as Id,
       joinedAt: new Date(),
       lastPosition: 1,
       currentPosition: 1,
@@ -37,8 +39,8 @@ describe("UpdateUserEnrollmentUsecaseImpl", () => {
     });
   }
 
-  it("should update enrollment and return SavedUserEnrollmentDomainEvent", async () => {
-    const enrollment = buildFakeEnrollment();
+  it('should update enrollment and return SavedUserEnrollmentDomainEvent', async () => {
+    const enrollment = buildFakeEnrollment().payload;
     const contract = makeMockContract(enrollment);
     const usecase = new UpdateUserEnrollmentUsecaseImpl(contract);
 
@@ -55,7 +57,7 @@ describe("UpdateUserEnrollmentUsecaseImpl", () => {
     expect(contract.modifyById).toHaveBeenCalledWith(enrollmentId, enrollment);
   });
 
-  it("should return NotGottenUserEnrollmentDomainEvent if enrollment does not exist", async () => {
+  it('should return NotGottenUserEnrollmentDomainEvent if enrollment does not exist', async () => {
     const contract = makeMockContract(null);
     const usecase = new UpdateUserEnrollmentUsecaseImpl(contract);
 

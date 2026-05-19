@@ -1,62 +1,51 @@
-import { Entity, Id } from "../../core/entity";
-import { ExactScoreRule } from "./scoreRules";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { Entity, Id } from '../../core/entity';
+import { ExactScoreRule } from './scoreRules';
 import {
   PredictionRuleBreakdown,
   PredictionScoreResult,
   PredictionScoreRuleset,
-} from "./scoreRules/prediction-score.ruleset";
+} from './scoreRules/prediction-score.ruleset';
 
-export class PredictionEntity extends Entity {
+export interface PredictionAttributes {
+  id: Id;
+  userId: Id;
   userEnrollmentId: Id;
-  instancePlayerId: Id;
+  tournamentInstanceId: Id;
   matchId: Id;
-  tournamentInstanceId : Id;
   awayScore: number;
   homeScore: number;
+  score: number;
+  earnedPoints: number;
+  hasExactResult: boolean;
+}
+
+export class PredictionEntity extends Entity {
+  userId: Id;
+  userEnrollmentId: Id;
+  tournamentInstanceId: Id;
+  matchId: Id;
+  awayScore: number;
+  homeScore: number;
+  score: number;
   earnedPoints: number;
   hasExactResult: boolean;
 
-  private constructor(
-    id: Id,
-    userEnrollmentId: Id,
-    instancePlayerId: Id,
-    matchId: Id,
-    tournamentInstanceId: Id,
-    awayScore: number,
-    homeScore: number,
-    hasExactResult: boolean,
-  ) {
-    super(id, new Date());
-    this.userEnrollmentId = userEnrollmentId;
-    this.matchId = matchId;
-    this.instancePlayerId = instancePlayerId;
-    this.tournamentInstanceId = tournamentInstanceId;
-    this.awayScore = awayScore;
-    this.homeScore = homeScore;
-    this.earnedPoints = 0;
-    this.hasExactResult = hasExactResult;
+  private constructor(attributes: PredictionAttributes) {
+    super(attributes.id, new Date());
+    this.userId = attributes.userId;
+    this.userEnrollmentId = attributes.userEnrollmentId;
+    this.tournamentInstanceId = attributes.tournamentInstanceId;
+    this.matchId = attributes.matchId;
+    this.awayScore = attributes.awayScore;
+    this.homeScore = attributes.homeScore;
+    this.earnedPoints = attributes.earnedPoints ?? 0;
+    this.hasExactResult = attributes.hasExactResult;
+    this.score = attributes.score;
   }
 
-  static build(params: {
-    id: Id;
-    userEnrollmentId: Id;
-    instancePlayerId: Id;
-    matchId: Id;
-    tournamentInstanceId: Id;
-    awayScore: number;
-    homeScore: number;
-    hasExactResult: boolean;
-  }): PredictionEntity {
-    return new PredictionEntity(
-      params.id,
-      params.userEnrollmentId,
-      params.instancePlayerId,
-      params.matchId,
-      params.tournamentInstanceId,
-      params.awayScore,
-      params.homeScore,
-      params.hasExactResult,
-    );
+  static build(params: PredictionAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new PredictionEntity(params));
   }
 
   calculateScore(
@@ -77,13 +66,13 @@ export class PredictionEntity extends Entity {
       },
     });
 
-    this.setHasExactResult(result.breakdown)
+    this.setHasExactResult(result.breakdown);
     this.earnedPoints = result.total + streakBonusPoints;
 
     return result;
   }
 
   private setHasExactResult(rulesApplied: PredictionRuleBreakdown[]) {
-    this.hasExactResult = !!rulesApplied.find(r => r.rule == ExactScoreRule.name)
+    this.hasExactResult = !!rulesApplied.find((r) => r.rule == ExactScoreRule.name);
   }
 }
