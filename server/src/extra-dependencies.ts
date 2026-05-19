@@ -13,7 +13,6 @@ import {
   TournamentRepository,
   UserRepository,
   TeamRepository,
-  EventBusImpl,
   UserEnrollmentRepository,
 } from '@skorify/shared';
 

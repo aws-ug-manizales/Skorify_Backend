@@ -16,7 +16,9 @@ export { GetTournamentInstancesByTournamentIdUsecase } from './usecases/get-tour
 export { GetTournamentInstanceByIdParam } from './usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.param';
 export { GetTournamentInstanceByIdUsecase } from './usecases/get-tournament-instance-by-id/get-tournament-instance-by-id.usecase';
 
-// Get current ranking
 export { GetCurrentRankingParam } from './usecases/get-current-ranking/get-current-ranking.param';
 export { GetCurrentRankingUsecase } from './usecases/get-current-ranking/get-current-ranking.usecase';
 export { RankingItem } from './usecases/get-current-ranking/utils/ranking-item';
+
+export { GetTournamentInstancesByQueryParam } from './usecases/get-tournament-instances-by-query/get-tournament-instances-by-query.param';
+export { GetTournamentInstancesByQueryUsecase } from './usecases/get-tournament-instances-by-query/get-tournament-instances-by-query.usecase';

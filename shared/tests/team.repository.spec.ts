@@ -1,7 +1,8 @@
-import { TeamEntity } from "@skorify/domain/team";
-import { TeamRepository } from "../src/repositories/team.repository";
-import { DataSource } from "../src/core";
-import type { Entity } from "@skorify/domain/core";
+import type { Entity } from '@skorify/domain/core';
+import { TeamEntity } from '@skorify/domain/team';
+import { DataSource } from '../src/core';
+import { TeamMapper } from '../src/mappers/team.mapper';
+import { TeamRepository } from '../src/repositories/team.repository';
 
 // ---------------------------------------------------------------------------
 // In-memory DataSource for testing (no file system required)
@@ -22,56 +23,56 @@ class InMemoryDataSource<T extends Entity> implements DataSource<T> {
 // Helpers
 // ---------------------------------------------------------------------------
 function makeRepo() {
-  return new TeamRepository(new InMemoryDataSource<TeamEntity>());
+  return new TeamRepository(new InMemoryDataSource<TeamEntity>(), new TeamMapper());
 }
 
-const id1 = "aaa00001-aaaa-aaaa-aaaa-aaaaaaaaaaaa" as const;
-const id2 = "bbb00002-bbbb-bbbb-bbbb-bbbbbbbbbbbb" as const;
+const id1 = 'aaa00001-aaaa-aaaa-aaaa-aaaaaaaaaaaa' as const;
+const id2 = 'bbb00002-bbbb-bbbb-bbbb-bbbbbbbbbbbb' as const;
 
 function buildTeam1(): TeamEntity {
   return TeamEntity.build({
     id: id1,
-    name: "Colombia",
-    shieldUrl: "https://example.com/colombia.png",
-  })!;
+    name: 'Colombia',
+    shieldUrl: 'https://example.com/colombia.png',
+  }).payload;
 }
 
 function buildTeam2(): TeamEntity {
-  return TeamEntity.build({ id: id2, name: "Brasil" })!;
+  return TeamEntity.build({ id: id2, name: 'Brasil' }).payload;
 }
 
 // ---------------------------------------------------------------------------
 // save()
 // ---------------------------------------------------------------------------
-describe("TeamRepository – save()", () => {
-  it("persists a new team and returns it", async () => {
+describe('TeamRepository – save()', () => {
+  it('persists a new team and returns it', async () => {
     const repo = makeRepo();
 
     const result = await repo.save(buildTeam1());
 
     expect(result).not.toBeNull();
     expect(result!.id).toBe(id1);
-    expect(result!.name).toBe("Colombia");
+    expect(result!.name).toBe('Colombia');
   });
 
-  it("overwrites an existing team with the same id", async () => {
+  it('overwrites an existing team with the same id', async () => {
     const repo = makeRepo();
     await repo.save(buildTeam1());
 
-    const updated = TeamEntity.build({ id: id1, name: "Colombia Updated" })!;
+    const updated = TeamEntity.build({ id: id1, name: 'Colombia Updated' }).payload;
     await repo.save(updated);
 
     const all = await repo.getAll();
     expect(all).toHaveLength(1);
-    expect(all[0].name).toBe("Colombia Updated");
+    expect(all[0].name).toBe('Colombia Updated');
   });
 });
 
 // ---------------------------------------------------------------------------
 // getById()
 // ---------------------------------------------------------------------------
-describe("TeamRepository – getById()", () => {
-  it("returns the team when it exists", async () => {
+describe('TeamRepository – getById()', () => {
+  it('returns the team when it exists', async () => {
     const repo = makeRepo();
     await repo.save(buildTeam1());
 
@@ -79,13 +80,13 @@ describe("TeamRepository – getById()", () => {
 
     expect(found).not.toBeNull();
     expect(found!.id).toBe(id1);
-    expect(found!.name).toBe("Colombia");
+    expect(found!.name).toBe('Colombia');
   });
 
-  it("returns null when the team does not exist", async () => {
+  it('returns null when the team does not exist', async () => {
     const repo = makeRepo();
 
-    const found = await repo.getById("00000000-0000-0000-0000-000000000000");
+    const found = await repo.getById('00000000-0000-0000-0000-000000000000');
 
     expect(found).toBeNull();
   });
@@ -94,14 +95,14 @@ describe("TeamRepository – getById()", () => {
 // ---------------------------------------------------------------------------
 // getAll()
 // ---------------------------------------------------------------------------
-describe("TeamRepository – getAll()", () => {
-  it("returns an empty array when the repository is empty", async () => {
+describe('TeamRepository – getAll()', () => {
+  it('returns an empty array when the repository is empty', async () => {
     const repo = makeRepo();
 
     expect(await repo.getAll()).toEqual([]);
   });
 
-  it("returns all saved teams", async () => {
+  it('returns all saved teams', async () => {
     const repo = makeRepo();
     await repo.save(buildTeam1());
     await repo.save(buildTeam2());
@@ -116,8 +117,8 @@ describe("TeamRepository – getAll()", () => {
 // ---------------------------------------------------------------------------
 // getByIDs()
 // ---------------------------------------------------------------------------
-describe("TeamRepository – getByIDs()", () => {
-  it("returns only the teams whose IDs are requested", async () => {
+describe('TeamRepository – getByIDs()', () => {
+  it('returns only the teams whose IDs are requested', async () => {
     const repo = makeRepo();
     await repo.save(buildTeam1());
     await repo.save(buildTeam2());
@@ -128,11 +129,11 @@ describe("TeamRepository – getByIDs()", () => {
     expect(result[0].id).toBe(id1);
   });
 
-  it("returns an empty array when no IDs match", async () => {
+  it('returns an empty array when no IDs match', async () => {
     const repo = makeRepo();
     await repo.save(buildTeam1());
 
-    const result = await repo.getByIDs(["00000000-0000-0000-0000-000000000000"]);
+    const result = await repo.getByIDs(['00000000-0000-0000-0000-000000000000']);
 
     expect(result).toHaveLength(0);
   });
@@ -141,25 +142,25 @@ describe("TeamRepository – getByIDs()", () => {
 // ---------------------------------------------------------------------------
 // modifyById()
 // ---------------------------------------------------------------------------
-describe("TeamRepository – modifyById()", () => {
-  it("updates the team and returns the updated version", async () => {
+describe('TeamRepository – modifyById()', () => {
+  it('updates the team and returns the updated version', async () => {
     const repo = makeRepo();
     await repo.save(buildTeam1());
 
-    const updated = TeamEntity.build({ id: id1, name: "Colombia National Team" })!;
-    const result = await repo.modifyById(id1, updated);
+    const updated = TeamEntity.build({ id: id1, name: 'Colombia National Team' })!;
+    const result = await repo.modifyById(id1, updated.payload);
 
     expect(result).not.toBeNull();
-    expect(result!.name).toBe("Colombia National Team");
+    expect(result!.name).toBe('Colombia National Team');
 
     const persisted = await repo.getById(id1);
-    expect(persisted!.name).toBe("Colombia National Team");
+    expect(persisted!.name).toBe('Colombia National Team');
   });
 
-  it("returns null when the team does not exist", async () => {
+  it('returns null when the team does not exist', async () => {
     const repo = makeRepo();
 
-    const result = await repo.modifyById("00000000-0000-0000-0000-000000000000", buildTeam1());
+    const result = await repo.modifyById('00000000-0000-0000-0000-000000000000', buildTeam1());
 
     expect(result).toBeNull();
   });
@@ -168,8 +169,8 @@ describe("TeamRepository – modifyById()", () => {
 // ---------------------------------------------------------------------------
 // deleteById()
 // ---------------------------------------------------------------------------
-describe("TeamRepository – deleteById()", () => {
-  it("removes the team and returns it", async () => {
+describe('TeamRepository – deleteById()', () => {
+  it('removes the team and returns it', async () => {
     const repo = makeRepo();
     await repo.save(buildTeam1());
     await repo.save(buildTeam2());
@@ -181,10 +182,10 @@ describe("TeamRepository – deleteById()", () => {
     expect(await repo.getAll()).toHaveLength(1);
   });
 
-  it("returns null when the team does not exist", async () => {
+  it('returns null when the team does not exist', async () => {
     const repo = makeRepo();
 
-    const result = await repo.deleteById("00000000-0000-0000-0000-000000000000");
+    const result = await repo.deleteById('00000000-0000-0000-0000-000000000000');
 
     expect(result).toBeNull();
   });

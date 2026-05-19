@@ -3,6 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['<rootDir>/tests/**/*.spec.ts'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   moduleNameMapper: {
     '^@skorify/domain/core$': '<rootDir>/node_modules/@skorify/domain/core/index.js',
     '^@skorify/domain/(.+)$': '<rootDir>/node_modules/@skorify/domain/features/$1/index.js',

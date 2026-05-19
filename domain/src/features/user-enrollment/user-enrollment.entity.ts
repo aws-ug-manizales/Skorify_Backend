@@ -1,6 +1,7 @@
-import { Entity, Id } from "../../core/entity";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { Entity, Id } from '../../core/entity';
 
-export interface UserEnrollmentAttributes{
+export interface UserEnrollmentAttributes {
   id: Id;
   userId: Id;
   tournamentInstanceId: Id;
@@ -23,6 +24,8 @@ export class UserEnrollmentEntity extends Entity {
   currentScore: number;
   streak: number;
   maxStreak: number;
+
+  private streakBonusRules: Map<number, number> = new Map<number, number>();
 
   private constructor(attributes: UserEnrollmentAttributes) {
     const {
@@ -47,9 +50,33 @@ export class UserEnrollmentEntity extends Entity {
     this.currentScore = currentScore;
     this.streak = streak;
     this.maxStreak = maxStreak;
+
+    this.streakBonusRules.set(3, 1);
+    this.streakBonusRules.set(5, 2);
+    this.streakBonusRules.set(7, 3);
+    this.streakBonusRules.set(10, 4);
   }
 
-  static build(params: UserEnrollmentAttributes): UserEnrollmentEntity {
-    return new UserEnrollmentEntity(params);
+  static build(params: UserEnrollmentAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new UserEnrollmentEntity(params));
+  }
+
+  getStreakBonusPoints(): number {
+    return this.streakBonusRules.get(this.streak) ?? 0;
+  }
+
+  applyScore(points: number, isExact: boolean): void {
+    this.currentScore += points;
+    if (isExact) {
+      this.streak += 1;
+    } else {
+      this.streak = 0;
+    }
+  }
+
+  verifyMaxStreak(): void {
+    if (this.streak > this.maxStreak) {
+      this.maxStreak = this.streak;
+    }
   }
 }

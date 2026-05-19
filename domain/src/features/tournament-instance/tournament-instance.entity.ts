@@ -1,4 +1,4 @@
-import { Entity, Id } from '../../core';
+import { BuiltEntityDomainEvent, DomainEvent, Entity, Id } from '../../core';
 
 export interface TournamentInstanceAttributes {
   id: Id;
@@ -23,7 +23,7 @@ export class TournamentInstanceEntity extends Entity {
     this.tournamentId = tournamentId;
   }
 
-  static build(params: TournamentInstanceAttributes): TournamentInstanceEntity | null {
-    return new TournamentInstanceEntity(params);
+  static build(params: TournamentInstanceAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new TournamentInstanceEntity(params));
   }
 }

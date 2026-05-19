@@ -1,9 +1,8 @@
-import { DomainEvent } from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
 import { GetTournamentByIdUsecase, GottenTournamentDomainEvent } from '@skorify/domain/tournament';
 import {
   CreateTournamentInstanceParam,
   CreateTournamentInstanceUsecase,
-  EntityNotInstanciableDomainEvent,
   TournamentInstanceContract,
   TournamentInstanceEntity,
   TournamentInstanceNotSavedDomainEvent,
@@ -47,7 +46,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return TournamentInstanceWithSameNameDomainEvent(exist);
     }
 
-    const tournamentInstance = TournamentInstanceEntity.build({
+    const tournamentInstanceDE = TournamentInstanceEntity.build({
       id: crypto.randomUUID(),
       name,
       tournamentId,
@@ -55,9 +54,11 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       state: 'active',
     });
 
-    if (!tournamentInstance) {
-      return EntityNotInstanciableDomainEvent();
+    if (tournamentInstanceDE.isNot(BuiltEntityDomainEvent)) {
+      return tournamentInstanceDE;
     }
+
+    const tournamentInstance = tournamentInstanceDE.payload;
 
     const saved = await this.tournamentInstanceContract.save(tournamentInstance);
 
