@@ -1,4 +1,4 @@
-import { BaseContract, Entity, Filters } from '@skorify/domain/core';
+import { BaseContract, BuiltEntityDomainEvent, Entity, Filters } from '@skorify/domain/core';
 import { BaseMapper } from './base.mapper';
 import { DataSource } from './data-source.interface';
 
@@ -16,7 +16,13 @@ export class BaseRepository<T extends Entity, Attrs> extends BaseContract<T> {
 
   async getById(id: string): Promise<T | null> {
     const items = await this.dataSource.read();
-    return items.find((item) => item.id === id) ?? null;
+    const temp = items.find((item) => item.id === id);
+    if (temp != null) {
+      const mapped = this.mapper.fromJson(temp ?? null);
+
+      return mapped.is(BuiltEntityDomainEvent) ? (mapped.payload as T) : null;
+    }
+    return null;
   }
 
   async save(entity: T): Promise<T | null> {
