@@ -15,7 +15,6 @@ export interface PredictionAttributes {
   matchId: Id;
   awayScore: number;
   homeScore: number;
-  score: number;
   earnedPoints: number;
   hasExactResult: boolean;
 }
@@ -27,7 +26,6 @@ export class PredictionEntity extends Entity {
   matchId: Id;
   awayScore: number;
   homeScore: number;
-  score: number;
   earnedPoints: number;
   hasExactResult: boolean;
 
@@ -41,7 +39,6 @@ export class PredictionEntity extends Entity {
     this.homeScore = attributes.homeScore;
     this.earnedPoints = attributes.earnedPoints ?? 0;
     this.hasExactResult = attributes.hasExactResult;
-    this.score = attributes.score;
   }
 
   static build(params: PredictionAttributes): DomainEvent {

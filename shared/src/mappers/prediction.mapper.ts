@@ -4,9 +4,17 @@ import { BaseMapper } from '../core/base.mapper';
 
 export class PredictionMapper extends BaseMapper<PredictionAttributes> {
   fromJson(json: Record<string, any>): DomainEvent {
-    const entity = PredictionEntity.build(json as PredictionAttributes);
-
-    return entity;
+    return PredictionEntity.build({
+      id: json.id,
+      userEnrollmentId: json.userEnrollmentId,
+      userId: json.userId,
+      tournamentInstanceId: json.tournamentInstanceId,
+      matchId: json.matchId,
+      awayScore: json.awayScore,
+      homeScore: json.homeScore,
+      earnedPoints: json.earnedPoints ?? 0,
+      hasExactResult: json.hasExactResult ?? false
+    });
   }
 
   toJson(entity: PredictionEntity): PredictionAttributes {
@@ -17,7 +25,6 @@ export class PredictionMapper extends BaseMapper<PredictionAttributes> {
       matchId: entity.matchId,
       awayScore: entity.awayScore,
       homeScore: entity.homeScore,
-      score: entity.score,
       earnedPoints: entity.earnedPoints,
       hasExactResult: entity.hasExactResult,
       userEnrollmentId: entity.userEnrollmentId,

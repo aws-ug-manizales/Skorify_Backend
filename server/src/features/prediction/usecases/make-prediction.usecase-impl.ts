@@ -94,7 +94,6 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       matchId: matchId,
       awayScore,
       homeScore,
-      score: 0,
       earnedPoints: 0,
       hasExactResult: false,
       userEnrollmentId: userEnrollment.id,

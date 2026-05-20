@@ -22,7 +22,6 @@ export class UpdateUserEnrollmentUsecaseImpl extends UpdateUserEnrollmentUsecase
     }
 
     userEnrollment.applyScore(points, isExact);
-    userEnrollment.verifyMaxStreak();
 
     const saved = await this.userEnrollmentContract.modifyById(userEnrollmentId, userEnrollment);
 

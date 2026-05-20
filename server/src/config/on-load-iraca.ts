@@ -27,7 +27,8 @@ type Injections = {
   [key: string]: unknown;
 };
 export const onLoadIraca = async (container: IracaContainer, injections: Injections) => {
-  void injections;
+  console.log(injections);
+
   const dataPath = join(__dirname, '../../../shared/src/data');
 
   // const dbClient = new DBClient({
@@ -127,6 +128,4 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
     implementation: StorageMemoryImpl,
     dependencies: ['rootFolder'],
   });
-
-
 };
