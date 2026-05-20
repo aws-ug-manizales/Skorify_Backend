@@ -12,7 +12,7 @@ const CLOSE_KICKOFF = new Date(Date.now() + 3 * 60 * 1000);        // 3 min from
 const FAR_FUTURE_KICKOFF = new Date("2030-01-01T12:00:00Z");
 
 function buildMatch(status: MatchStatus, kickOff: Date = FAR_FUTURE_KICKOFF): MatchEntity {
-  return MatchEntity.build({
+  const matchDE = MatchEntity.build({
     id: matchId,
     awayTeamId,
     homeTeamId,
@@ -21,6 +21,8 @@ function buildMatch(status: MatchStatus, kickOff: Date = FAR_FUTURE_KICKOFF): Ma
     createdAt: new Date(),
     status,
   });
+
+  return (matchDE as any).payload as MatchEntity;
 }
 
 // ---------------------------------------------------------------------------
@@ -28,7 +30,7 @@ function buildMatch(status: MatchStatus, kickOff: Date = FAR_FUTURE_KICKOFF): Ma
 // ---------------------------------------------------------------------------
 describe("MatchEntity – build()", () => {
   it("defaults to Draft status when no status is provided", () => {
-    const match = MatchEntity.build({
+    const matchDE = MatchEntity.build({
       id: matchId,
       awayTeamId,
       homeTeamId,
@@ -37,6 +39,7 @@ describe("MatchEntity – build()", () => {
       createdAt: new Date(),
     });
 
+    const match = (matchDE as any).payload as MatchEntity;
     expect(match.status).toBe(MatchStatus.Draft);
   });
 

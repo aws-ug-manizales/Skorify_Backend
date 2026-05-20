@@ -9,16 +9,19 @@ function makePrediction(params: {
   awayScore: number;
   homeScore: number;
 }): PredictionEntity {
-  return PredictionEntity.build({
+  const predictionDE = PredictionEntity.build({
     id: params.predictionId as any,
-    userEnrollmentId: params.userId as any,
-    instancePlayerId: params.instanceId as any,
+    userId: params.userId as any,
+    userEnrollmentId: params.instanceId as any,
     matchId: params.matchId as any,
     tournamentInstanceId: "ti-1111-1111" as any,
     awayScore: params.awayScore,
     homeScore: params.homeScore,
-    hasExactResult: false
+    earnedPoints: 0,
+    hasExactResult: false,
   });
+
+  return (predictionDE as any).payload as PredictionEntity;
 }
 
 function asMap(breakdown: PredictionRuleBreakdown[]): Record<string, number> {

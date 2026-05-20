@@ -62,13 +62,22 @@ export class BaseRepository<T extends Entity, Attrs> extends BaseContract<T> {
     return updated;
   }
 
+  private mapItems(items: any[]): T[] {
+    return items.map(item => {
+      const mapped = this.mapper.fromJson(item);
+      return mapped.is(BuiltEntityDomainEvent) ? (mapped.payload as T) : null;
+    }).filter(item => item !== null) as T[];
+  }
+
   async getAll(): Promise<T[]> {
-    return this.dataSource.read();
+    const items = await this.dataSource.read();
+    return this.mapItems(items);
   }
 
   async getByIDs(ids: string[]): Promise<T[]> {
     const items = await this.dataSource.read();
-    return items.filter((item) => ids.includes(item.id));
+    const filtered = items.filter((item) => ids.includes(item.id));
+    return this.mapItems(filtered);
   }
 
   async filter(filters: Filters): Promise<T[]> {
@@ -145,6 +154,6 @@ export class BaseRepository<T extends Entity, Attrs> extends BaseContract<T> {
       result = result.slice(0, filters.take);
     }
 
-    return result;
+    return this.mapItems(result);
   }
 }

@@ -72,9 +72,10 @@ export class UserEnrollmentEntity extends Entity {
     } else {
       this.streak = 0;
     }
+    this.verifyMaxStreak()
   }
 
-  verifyMaxStreak(): void {
+  private verifyMaxStreak(): void {
     if (this.streak > this.maxStreak) {
       this.maxStreak = this.streak;
     }

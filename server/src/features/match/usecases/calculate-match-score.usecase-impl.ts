@@ -37,15 +37,6 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-    if (match.isMatchClose()) {
-      //TODO: Change domain event to match is close
-      return MatchDoesNotExistDomainEvent();
-    }
-
-    if (match.awayScore === undefined || match.homeScore === undefined) {
-      // No scores to calculate
-      return GottenMatchDomainEvent(match);
-    }
 
     const predictions = await this.predictionContract.filter({
       where: {

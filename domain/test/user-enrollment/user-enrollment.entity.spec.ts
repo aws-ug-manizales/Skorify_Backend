@@ -7,8 +7,8 @@ describe("UserEnrollmentEntity", () => {
   const tournamentInstanceId = "33333333-3333-3333-3333-333333333333" as Id;
   const tournamentId = "44444444-4444-4444-4444-444444444444" as Id;
 
-  function createEnrollment(initialScore = 0, initialStreak = 0) {
-    return UserEnrollmentEntity.build({
+  function createEnrollment(initialScore = 0, initialStreak = 0): UserEnrollmentEntity {
+    const enrollmentDE = UserEnrollmentEntity.build({
       id: enrollmentId,
       userId,
       tournamentInstanceId,
@@ -20,6 +20,8 @@ describe("UserEnrollmentEntity", () => {
       streak: initialStreak,
       maxStreak: 0,
     });
+
+    return (enrollmentDE as any).payload as UserEnrollmentEntity;
   }
 
   describe("applyScore", () => {
@@ -54,20 +56,18 @@ describe("UserEnrollmentEntity", () => {
   describe("verifyMaxStreak", () => {
     it("should update maxStreak if current streak is greater", () => {
       const enrollment = createEnrollment(0, 5);
-      // @ts-ignore
-      enrollment.maxStreak = 4;
+      (enrollment as any).maxStreak = 4;
       
-      enrollment.verifyMaxStreak();
+      (enrollment as any).verifyMaxStreak();
 
       expect(enrollment.maxStreak).toBe(5);
     });
 
     it("should NOT update maxStreak if current streak is less or equal", () => {
       const enrollment = createEnrollment(0, 3);
-      // @ts-ignore
-      enrollment.maxStreak = 5;
+      (enrollment as any).maxStreak = 5;
       
-      enrollment.verifyMaxStreak();
+      (enrollment as any).verifyMaxStreak();
 
       expect(enrollment.maxStreak).toBe(5);
     });
