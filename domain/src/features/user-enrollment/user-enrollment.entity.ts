@@ -1,6 +1,10 @@
 import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
 import { Entity, Id } from '../../core/entity';
 
+export interface SimulationUserEnrollmentAttribute {
+  streak: number;
+}
+
 export interface UserEnrollmentAttributes {
   id: Id;
   userId: Id;
@@ -61,6 +65,23 @@ export class UserEnrollmentEntity extends Entity {
     return BuiltEntityDomainEvent(new UserEnrollmentEntity(params));
   }
 
+  static forSimulation({ streak }: SimulationUserEnrollmentAttribute): DomainEvent {
+    return BuiltEntityDomainEvent(new UserEnrollmentEntity(
+      {
+        id: '0-0-0-0-0',
+        userId: '0-0-0-0-0',
+        tournamentInstanceId: '0-0-0-0-0',
+        tournamentId: '0-0-0-0-0',
+        joinedAt: new Date(),
+        lastPosition: null,
+        currentPosition: null,
+        currentScore: 0,
+        streak,
+        maxStreak: 0,
+      },
+    ));
+  }
+
   getStreakBonusPoints(): number {
     return this.streakBonusRules.get(this.streak) ?? 0;
   }
@@ -79,5 +100,9 @@ export class UserEnrollmentEntity extends Entity {
     if (this.streak > this.maxStreak) {
       this.maxStreak = this.streak;
     }
+  }
+
+  private static generateEmptyId(): Id {
+    return "0-0-0-0-0"
   }
 }

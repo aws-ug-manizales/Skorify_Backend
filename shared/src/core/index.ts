@@ -6,4 +6,5 @@ export { EventBusImpl } from './eventbus.impl';
 export { Queue } from './queue';
 export { StorageMemoryImpl } from './storage-memory.impl';
 export { StorageImpl } from './storage.impl';
+export { IdentityProviderMemoryImpl } from './identity-provider.impl';
 

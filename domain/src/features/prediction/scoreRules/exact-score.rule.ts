@@ -4,6 +4,14 @@ import { isExactScore } from "./score-rule.utils";
 export class ExactScoreRule implements PredictionRule {
   private ruleScore = 1;
 
+  getRuleScore(): number {
+   return this.ruleScore;
+  }
+  
+  getRuleName(): string {
+    return ExactScoreRule.name
+  }
+
   calculateScore(context: PredictionRuleContext): number {
     if (isExactScore(context.prediction, context.match)) {
       return this.ruleScore;

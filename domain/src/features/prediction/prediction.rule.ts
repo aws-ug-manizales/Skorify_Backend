@@ -11,4 +11,6 @@ export type PredictionRuleContext = {
 
 export interface PredictionRule {
   calculateScore(context: PredictionRuleContext): number;
+  getRuleScore(): number;
+  getRuleName(): string;
 }

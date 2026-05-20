@@ -26,3 +26,9 @@ export { EditPredictionUsecase } from './usecases/edit-prediction/edit-predictio
 export { GetPredictionByIdParam } from './usecases/get-prediction-by-id/get-prediction-by-id.param';
 export { GetPredictionByIdUsecase } from './usecases/get-prediction-by-id/get-prediction-by-id.usecase';
 
+export { GetPredictionRulesParam } from './usecases/get-prediction-rules/get-prediction-rules.param';
+export { GetPredictionRulesUsecase } from './usecases/get-prediction-rules/get-prediction-rules.usecase';
+
+export { SimulatePredictionParam } from './usecases/simulate-prediction/simulate-prediction.param';
+export { SimulatePredictionUsecase } from './usecases/simulate-prediction/simulate-prediction.usecase';
+
