@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:deploy": "npx tsc -p tsconfig.json && pnpm run copy-package",
     "build": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-to-server && pnpm run copy-to-shared",
     "build-pipeline": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-to-server-pipeline && pnpm run copy-to-shared-pipeline",
     "test": "jest",
@@ -13,6 +14,9 @@
     "copy-to-shared": "copyfiles -u 1 dist/**/* ../shared/libs/domain",
     "copy-to-server-pipeline": "copyfiles -u 1 dist/**/* ../../../server/libs/domain",
     "copy-to-shared-pipeline": "copyfiles -u 1 dist/**/* ../shared/libs/domain && copyfiles -u 1 dist/**/* ../../shared/libs/domain && copyfiles -u 1 dist/**/* ../../../shared/libs/domain"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

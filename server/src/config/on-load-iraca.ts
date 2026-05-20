@@ -1,4 +1,5 @@
 import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
+import { DBClient } from '@skorify/data';
 import { EventBusContract, StorageContract } from '@skorify/domain/core';
 import {
   CalculateMatchScoreUsecase,
@@ -16,9 +17,24 @@ import { join } from 'path';
 
 type DatabaseConfig = {
   host: string;
-  port: number;
+  port: string;
   username: string;
   password: string;
+  engine:
+    | 'mysql'
+    | 'mariadb'
+    | 'postgres'
+    | 'cockroachdb'
+    | 'sqlite'
+    | 'mssql'
+    | 'sap'
+    | 'oracle'
+    | 'cordova'
+    | 'nativescript'
+    | 'react-native'
+    | 'sqljs'
+    | 'mongodb'
+    | 'aurora-mysql';
   name: string;
   logging?: boolean;
 };
@@ -28,33 +44,36 @@ type Injections = {
 };
 export const onLoadIraca = async (container: IracaContainer, injections: Injections) => {
   console.log(injections);
+  const { database } = injections;
+  const { host, port, username, engine, password, name, logging } = database;
 
   const dataPath = join(__dirname, '../../../shared/src/data');
 
-  // const dbClient = new DBClient({
-  //   type: "postgres",
-  //   host,
-  //   port: parseInt(port),
-  //   username,
-  //   password,
-  //   database: name,
-  //   synchronize: false,
-  //   logging,
-  // });
+  const dbClient = new DBClient({
+    type: 'postgres',
+    host,
+    port: parseInt(port),
+    username,
+    password,
+    database: name,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  });
 
   // Connect to database
-  // try {
-  //   await dbClient.connect();
-  //   console.log("Database connected successfully");
-  // } catch (error) {
-  //   console.error("Failed to connect to database:", error);
-  //   process.exit(1);
-  // }
+  try {
+    await dbClient.connect();
+    console.log('Database connected successfully');
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    process.exit(1);
+  }
 
-  // container.addValue({
-  //   id: "DBClient",
-  //   value: dbClient,
-  // });
+  container.addValue({
+    id: 'DBClient',
+    value: dbClient,
+  });
   container.addValue({
     id: 'MatchDatasource',
     value: new JsonDataSource<MatchEntity>('matches.json', dataPath),

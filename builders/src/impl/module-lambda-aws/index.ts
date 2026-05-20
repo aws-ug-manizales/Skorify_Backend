@@ -4,7 +4,6 @@ import {
 } from "@scifamek-open-source/iraca/web-api";
 import { generalMethodMapper } from "@skorify/domain/core";
 import { exec } from "node:child_process";
-import { writeFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { Builder, BuilderConfiguration } from "../../general/builder";
@@ -170,8 +169,15 @@ export class ModuleLambdaAWSBuilder extends Builder {
     }
 	const finalYml = `AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-
+Parameters:
+  DB_PARAMETER_ARN:
+    Type: String
+  STORAGE_PARAMETER_ARN:
+    Type: String
+  BUS_PARAMETER_ARN:
+    Type: String
 Resources:
+
 ${samTemplates.join("\n")}`;
     await writeFile(
       join(fullGeneratedFolder, `template.yaml`),
