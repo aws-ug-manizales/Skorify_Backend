@@ -9,6 +9,9 @@ export class PredictionController extends IracaController {
     this.configureEndpointsByPattern(/[\w]+Usecase$/, {
       methodMapper:
         generalMethodMapper as MassiveRegisterConfiguration["methodMapper"],
+      privateEndpointsChooser(ids) {
+        return ["GetPredictionsByMatchUsecase"];
+      },
     });
   }
 }

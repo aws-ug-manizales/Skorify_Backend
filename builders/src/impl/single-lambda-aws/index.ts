@@ -1,5 +1,10 @@
-import { existsFile, getUsecases, toToken } from "../general/helpers";
-import { Builder, BuilderConfiguration } from "../general/builder";
+import {
+  existsFile,
+  toToken,
+  UsecaseInfo,
+  UsecasesInfo,
+} from "../../general/helpers";
+import { Builder, BuilderConfiguration } from "../../general/builder";
 import { pathToFileURL } from "node:url";
 import * as ts from "typescript";
 import { mkdir, statfs, readFile, writeFile, rm } from "node:fs/promises";
@@ -10,14 +15,7 @@ import {
 } from "@scifamek-open-source/iraca/web-api";
 import { generalMethodMapper } from "@skorify/domain/core";
 import { exec } from "node:child_process";
-type UsecaseInfo = {
-  module: string;
-  modulePascal: string;
-  usecaseName: string;
-  kebadUsecaseName: string;
-  path: string;
-};
-type UsecasesInfo = UsecaseInfo[];
+
 type Templates = {
   packageTemplate: string;
   sourceCodeTemplate: string;
@@ -27,13 +25,20 @@ type Templates = {
   repositoryTemplate: string;
 };
 export class SingleLambdaAWSBuilder extends Builder {
-  generatedFolder = "generated";
-  distFolder = "dist";
   async build(config: BuilderConfiguration): Promise<void> {
-    const usecases = await getUsecases(config.serverFolder);
+    const usecases = await this.getUsecases(config.serverFolder);
+
+    console.log(usecases);
 
     const myFolder = "single-lambda-aws";
-    const templatesFolder = join(config.root, "src", myFolder, "templates");
+
+    const templatesFolder = join(
+      config.root,
+      "src",
+      "impl",
+      myFolder,
+      "templates",
+    );
     const sourceCodeTemplate = await readFile(
       join(templatesFolder, "./lambda-body.template"),
       "utf-8",
@@ -59,27 +64,8 @@ export class SingleLambdaAWSBuilder extends Builder {
       "utf-8",
     );
 
-    const fullGeneratedFolder = join(config.root, this.generatedFolder);
-    const fullDistFolder = join(config.root, this.distFolder);
-    const existsGenerated = await existsFile(fullGeneratedFolder);
-    const exists = await existsFile(fullDistFolder);
-    if (!existsGenerated) {
-      // await rm(fullDistFolder, {
-      //   force: true,
-      //   recursive: true,
-      // });
-      await mkdir(fullGeneratedFolder);
-    }
-    if (!exists) {
-      // await rm(fullDistFolder, {
-      //   force: true,
-      //   recursive: true,
-      // });
-      await mkdir(fullDistFolder);
-    }
-
-    await this.createModuleFolders(usecases, fullGeneratedFolder);
-    await this.createModuleFolders(usecases, fullDistFolder);
+    const { fullDistFolder, fullGeneratedFolder } =
+      await this.createAllModuleFolders(config, usecases);
     const promises = [];
     for (const usecaseConfig of usecases) {
       const promise = this.constructUsecase(
@@ -112,16 +98,6 @@ ${resourcesYML.join("\n")}`,
     );
   }
 
-  async createModuleFolders(usecases: UsecasesInfo, fullDistFolder: string) {
-    for (const usecaseConfig of usecases) {
-      const moduleFolder = join(fullDistFolder, usecaseConfig.module);
-
-      const existsModuleFolder = await existsFile(moduleFolder);
-      if (!existsModuleFolder) {
-        await mkdir(moduleFolder);
-      }
-    }
-  }
   async constructUsecase(
     usecasesConfig: UsecasesInfo,
     usecaseConfig: UsecaseInfo,
@@ -143,8 +119,8 @@ ${resourcesYML.join("\n")}`,
 
     const injections: string[] = [];
     const moduleFolder = join(fullGeneratedFolder, usecaseConfig.module);
-
     const usecaseFolder = join(moduleFolder, usecaseConfig.kebadUsecaseName);
+
     const existsUsecaseFolder = await existsFile(usecaseFolder);
     if (!existsUsecaseFolder) {
       await mkdir(usecaseFolder);
@@ -154,12 +130,14 @@ ${resourcesYML.join("\n")}`,
       join(usecaseFolder, `${usecaseConfig.kebadUsecaseName}.usecase-impl.ts`),
       source,
     );
+
     await writeFile(
       join(usecaseFolder, `package.json`),
       packageTemplate
         .replace(toToken("MODULE"), usecaseConfig.module)
         .replace(toToken("USECASE"), usecaseConfig.kebadUsecaseName),
     );
+
     await writeFile(join(usecaseFolder, `tsconfig.json`), tsconfigTemplate);
     await writeFile(join(usecaseFolder, `helpers.ts`), helpersTemplate);
     await writeFile(
@@ -303,47 +281,5 @@ ${resourcesYML.join("\n")}`,
       }
     }
     return myYamlTemplate;
-  }
-  addImport(
-    imports: string[],
-    usecases: UsecasesInfo,
-    myClass: string,
-    impl: string,
-  ) {
-    if (myClass.includes("UsecaseImpl")) {
-      const empty = myClass.replace("Impl", "");
-      const usecase = usecases.find((x) => x.usecaseName == empty);
-      if (usecase) {
-        imports.push(
-          `import {${myClass}} from './${usecase.kebadUsecaseName}.usecase-impl';`,
-        );
-      }
-    } else if (myClass.includes("Usecase")) {
-      const usecase = usecases.find((x) => x.usecaseName == myClass);
-
-      if (usecase) {
-        imports.push(
-          `import {${myClass}} from '@skorify/domain/${usecase.module}';`,
-        );
-      }
-    } else {
-      const p = new RegExp(
-        "import\\s*\\{[^}]*\\b" +
-          myClass +
-          `\\b[^}]*\\}\\s*from\\s*["']([^"']+)["'];`,
-      );
-      const result = p.exec(impl);
-      if (result) {
-        const fromPath = result[1];
-        imports.push(`import {${myClass}} from '${fromPath}';`);
-      }
-    }
-  }
-
-  *walk(node: ts.Node): Generator<ts.Node> {
-    yield node;
-    for (const child of node.getChildren()) {
-      yield* this.walk(child);
-    }
   }
 }

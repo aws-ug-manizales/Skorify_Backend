@@ -1,0 +1,137 @@
+// handler.ts
+// import { APIGatewayProxyEvent } from "aws-lambda";
+// import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
+import { IracaServer } from "@scifamek-open-source/iraca/web-api";
+
+import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
+import { generate } from "./helpers";
+import { {{MODULE_PASCAL}}Repository } from "./{{MODULE}}.repository";
+import { {{MODULE_PASCAL}}Controller } from "./controller";
+
+{{IMPORTS}}
+
+
+type LambdaEvent = {
+  rawPath?: string
+  path?: string
+  body?: string | null
+  queryStringParameters?: Record<string, string>
+  requestContext?: {
+    http?: {
+      method?: string
+    }
+  }
+  httpMethod?: string
+}
+
+export const handler = async (event: any) => {
+  const name = event.queryStringParameters?.name ?? "World";
+
+  const identifier = "{{IDENTIFIER}}";
+
+    const methodMapper: any = [
+  {
+    method: "get",
+    patterns: [/[\w]+/],
+  },
+];
+  const container = new IracaContainer();
+
+{{INJECTIONS}}
+
+
+
+
+  const myController = new {{MODULE_PASCAL}}Controller(
+        {
+      container,
+      prefix: '{{MODULE}}'
+    }
+  );
+
+
+
+
+
+
+try {
+    const path = getPath(event)
+
+    const useCaseName = `${toPascalCase(path)}Usecase`
+
+    console.log('useCase');
+    console.log(container.configsTable);
+    const useCase = await container.getInstance<any>(useCaseName);
+
+    if (!useCase) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: `Use case ${useCaseName} not found`,
+        }),
+      }
+    }
+
+    const payload = getPayload(event)
+
+    const result = await useCase.call(payload)
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(result),
+    }
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: 'Internal server error',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error',
+      }),
+    }
+  }
+};
+
+const toPascalCase = (value: string) => {
+  return value
+    .split('/')
+    .filter(Boolean)
+    .pop()!
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('')
+}
+
+const getPath = (event: LambdaEvent) => {
+  return event.rawPath || event.path || '/'
+}
+
+const getMethod = (event: LambdaEvent) => {
+  return (
+    event.requestContext?.http?.method ||
+    event.httpMethod ||
+    'GET'
+  )
+}
+
+const getPayload = (event: LambdaEvent) => {
+  const method = getMethod(event)
+
+  if (method === 'GET') {
+    return event.queryStringParameters || {}
+  }
+
+  if (!event.body) {
+    return {}
+  }
+
+  return JSON.parse(event.body)
+}
