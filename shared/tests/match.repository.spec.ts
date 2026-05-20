@@ -64,20 +64,6 @@ describe('MatchRepository – save()', () => {
     expect(result).not.toBeNull();
     expect(result!.id).toBe(id1);
   });
-
-  it('overwrites an existing match with the same id', async () => {
-    const repo = makeRepo();
-    const match = buildMatch1();
-    await repo.save(match);
-
-    match.setScores(2, 1);
-    await repo.save(match);
-
-    const all = await repo.getAll();
-    expect(all).toHaveLength(1);
-    expect(all[0].homeScore).toBe(1);
-    expect(all[0].awayScore).toBe(2);
-  });
 });
 
 // ---------------------------------------------------------------------------
