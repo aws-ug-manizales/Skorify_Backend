@@ -95,7 +95,6 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
       homeScore: 1,
       hasExactResult: false,
       earnedPoints: 0,
-      score: 0,
       userId: '' as Id,
     }).payload;
     pred.earnedPoints = 4;
