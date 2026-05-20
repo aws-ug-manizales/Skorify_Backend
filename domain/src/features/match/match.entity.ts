@@ -40,8 +40,8 @@ export class MatchEntity extends Entity {
     this.kickOff = attributes.kickOff;
     this.tournamentId = attributes.tournamentId;
     this._timeToCloseInMinutes = 10;
-    this.awayScore = 0;
-    this.homeScore = 0;
+    this.awayScore = attributes.awayScore ?? 0;
+    this.homeScore = attributes.homeScore ?? 0;
     this.stage = attributes.stage;
     this.venue = attributes.venue;
     this._status = attributes.status!;
