@@ -1,12 +1,12 @@
 export type Score = {
-  awayTeamScore: number;
-  localTeamScore: number;
+  awayScore: number;
+  homeScore: number;
 };
 
 export type MatchOutcome = -1 | 0 | 1;
 
 export function goalDiff(score: Score): number {
-  return score.awayTeamScore - score.localTeamScore;
+  return score.awayScore - score.homeScore;
 }
 
 export function outcome(score: Score): MatchOutcome {
@@ -20,7 +20,7 @@ export function isSameOutcome(a: Score, b: Score): boolean {
 }
 
 export function isExactScore(a: Score, b: Score): boolean {
-  return a.awayTeamScore === b.awayTeamScore && a.localTeamScore === b.localTeamScore;
+  return a.awayScore === b.awayScore && a.homeScore === b.homeScore;
 }
 
 export function isInverseOutcome(a: Score, b: Score): boolean {
@@ -33,5 +33,5 @@ export function isInverseOutcome(a: Score, b: Score): boolean {
 }
 
 export function totalGoals(score: Score): number {
-  return score.awayTeamScore + score.localTeamScore;
+  return score.awayScore + score.homeScore;
 }

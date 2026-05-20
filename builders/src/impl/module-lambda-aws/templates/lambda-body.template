@@ -1,0 +1,236 @@
+// handler.ts
+// import { APIGatewayProxyEvent } from "aws-lambda";
+// import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
+import { IracaServer } from "@scifamek-open-source/iraca/web-api";
+
+import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
+import { generate } from "./helpers";
+import { {{MODULE_PASCAL}}Repository } from "./{{MODULE}}.repository";
+import { {{MODULE_PASCAL}}Controller } from "./controller";
+import { DBClient } from '@skorify/data';
+import { StorageContract } from '@skorify/domain/core';
+import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
+
+
+{{IMPORTS}}
+
+
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand
+} from '@aws-sdk/client-secrets-manager';
+
+import {
+  SSMClient,
+  GetParameterCommand,
+} from '@aws-sdk/client-ssm';
+
+
+
+type LambdaEvent = {
+  rawPath?: string
+  path?: string
+  body?: string | null
+  queryStringParameters?: Record<string, string>
+  requestContext?: {
+    http?: {
+      method?: string
+    }
+  }
+  httpMethod?: string
+}
+
+
+
+export const handler = async (event: any) => {
+
+  const secretManagerClient = new SecretsManagerClient();
+  const ssmClient = new SSMClient();
+
+
+  const DbParameterARN = process.env.DB_PARAMETER_ARN!;
+  const StorageParameterArn = process.env.STORAGE_PARAMETER_ARN!;
+  const BusParameterArn = process.env.BUS_PARAMETER_ARN!;
+
+
+  const DbParameterARNResponse = await ssmClient.send(
+    new GetParameterCommand({
+      Name: DbParameterARN!,
+      WithDecryption: true,
+    }),
+  );
+  const DBSecretArn = DbParameterARNResponse.Parameter?.Value;
+  
+  const StorageParameterArnResponse = await ssmClient.send(
+    new GetParameterCommand({
+      Name: StorageParameterArn!,
+      WithDecryption: true,
+    }),
+  );
+  const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
+  const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
+
+
+  const storageConfig = StorageParameterParsedValue[0];
+
+
+  const DBConfigObject = await secretManagerClient.send(
+    new GetSecretValueCommand({
+      SecretId: DBSecretArn
+    })
+  );
+
+  const externalDBConfig = DBConfigObject.SecretString;
+  const parsedDBSecrets = JSON.parse(externalDBConfig!);
+
+
+
+  const dbClient = new DBClient({
+    type: 'postgres',
+    host: parsedDBSecrets.host,
+    port: parseInt(parsedDBSecrets.port),
+    username: parsedDBSecrets.username,
+    password: parsedDBSecrets.password,
+    database: parsedDBSecrets.dbname,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  });
+
+
+  const name = event.queryStringParameters?.name ?? "World";
+
+  const identifier = "{{IDENTIFIER}}";
+
+    const methodMapper: any = [
+  {
+    method: "get",
+    patterns: [/[\w]+/],
+  },
+];
+  const container = new IracaContainer();
+
+{{INJECTIONS}}
+
+
+ try {
+    await dbClient.connect();
+    console.log('Database connected successfully');
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    process.exit(1);
+  }
+
+  container.addValue({
+    id: 'DBClient',
+    value: dbClient,
+  });
+
+  container.addValue({
+    id: 'StorageConfig',
+    value: {
+      region: 'us-east-1',
+      bucketName: storageConfig.bucketName
+    },
+  });
+
+  container.add({
+    abstraction: StorageContract,
+    implementation: StorageImpl,
+    dependencies: ['StorageConfig'],
+  });
+
+
+  const myController = new {{MODULE_PASCAL}}Controller(
+        {
+      container,
+      prefix: '{{MODULE}}'
+    }
+  );
+
+
+
+
+
+
+try {
+    const path = getPath(event)
+
+    const useCaseName = `${toPascalCase(path)}Usecase`
+
+    console.log('useCase');
+    console.log(container.configsTable);
+    const useCase = await container.getInstance<any>(useCaseName);
+
+    if (!useCase) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: `Use case ${useCaseName} not found`,
+        }),
+      }
+    }
+
+    const payload = getPayload(event)
+
+    const result = await useCase.call(payload)
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(result),
+    }
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: 'Internal server error',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error',
+      }),
+    }
+  }
+};
+
+const toPascalCase = (value: string) => {
+  return value
+    .split('/')
+    .filter(Boolean)
+    .pop()!
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('')
+}
+
+const getPath = (event: LambdaEvent) => {
+  return event.rawPath || event.path || '/'
+}
+
+const getMethod = (event: LambdaEvent) => {
+  return (
+    event.requestContext?.http?.method ||
+    event.httpMethod ||
+    'GET'
+  )
+}
+
+const getPayload = (event: LambdaEvent) => {
+  const method = getMethod(event)
+
+  if (method === 'GET') {
+    return event.queryStringParameters || {}
+  }
+
+  if (!event.body) {
+    return {}
+  }
+
+  return JSON.parse(event.body)
+}

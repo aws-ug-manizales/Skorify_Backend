@@ -4,9 +4,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "rootDir": "./src",
-    "paths": {
-      "@/*": ["src/*"]
-    },
+    "paths": {},
     "types": ["node"],
     "target": "es2024",
     "lib": ["ES2020"],

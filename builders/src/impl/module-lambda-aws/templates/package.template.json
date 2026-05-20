@@ -1,0 +1,30 @@
+{
+  "name": "@skorify/{{LAMBDA_NAME}}",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx esbuild index.ts  --bundle --keep-names --platform=node --target=node22 --outfile=../../dist/{{MODULE}}/index.js",
+    "copy-template": "copyfiles template.yaml ./dist"
+  },
+  "dependencies": {
+    "@scifamek-open-source/iraca": "9.1.0",
+    "@skorify/domain": "link:../../../domain/dist",
+    "@skorify/shared": "link:../../../shared/dist",
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.2.1-beta.5",
+    "@aws-sdk/client-lambda": "^3.600.0",
+    "@aws-sdk/client-ssm": "3.1050.0",
+    "@aws-sdk/client-secrets-manager": "3.1050.0"
+  },
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "@types/node": "22.5.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3",
+    "esbuild": "^0.28.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.22.0"
+}

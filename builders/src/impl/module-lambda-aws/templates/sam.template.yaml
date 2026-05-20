@@ -1,0 +1,14 @@
+
+  {{MODULE_PASCAL}}Lambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs22.x
+      Handler: {{MODULE}}/index.handler
+      CodeUri: .
+      Environment:
+        Variables:
+          DB_PARAMETER_ARN: !Ref DbParameterArn
+          STORAGE_PARAMETER_ARN: !Ref StorageParameterArn
+          BUS_PARAMETER_ARN: !Ref BusParameterArn
+      Events:
+        

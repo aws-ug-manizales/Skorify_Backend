@@ -1,14 +1,34 @@
-import { Entity, Id } from "../../core/entity";
+import { BuiltEntityDomainEvent, DomainEvent } from '../../core';
+import { BaseAttributes, Entity, Id } from '../../core/entity';
+
+export interface UserAttributes extends BaseAttributes {
+  id: Id;
+  name: string;
+  isActive: boolean;
+  notificationToken: string;
+  email: string;
+  image?: string;
+}
 
 export class UserEntity extends Entity {
   name: string;
-  
-  private constructor(id: Id, name: string) {
-    super(id);
+  isActive: boolean = false;
+  notificationToken: string;
+  email: string;
+  image?: string;
+
+  private constructor(attributes: UserAttributes) {
+    const { id, name, notificationToken, email, image, isActive } = attributes;
+    super(id, new Date());
     this.name = name;
+    this.email = email;
+    this.image = image;
+    this.notificationToken = notificationToken;
+    this.email = email;
+    this.isActive = isActive;
   }
-  
-  build(params: { name: string }): UserEntity {
-    return new UserEntity(this.id, params.name);
+
+  static build(params: UserAttributes): DomainEvent {
+    return BuiltEntityDomainEvent(new UserEntity(params));
   }
 }

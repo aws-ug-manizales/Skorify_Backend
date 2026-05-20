@@ -1,14 +1,16 @@
 export type PredictionRuleContext = {
   prediction: {
-    awayTeamScore: number;
-    localTeamScore: number;
+    awayScore: number;
+    homeScore: number;
   };
   match: {
-    awayTeamScore: number;
-    localTeamScore: number;
+    awayScore: number;
+    homeScore: number;
   };
 };
 
 export interface PredictionRule {
   calculateScore(context: PredictionRuleContext): number;
+  getRuleScore(): number;
+  getRuleName(): string;
 }

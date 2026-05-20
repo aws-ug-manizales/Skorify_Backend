@@ -139,5 +139,11 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 server/libs
+shared/libs
 builders/dist
 builders/generated
+
+# Generated test data (use `pnpm run seed` to generate)
+server/data
+shared/src/data
+shared/src/storage

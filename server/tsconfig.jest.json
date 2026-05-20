@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node", "jest"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "paths": {
+      "@skorify/domain/core": ["../domain/src/core/index.ts"],
+      "@skorify/domain/*": ["../domain/src/features/*"],
+      "@skorify/domain/*/*": ["../domain/src/features/*/*"],
+      "@skorify/shared": ["../shared/src/index.ts"],
+      "@skorify/shared/*": ["../shared/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}
