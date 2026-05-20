@@ -1,11 +1,12 @@
 import { BuiltEntityDomainEvent, DomainEvent, Entity, Id } from '../../core';
 
+export type TournamentInstanceState = 'active' | 'inactive' | 'supended' | 'terminated';
 export interface TournamentInstanceAttributes {
   id: Id;
   name: string;
   ownerId: Id;
   tournamentId: Id;
-  state: 'active' | 'inactive' | 'supended' | 'terminated';
+  state: TournamentInstanceState;
   inviteCode: string;
 }
 
@@ -13,7 +14,7 @@ export class TournamentInstanceEntity extends Entity {
   name: string;
   ownerId: Id;
   tournamentId: Id;
-  state: 'active' | 'inactive' | 'supended' | 'terminated';
+  state: TournamentInstanceState;
   inviteCode: string;
 
   private constructor(attributes: TournamentInstanceAttributes) {

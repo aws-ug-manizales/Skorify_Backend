@@ -1,6 +1,7 @@
 export {
   TournamentInstanceAttributes,
   TournamentInstanceEntity,
+  TournamentInstanceState
 } from './tournament-instance.entity';
 
 export * from './domain-events';
@@ -25,3 +26,4 @@ export { RankingItem } from './usecases/get-current-ranking/utils/ranking-item';
 
 export { GetTournamentInstancesByQueryParam } from './usecases/get-tournament-instances-by-query/get-tournament-instances-by-query.param';
 export { GetTournamentInstancesByQueryUsecase } from './usecases/get-tournament-instances-by-query/get-tournament-instances-by-query.usecase';
+

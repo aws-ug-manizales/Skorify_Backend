@@ -1,4 +1,4 @@
-import { DomainEvent } from '@skorify/domain/core';
+import { DomainEvent, Filters } from '@skorify/domain/core';
 import {
   GetTournamentInstanceByInviteCodeParam,
   GetTournamentInstanceByInviteCodeUsecase,
@@ -13,20 +13,28 @@ export class GetTournamentInstanceByInviteCodeUsecaseImpl extends GetTournamentI
   }
 
   async call(param: GetTournamentInstanceByInviteCodeParam): Promise<DomainEvent> {
-    const inviteCode = param?.inviteCode?.trim().toUpperCase();
+    const { inviteCode, state } = param;
+    const cleanedInviteCode = inviteCode.trim().toUpperCase();
 
-    if (!inviteCode) {
+    if (!cleanedInviteCode) {
       return NotGottenTournamentInstanceDomainEvent();
     }
 
-    const matches = await this.tournamentInstanceContract.filter({
-      where: { inviteCode },
-    });
+    const filters: Filters = {
+      where: { inviteCode: cleanedInviteCode },
+    };
+    if (state) {
+      filters.where = {
+        ...filters.where,
+        state,
+      };
+    }
+    const tournamentInstances = await this.tournamentInstanceContract.filter(filters);
 
-    if (!matches.length) {
+    if (!tournamentInstances.length) {
       return NotGottenTournamentInstanceDomainEvent();
     }
 
-    return GottenTournamentInstanceDomainEvent(matches[0]);
+    return GottenTournamentInstanceDomainEvent(tournamentInstances[0]);
   }
 }

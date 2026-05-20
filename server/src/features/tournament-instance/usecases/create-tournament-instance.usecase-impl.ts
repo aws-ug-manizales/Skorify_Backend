@@ -3,6 +3,8 @@ import { GetTournamentByIdUsecase, GottenTournamentDomainEvent } from '@skorify/
 import {
   CreateTournamentInstanceParam,
   CreateTournamentInstanceUsecase,
+  GetTournamentInstanceByInviteCodeUsecase,
+  GottenTournamentInstanceDomainEvent,
   TournamentInstanceContract,
   TournamentInstanceEntity,
   TournamentInstanceNotSavedDomainEvent,
@@ -19,6 +21,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
 
     private tournamentInstanceContract: TournamentInstanceContract,
     private createUserEnrollmentUsecase: CreateUserEnrollmentUsecase,
+    private getTournamentInstanceByInviteCodeUsecase: GetTournamentInstanceByInviteCodeUsecase,
   ) {
     super();
   }
@@ -50,6 +53,10 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
 
     const inviteCode = await this.generateUniqueInviteCode();
 
+    if (!inviteCode) {
+      return TournamentInstanceNotSavedDomainEvent();
+    }
+
     const tournamentInstanceDE = TournamentInstanceEntity.build({
       id: crypto.randomUUID(),
       name,
@@ -79,7 +86,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
     return TournamentInstanceSavedDomainEvent(tournamentInstance);
   }
 
-  private async generateUniqueInviteCode(): Promise<string> {
+  private async generateUniqueInviteCode(): Promise<string | null> {
     const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const LENGTH = 8;
 
@@ -89,13 +96,15 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
         code += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
       }
 
-      const existing = await this.tournamentInstanceContract.filter({
-        where: { inviteCode: code },
+      const existing = await this.getTournamentInstanceByInviteCodeUsecase.call({
+        inviteCode: code,
+        state: 'active',
       });
 
-      if (!existing.length) return code;
+      if (existing.is(GottenTournamentInstanceDomainEvent)) {
+        return code;
+      }
     }
-
-    throw new Error('Could not generate a unique invite code');
+    return null;
   }
 }
