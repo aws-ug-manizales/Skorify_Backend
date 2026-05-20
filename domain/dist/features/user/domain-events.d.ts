@@ -1,0 +1,11 @@
+import { DomainEventKind } from "../../core";
+import { UserEntity } from "./user.entity";
+export declare const NotGottenUserDomainEvent: DomainEventKind;
+export declare const UserWithSameEmailDomainEvent: DomainEventKind;
+export declare const GottenUserDomainEvent: import("../../core").DomainEventKindWithPayload<UserEntity>;
+export declare const NotificationTokenAssignedDomainEvent: import("../../core").DomainEventKindWithPayload<UserEntity>;
+export declare const NotificationTokenAssignmentFailedDomainEvent: DomainEventKind;
+export declare const UserWithEmailAlreadyExistDomainEvent: import("../../core").DomainEventKindWithPayload<UserEntity>;
+export declare const UserFoundAndDeletedDomainEvent: DomainEventKind;
+export declare const UserRegisteredDomainEvent: import("../../core").DomainEventKindWithPayload<UserEntity>;
+export declare const UserRegistrationInvalidParamsDomainEvent: DomainEventKind;

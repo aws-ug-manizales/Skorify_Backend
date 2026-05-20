@@ -80,7 +80,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -142,6 +141,8 @@ server/libs
 shared/libs
 builders/dist
 builders/generated
+shared/dist
+server/dist
 
 # Generated test data (use `pnpm run seed` to generate)
 server/data

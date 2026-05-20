@@ -1,0 +1,10 @@
+import { DomainEventKind } from '../../core';
+import { TeamEntity } from './team.entity';
+export declare const TeamWithThatNameAlreadyExistsDomainEvent: import("../../core").DomainEventKindWithPayload<TeamEntity>;
+export declare const TeamSavedDomainEvent: import("../../core").DomainEventKindWithPayload<TeamEntity>;
+export declare const TeamNotSavedDomainEvent: DomainEventKind;
+export declare const GottenTeamDomainEvent: import("../../core").DomainEventKindWithPayload<TeamEntity>;
+export declare const NotGottenTeamDomainEvent: DomainEventKind;
+export declare const TeamEditedDomainEvent: import("../../core").DomainEventKindWithPayload<TeamEntity>;
+export declare const TeamNotEditedDomainEvent: DomainEventKind;
+export declare const GottenTeamsDomainEvent: import("../../core").DomainEventKindWithPayload<TeamEntity[]>;

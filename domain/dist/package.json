@@ -1,0 +1,49 @@
+{
+  "name": "@skorify/domain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:deploy": "npx tsc -p tsconfig.json && pnpm run copy-package",
+    "build": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-to-server && pnpm run copy-to-shared",
+    "build-pipeline": "npx tsc -p tsconfig.json && pnpm run copy-package && pnpm run copy-to-server-pipeline && pnpm run copy-to-shared-pipeline",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "copy-package": "copyfiles  package.json dist/",
+    "copy-to-server": "copyfiles -u 1 dist/**/* ../server/libs/domain",
+    "copy-to-shared": "copyfiles -u 1 dist/**/* ../shared/libs/domain",
+    "copy-to-server-pipeline": "copyfiles -u 1 dist/**/* ../../../server/libs/domain",
+    "copy-to-shared-pipeline": "copyfiles -u 1 dist/**/* ../shared/libs/domain && copyfiles -u 1 dist/**/* ../../shared/libs/domain && copyfiles -u 1 dist/**/* ../../../shared/libs/domain"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/jest": "^29.5.14",
+    "copyfiles": "^2.4.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "5.7.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.22.0",
+  "exports": {
+    "./core": "./core/index.js",
+    "./match": "./features/match/index.js",
+    "./user": "./features/user/index.js",
+    "./team": "./features/team/index.js",
+    "./prediction": "./features/prediction/index.js",
+    "./tournament": "./features/tournament/index.js",
+    "./tournament-instance": "./features/tournament-instance/index.js",
+    "./user-enrollment": "./features/user-enrollment/index.js"
+  },
+  "files": [
+    "match",
+    "user",
+    "team",
+    "prediction"
+  ]
+}

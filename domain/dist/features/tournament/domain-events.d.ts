@@ -1,0 +1,10 @@
+import { DomainEventKind } from '../../core';
+import { TournamentEntity } from './tournament.entity';
+export declare const TournamentNotSavedDomainEvent: DomainEventKind;
+export declare const TournamentSavedDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentEntity>;
+export declare const GottenTournamentDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentEntity>;
+export declare const NotGottenTournamentDomainEvent: DomainEventKind;
+export declare const FilteredTournamentsDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentEntity[]>;
+export declare const TournamentNotUpdatedDomainEvent: DomainEventKind;
+export declare const TournamentUpdatedDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentEntity>;
+export declare const TournamentInvalidDatesDomainEvent: DomainEventKind;

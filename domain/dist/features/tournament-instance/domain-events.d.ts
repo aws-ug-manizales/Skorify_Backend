@@ -1,0 +1,12 @@
+import { DomainEventKind } from '../../core';
+import { TournamentInstanceEntity } from './tournament-instance.entity';
+import { RankingItem } from './usecases/get-current-ranking/utils/ranking-item';
+export declare const GottenTournamentInstanceCurrentRankingDomainEvent: import("../../core").DomainEventKindWithPayload<RankingItem[]>;
+export declare const NotGottenTournamentInstanceCurrentRankingDomainEvent: DomainEventKind;
+export declare const EntityNotInstanciableDomainEvent: DomainEventKind;
+export declare const TournamentInstanceWithSameNameDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentInstanceEntity[]>;
+export declare const GottenTournamentInstancesDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentInstanceEntity[]>;
+export declare const TournamentInstanceSavedDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentInstanceEntity>;
+export declare const TournamentInstanceNotSavedDomainEvent: DomainEventKind;
+export declare const NotGottenTournamentInstanceDomainEvent: DomainEventKind;
+export declare const GottenTournamentInstanceDomainEvent: import("../../core").DomainEventKindWithPayload<TournamentInstanceEntity>;

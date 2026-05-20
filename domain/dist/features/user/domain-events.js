@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserRegistrationInvalidParamsDomainEvent = exports.UserRegisteredDomainEvent = exports.UserFoundAndDeletedDomainEvent = exports.UserWithEmailAlreadyExistDomainEvent = exports.NotificationTokenAssignmentFailedDomainEvent = exports.NotificationTokenAssignedDomainEvent = exports.GottenUserDomainEvent = exports.UserWithSameEmailDomainEvent = exports.NotGottenUserDomainEvent = void 0;
+const core_1 = require("../../core");
+exports.NotGottenUserDomainEvent = (0, core_1.DomainEventKind)("NotGottenUserDomainEvent");
+exports.UserWithSameEmailDomainEvent = (0, core_1.DomainEventKind)("UserWithSameEmailDomainEvent");
+exports.GottenUserDomainEvent = (0, core_1.DomainEventKind)("GottenUserDomainEvent");
+exports.NotificationTokenAssignedDomainEvent = (0, core_1.DomainEventKind)("NotificationTokenAssignedDomainEvent");
+exports.NotificationTokenAssignmentFailedDomainEvent = (0, core_1.DomainEventKind)("NotificationTokenAssignmentFailedDomainEvent");
+exports.UserWithEmailAlreadyExistDomainEvent = (0, core_1.DomainEventKind)("UserWithEmailAlreadyExistDomainEvent");
+exports.UserFoundAndDeletedDomainEvent = (0, core_1.DomainEventKind)("UserFoundAndDeletedDomainEvent");
+exports.UserRegisteredDomainEvent = (0, core_1.DomainEventKind)("UserRegisteredDomainEvent");
+exports.UserRegistrationInvalidParamsDomainEvent = (0, core_1.DomainEventKind)("UserRegistrationInvalidParamsDomainEvent");
