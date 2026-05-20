@@ -7,6 +7,10 @@ import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection
 import { generate } from "./helpers";
 import { {{MODULE_PASCAL}}Repository } from "./{{MODULE}}.repository";
 import { {{MODULE_PASCAL}}Controller } from "./controller";
+import { DBClient } from '@skorify/data';
+import { StorageContract } from '@skorify/domain/core';
+import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
+
 
 {{IMPORTS}}
 
@@ -16,18 +20,10 @@ import {
   GetSecretValueCommand
 } from '@aws-sdk/client-secrets-manager';
 
-const client = new SecretsManagerClient();
-
-const secretArn = process.env.DB_SECRET_ARN!;
-
-const response = await client.send(
-  new GetSecretValueCommand({
-    SecretId: secretArn
-  })
-);
-
-const secret = response.SecretString;
-const parsedDBSecrets = JSON.parse(secret);
+import {
+  SSMClient,
+  GetParameterCommand,
+} from '@aws-sdk/client-ssm';
 
 
 
@@ -44,7 +40,64 @@ type LambdaEvent = {
   httpMethod?: string
 }
 
+
+
 export const handler = async (event: any) => {
+
+  const secretManagerClient = new SecretsManagerClient();
+  const ssmClient = new SSMClient();
+
+
+  const DbParameterARN = process.env.DB_PARAMETER_ARN!;
+  const StorageParameterArn = process.env.STORAGE_PARAMETER_ARN!;
+  const BusParameterArn = process.env.BUS_PARAMETER_ARN!;
+
+
+  const DbParameterARNResponse = await ssmClient.send(
+    new GetParameterCommand({
+      Name: DbParameterARN!,
+      WithDecryption: true,
+    }),
+  );
+  const DBSecretArn = DbParameterARNResponse.Parameter?.Value;
+  
+  const StorageParameterArnResponse = await ssmClient.send(
+    new GetParameterCommand({
+      Name: StorageParameterArn!,
+      WithDecryption: true,
+    }),
+  );
+  const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
+  const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
+
+
+  const storageConfig = StorageParameterParsedValue[0];
+
+
+  const DBConfigObject = await secretManagerClient.send(
+    new GetSecretValueCommand({
+      SecretId: DBSecretArn
+    })
+  );
+
+  const externalDBConfig = DBConfigObject.SecretString;
+  const parsedDBSecrets = JSON.parse(externalDBConfig!);
+
+
+
+  const dbClient = new DBClient({
+    type: 'postgres',
+    host: parsedDBSecrets.host,
+    port: parseInt(parsedDBSecrets.port),
+    username: parsedDBSecrets.username,
+    password: parsedDBSecrets.password,
+    database: parsedDBSecrets.dbname,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  });
+
+
   const name = event.queryStringParameters?.name ?? "World";
 
   const identifier = "{{IDENTIFIER}}";
@@ -60,6 +113,32 @@ export const handler = async (event: any) => {
 {{INJECTIONS}}
 
 
+ try {
+    await dbClient.connect();
+    console.log('Database connected successfully');
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    process.exit(1);
+  }
+
+  container.addValue({
+    id: 'DBClient',
+    value: dbClient,
+  });
+
+  container.addValue({
+    id: 'StorageConfig',
+    value: {
+      region: 'us-east-1',
+      bucketName: storageConfig.bucketName
+    },
+  });
+
+  container.add({
+    abstraction: StorageContract,
+    implementation: StorageImpl,
+    dependencies: ['StorageConfig'],
+  });
 
 
   const myController = new {{MODULE_PASCAL}}Controller(
