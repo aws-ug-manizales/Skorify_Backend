@@ -19,9 +19,16 @@ export class GetPredictionRulesUsecaseImpl extends GetPredictionRulesUsecase {
 
     const bonus = UserEnrollmentEntity.getStreakBonusRules()
 
+    const streakBonusRules = [...bonus.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([key, value]) => ({
+        key,
+        value,
+      }));
+
     const predictionScoringConfig: PredictionScoringConfig = {
       rules,
-      streakBonusRules: Object.fromEntries(bonus)
+      streakBonusRules: streakBonusRules,
     }
 
     return GottenPredictionRulesDomainEvent(predictionScoringConfig);

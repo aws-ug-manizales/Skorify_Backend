@@ -1,4 +1,4 @@
-export { PredictionAttributes, PredictionEntity, PredictionScoringConfig } from './prediction.entity';
+export { PredictionAttributes, PredictionEntity, PredictionScoringConfig, StreakBonusConfig } from './prediction.entity';
 
 export * from "./domain-events";
 export * from "./prediction.rule";

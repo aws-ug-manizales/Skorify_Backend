@@ -8,9 +8,14 @@ import {
   Rule,
 } from './scoreRules/prediction-score.ruleset';
 
+export interface StreakBonusConfig {
+  key: number;
+  value: number;
+}
+
 export interface PredictionScoringConfig {
-  rules: Rule[]
-  streakBonusRules: Record<number, number>;
+  rules: Rule[];
+  streakBonusRules: StreakBonusConfig[];
 }
 
 export interface PredictionAttributes {
