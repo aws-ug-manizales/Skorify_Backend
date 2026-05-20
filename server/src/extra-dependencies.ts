@@ -1,6 +1,6 @@
 import { RunIracaConfig } from '@scifamek-open-source/iraca/web-api';
 import { MatchContract } from '@skorify/domain/match';
-import { EditPredictionUsecase, PredictionContract } from '@skorify/domain/prediction';
+import { PredictionContract } from '@skorify/domain/prediction';
 import { TeamContract } from '@skorify/domain/team';
 import { TournamentContract } from '@skorify/domain/tournament';
 import { TournamentInstanceContract } from '@skorify/domain/tournament-instance';
@@ -22,19 +22,9 @@ import { TournamentInstanceMapper } from '@skorify/shared/mappers/tournament-ins
 import { TournamentMapper } from '@skorify/shared/mappers/tournament.mapper';
 import { UserEnrollmentMapper } from '@skorify/shared/mappers/user-enrollment.mappert';
 import { UserMapper } from '@skorify/shared/mappers/user.mapper';
-import { EditPredictionUsecaseImpl } from './features/prediction/usecases/edit-prediction.usecase-impl';
 
 export const extraDependencies: RunIracaConfig['extraDependencies'] = [
-  {
-    abstraction: EditPredictionUsecase,
-    implementation: EditPredictionUsecaseImpl,
-    dependencies: [
-      'GetPredictionByIdUsecase',
-      'GetMatchByIdUsecase',
-      'PredictionContract',
-      'predictionEditingWindow',
-    ],
-  },
+
   // Repositories
   {
     component: MatchMapper,
