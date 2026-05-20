@@ -17,11 +17,12 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
     private getPredictionByIdUsecase: GetPredictionByIdUsecase,
     private getMatchByIdUsecase: GetMatchByIdUsecase,
     private predictionContract: PredictionContract,
-    private editingWindow: number,
   ) {
     super();
   }
   async call(param: EditPredictionParam): Promise<DomainEvent> {
+    const editingWindow = 10;
+
     const { awayScore, homeScore, predictionId } = param;
 
     const prediontionDE = await this.getPredictionByIdUsecase.call({
@@ -44,7 +45,7 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
 
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-    if (diffMinutes < this.editingWindow) {
+    if (diffMinutes < editingWindow) {
       return PassedPredictionWindowDomainEvent();
     }
 
