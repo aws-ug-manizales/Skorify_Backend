@@ -4,7 +4,10 @@ import {
   GetPredictionRulesUsecase,
   GottenPredictionRulesDomainEvent,
   PredictionScoreRuleset,
+  PredictionScoringConfig,
 } from '@skorify/domain/prediction';
+
+import { UserEnrollmentEntity } from '@skorify/domain/user-enrollment';
 
 export class GetPredictionRulesUsecaseImpl extends GetPredictionRulesUsecase {
   constructor() {
@@ -13,6 +16,14 @@ export class GetPredictionRulesUsecaseImpl extends GetPredictionRulesUsecase {
 
   async call(_param: GetPredictionRulesParam): Promise<DomainEvent> {
     const rules = PredictionScoreRuleset.default().getRules();
-    return GottenPredictionRulesDomainEvent(rules);
+
+    const bonus = UserEnrollmentEntity.getStreakBonusRules()
+
+    const predictionScoringConfig: PredictionScoringConfig = {
+      rules,
+      streakBonusRules: Object.fromEntries(bonus)
+    }
+
+    return GottenPredictionRulesDomainEvent(predictionScoringConfig);
   }
 }

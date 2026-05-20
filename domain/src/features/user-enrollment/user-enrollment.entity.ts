@@ -17,7 +17,12 @@ export interface UserEnrollmentAttributes {
   streak: number;
   maxStreak: number;
 }
+const streakBonusRules: Map<number, number> = new Map<number, number>();
 
+streakBonusRules.set(3, 1);
+streakBonusRules.set(5, 2);
+streakBonusRules.set(7, 3);
+streakBonusRules.set(10, 4);
 export class UserEnrollmentEntity extends Entity {
   userId: Id;
   tournamentInstanceId: Id;
@@ -29,7 +34,6 @@ export class UserEnrollmentEntity extends Entity {
   streak: number;
   maxStreak: number;
 
-  private streakBonusRules: Map<number, number> = new Map<number, number>();
 
   private constructor(attributes: UserEnrollmentAttributes) {
     const {
@@ -55,10 +59,7 @@ export class UserEnrollmentEntity extends Entity {
     this.streak = streak;
     this.maxStreak = maxStreak;
 
-    this.streakBonusRules.set(3, 1);
-    this.streakBonusRules.set(5, 2);
-    this.streakBonusRules.set(7, 3);
-    this.streakBonusRules.set(10, 4);
+
   }
 
   static build(params: UserEnrollmentAttributes): DomainEvent {
@@ -83,7 +84,11 @@ export class UserEnrollmentEntity extends Entity {
   }
 
   getStreakBonusPoints(): number {
-    return this.streakBonusRules.get(this.streak) ?? 0;
+    return streakBonusRules.get(this.streak) ?? 0;
+  }
+
+  static getStreakBonusRules(): Map<number, number> {
+    return streakBonusRules
   }
 
   applyScore(points: number, isExact: boolean): void {

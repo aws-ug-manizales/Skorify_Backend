@@ -5,7 +5,13 @@ import {
   PredictionRuleBreakdown,
   PredictionScoreResult,
   PredictionScoreRuleset,
+  Rule,
 } from './scoreRules/prediction-score.ruleset';
+
+export interface PredictionScoringConfig {
+  rules: Rule[]
+  streakBonusRules: Record<number, number>;
+}
 
 export interface PredictionAttributes {
   id: Id;
@@ -82,10 +88,11 @@ export class PredictionEntity extends Entity {
     });
 
     this.setHasExactResult(result.breakdown);
-    this.earnedPoints = result.total + streakBonusPoints;
+    this.earnedPoints = result.total
 
-    if (streakBonusPoints > 0) {
+    if (streakBonusPoints > 0 && this.hasExactResult) {
       result.breakdown.push({ points: streakBonusPoints, rule: "StreakBonusPoints" })
+      this.earnedPoints += streakBonusPoints
     }
 
     return result;

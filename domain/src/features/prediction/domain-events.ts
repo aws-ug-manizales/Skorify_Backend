@@ -1,6 +1,6 @@
 import { DomainEventKind } from '../../core';
-import { PredictionEntity } from './prediction.entity';
-import { Rule, PredictionScoreResult } from './scoreRules/prediction-score.ruleset';
+import { PredictionScoringConfig, PredictionEntity } from './prediction.entity';
+import { PredictionScoreResult } from './scoreRules/prediction-score.ruleset';
 
 export const BasicDomainEvent = DomainEventKind("BasicDomainEvent");
 
@@ -40,5 +40,5 @@ export const PredictionEditedDomainEvent = DomainEventKind<PredictionEntity>(
 
 export const NotEditedPredictionDomainEvent = DomainEventKind('NotEditedPredictionDomainEvent');
 
-export const GottenPredictionRulesDomainEvent = DomainEventKind<Rule[]>('GottenPredictionRulesDomainEvent');
+export const GottenPredictionRulesDomainEvent = DomainEventKind<PredictionScoringConfig>('GottenPredictionRulesDomainEvent');
 export const SimulatedPredictionDomainEvent = DomainEventKind<PredictionScoreResult>('SimulatedPredictionDomainEvent');
