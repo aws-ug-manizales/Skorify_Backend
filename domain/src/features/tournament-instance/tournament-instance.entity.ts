@@ -6,6 +6,7 @@ export interface TournamentInstanceAttributes {
   ownerId: Id;
   tournamentId: Id;
   state: 'active' | 'inactive' | 'supended' | 'terminated';
+  inviteCode: string;
 }
 
 export class TournamentInstanceEntity extends Entity {
@@ -13,14 +14,16 @@ export class TournamentInstanceEntity extends Entity {
   ownerId: Id;
   tournamentId: Id;
   state: 'active' | 'inactive' | 'supended' | 'terminated';
+  inviteCode: string;
 
   private constructor(attributes: TournamentInstanceAttributes) {
-    const { id, name, state, ownerId, tournamentId } = attributes;
+    const { id, name, state, ownerId, tournamentId, inviteCode } = attributes;
     super(id, new Date());
     this.name = name;
     this.state = state;
     this.ownerId = ownerId;
     this.tournamentId = tournamentId;
+    this.inviteCode = inviteCode;
   }
 
   static build(params: TournamentInstanceAttributes): DomainEvent {
