@@ -11,6 +11,26 @@ import { {{MODULE_PASCAL}}Controller } from "./controller";
 {{IMPORTS}}
 
 
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand
+} from '@aws-sdk/client-secrets-manager';
+
+const client = new SecretsManagerClient();
+
+const secretArn = process.env.DB_SECRET_ARN!;
+
+const response = await client.send(
+  new GetSecretValueCommand({
+    SecretId: secretArn
+  })
+);
+
+const secret = response.SecretString;
+const parsedDBSecrets = JSON.parse(secret);
+
+
+
 type LambdaEvent = {
   rawPath?: string
   path?: string

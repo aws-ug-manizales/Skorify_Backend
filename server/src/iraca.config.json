@@ -4,6 +4,7 @@
     "host": "${SKO_DB_HOST}",
     "port": "${SKO_DB_PORT}",
     "username": "${SKO_DB_USER}",
+    "engine": "${SKO_DB_ENGINE}",
     "password": "${SKO_DB_PASSWORD}",
     "name": "${SKO_DB_NAME}",
     "logging": "${SKO_DB_LOGGING}"
