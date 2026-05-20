@@ -5,6 +5,14 @@ export class HighScoringMatchRule implements PredictionRule {
   private ruleScore = 1;
   private threshold = 4;
 
+  getRuleScore(): number {
+    return this.ruleScore;
+  }
+  
+  getRuleName(): string {
+    return HighScoringMatchRule.name
+  }
+
   calculateScore(context: PredictionRuleContext): number {
     if (this.isHighScoringMatch(context.match) && isExactScore(context.prediction, context.match)) {
       return this.ruleScore;

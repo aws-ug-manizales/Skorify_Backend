@@ -5,6 +5,11 @@ import { InverseResultRule } from "./inverse-result.rule";
 import { TeamGoalsRule } from "./team-goals.rule";
 import { WinnerDrawRule } from "./winner-draw.rule";
 
+export interface Rule {
+  name: string;
+  score: number;
+}
+
 export type PredictionRuleBreakdown = {
   rule: string;
   points: number;
@@ -38,7 +43,7 @@ export class PredictionScoreRuleset {
       .map((rule) => {
         const points = rule.calculateScore(context);
         return {
-          rule: rule.constructor.name,
+          rule: rule.getRuleName(),
           points,
         };
       })
@@ -50,5 +55,14 @@ export class PredictionScoreRuleset {
       total,
       breakdown,
     };
+  }
+
+  getRules(): Rule[] {
+    return this.rules.map(r => {
+      return {
+        name: r.getRuleName(),
+        score: r.getRuleScore()
+      }
+    })
   }
 }

@@ -5,7 +5,18 @@ import {
   PredictionRuleBreakdown,
   PredictionScoreResult,
   PredictionScoreRuleset,
+  Rule,
 } from './scoreRules/prediction-score.ruleset';
+
+export interface StreakBonusConfig {
+  key: number;
+  value: number;
+}
+
+export interface PredictionScoringConfig {
+  rules: Rule[];
+  streakBonusRules: StreakBonusConfig[];
+}
 
 export interface PredictionAttributes {
   id: Id;
@@ -19,6 +30,10 @@ export interface PredictionAttributes {
   hasExactResult: boolean;
 }
 
+export interface SimulationPredictionAttribute {
+  awayScore: number;
+  homeScore: number;
+}
 export class PredictionEntity extends Entity {
   userId: Id;
   userEnrollmentId: Id;
@@ -45,6 +60,20 @@ export class PredictionEntity extends Entity {
     return BuiltEntityDomainEvent(new PredictionEntity(params));
   }
 
+  static forSimulation(params: SimulationPredictionAttribute): PredictionEntity {
+    return new PredictionEntity({
+      id: this.generateEmptyId(),
+      userId: this.generateEmptyId(),
+      userEnrollmentId: this.generateEmptyId(),
+      tournamentInstanceId: this.generateEmptyId(),
+      matchId: this.generateEmptyId(),
+      homeScore: params.homeScore,
+      awayScore: params.awayScore,
+      earnedPoints: 0,
+      hasExactResult: false,
+    });
+  }
+
   calculateScore(
     matchAwayScore: number,
     matchHomeScore: number,
@@ -64,7 +93,12 @@ export class PredictionEntity extends Entity {
     });
 
     this.setHasExactResult(result.breakdown);
-    this.earnedPoints = result.total + streakBonusPoints;
+    this.earnedPoints = result.total
+
+    if (streakBonusPoints > 0 && this.hasExactResult) {
+      result.breakdown.push({ points: streakBonusPoints, rule: "StreakBonusPoints" })
+      this.earnedPoints += streakBonusPoints
+    }
 
     return result;
   }
@@ -72,4 +106,9 @@ export class PredictionEntity extends Entity {
   private setHasExactResult(rulesApplied: PredictionRuleBreakdown[]) {
     this.hasExactResult = !!rulesApplied.find((r) => r.rule == ExactScoreRule.name);
   }
+
+  private static generateEmptyId(): Id {
+    return "0-0-0-0-0"
+  }
+
 }

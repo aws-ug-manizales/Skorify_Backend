@@ -4,9 +4,10 @@ import { PredictionContract } from '@skorify/domain/prediction';
 import { TeamContract } from '@skorify/domain/team';
 import { TournamentContract } from '@skorify/domain/tournament';
 import { TournamentInstanceContract } from '@skorify/domain/tournament-instance';
-import { UserContract } from '@skorify/domain/user';
+import { IdentityProviderContract, UserContract } from '@skorify/domain/user';
 import { UserEnrollmentContract } from '@skorify/domain/user-enrollment';
 import {
+  IdentityProviderMemoryImpl,
   MatchRepository,
   PredictionRepository,
   TeamRepository,
@@ -41,6 +42,10 @@ export const extraDependencies: RunIracaConfig['extraDependencies'] = [
     abstraction: UserContract,
     implementation: UserRepository,
     dependencies: ['UserDatasource', 'UserMapper'],
+  },
+  {
+    abstraction: IdentityProviderContract,
+    implementation: IdentityProviderMemoryImpl,
   },
   {
     component: PredictionMapper,

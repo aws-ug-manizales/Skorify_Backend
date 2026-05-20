@@ -28,3 +28,11 @@ export const UserWithEmailAlreadyExistDomainEvent = DomainEventKind<UserEntity>(
 export const UserFoundAndDeletedDomainEvent = DomainEventKind(
   "UserFoundAndDeletedDomainEvent",
 );
+
+export const UserRegisteredDomainEvent = DomainEventKind<UserEntity>(
+  "UserRegisteredDomainEvent",
+);
+
+export const UserRegistrationInvalidParamsDomainEvent = DomainEventKind(
+  "UserRegistrationInvalidParamsDomainEvent",
+);

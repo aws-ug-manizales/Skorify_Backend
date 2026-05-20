@@ -3,8 +3,14 @@ export * from "./domain-events";
 export { UserEntity } from "./user.entity";
 export { UserContract } from "./user.contract";
 
-export { GetUserByIdParam } from "./usecases/get-user-by-id/get-user-by-id.param";
-export { GetUserByIdUsecase } from "./usecases/get-user-by-id/get-user-by-id.usecase";
+export { GetUserByIdParam } from './usecases/get-user-by-id/get-user-by-id.param';
+export { GetUserByIdUsecase } from './usecases/get-user-by-id/get-user-by-id.usecase';
+
+export { RegisterUserParam } from './usecases/register-user/register-user.param';
+export { RegisterUserUsecase } from './usecases/register-user/register-user.usecase';
+
+export { IdentityProviderContract } from './identity-provider.contract';
+
 export { CreateUserParam } from "./usecases/create-user/create-user.param";
 export { CreateUserUsecase } from "./usecases/create-user/create-user.usecase";
 export { DeleteUserParam } from "./usecases/delete-user/delete-user.param";
