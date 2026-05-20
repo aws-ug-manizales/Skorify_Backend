@@ -1,5 +1,5 @@
 {
-  "predictionEditingWindow": "${SKO_PREDICTION_EDITING_WINDOW | number}",
+  "predictionEditingWindow": "${SKO_PREDICTION_EDITING_WINDOW}",
   "database!": {
     "host": "${SKO_DB_HOST}",
     "port": "${SKO_DB_PORT}",
