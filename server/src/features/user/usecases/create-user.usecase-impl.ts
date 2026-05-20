@@ -47,14 +47,11 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       return userDE;
     }
 
-    const user = users[0];
-    // Subir la imagen al storage si se proporciona
-    let imageBuffer: Buffer | undefined;
+    const user = userDE.payload as UserEntity;
     if (image) {
       const key = `user/${user.id}/profile`;
 
       await this.storageContract.uploadImage(key, image);
-      imageBuffer = image;
       user.image = key;
     }
 

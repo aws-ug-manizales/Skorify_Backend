@@ -13,6 +13,7 @@ export class TournamentInstanceMapper extends BaseMapper<TournamentInstanceAttri
       ownerId: json.ownerId,
       tournamentId: json.tournamentId,
       state: json.state,
+      inviteCode: json.inviteCode,
     });
 
     return event;
@@ -25,6 +26,7 @@ export class TournamentInstanceMapper extends BaseMapper<TournamentInstanceAttri
       ownerId: entity.ownerId,
       tournamentId: entity.tournamentId,
       state: entity.state,
+      inviteCode: entity.inviteCode,
     };
   }
 }

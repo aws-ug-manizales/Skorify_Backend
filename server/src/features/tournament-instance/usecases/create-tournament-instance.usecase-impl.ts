@@ -3,6 +3,8 @@ import { GetTournamentByIdUsecase, GottenTournamentDomainEvent } from '@skorify/
 import {
   CreateTournamentInstanceParam,
   CreateTournamentInstanceUsecase,
+  GetTournamentInstanceByInviteCodeUsecase,
+  GottenTournamentInstanceDomainEvent,
   TournamentInstanceContract,
   TournamentInstanceEntity,
   TournamentInstanceNotSavedDomainEvent,
@@ -10,6 +12,7 @@ import {
   TournamentInstanceWithSameNameDomainEvent,
 } from '@skorify/domain/tournament-instance';
 import { GetUserByIdUsecase, GottenUserDomainEvent } from '@skorify/domain/user';
+import { CreateUserEnrollmentUsecase } from '@skorify/domain/user-enrollment';
 
 export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanceUsecase {
   constructor(
@@ -17,6 +20,8 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
     private getUserByIdUsecase: GetUserByIdUsecase,
 
     private tournamentInstanceContract: TournamentInstanceContract,
+    private createUserEnrollmentUsecase: CreateUserEnrollmentUsecase,
+    private getTournamentInstanceByInviteCodeUsecase: GetTournamentInstanceByInviteCodeUsecase,
   ) {
     super();
   }
@@ -46,12 +51,19 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return TournamentInstanceWithSameNameDomainEvent(exist);
     }
 
+    const inviteCode = await this.generateUniqueInviteCode();
+
+    if (!inviteCode) {
+      return TournamentInstanceNotSavedDomainEvent();
+    }
+
     const tournamentInstanceDE = TournamentInstanceEntity.build({
       id: crypto.randomUUID(),
       name,
       tournamentId,
       ownerId,
       state: 'active',
+      inviteCode,
     });
 
     if (tournamentInstanceDE.isNot(BuiltEntityDomainEvent)) {
@@ -66,6 +78,33 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return TournamentInstanceNotSavedDomainEvent();
     }
 
+    await this.createUserEnrollmentUsecase.call({
+      userId: ownerId,
+      tournamentInstanceId: tournamentInstance.id,
+    });
+
     return TournamentInstanceSavedDomainEvent(tournamentInstance);
+  }
+
+  private async generateUniqueInviteCode(): Promise<string | null> {
+    const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const LENGTH = 8;
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      let code = '';
+      for (let i = 0; i < LENGTH; i += 1) {
+        code += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+      }
+
+      const existing = await this.getTournamentInstanceByInviteCodeUsecase.call({
+        inviteCode: code,
+        state: 'active',
+      });
+
+      if (existing.is(GottenTournamentInstanceDomainEvent)) {
+        return code;
+      }
+    }
+    return null;
   }
 }
