@@ -44,7 +44,9 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
     }
 
     // 3. Validar cambios de equipos
-    const teamsChanged = matchInDB.awayTeamId !== awayTeamId || matchInDB.homeTeamId !== homeTeamId;
+    const teamsChanged =
+      (matchInDB.awayTeamId !== awayTeamId && !!awayTeamId) ||
+      (matchInDB.homeTeamId !== homeTeamId && !!homeTeamId);
 
     if (teamsChanged) {
       // Obtener predicciones usando filter genérico (equipo de datos)
@@ -65,13 +67,13 @@ export class EditMatchUsecaseImpl extends EditMatchUsecase {
     }
 
     // 4. Aplicar cambios
-    matchInDB.awayTeamId = awayTeamId;
-    matchInDB.homeTeamId = homeTeamId;
-    matchInDB.kickOff = date;
-    matchInDB.status = status;
+    matchInDB.awayTeamId = awayTeamId ?? matchInDB.awayTeamId;
+    matchInDB.homeTeamId = homeTeamId ?? matchInDB.homeTeamId;
+    matchInDB.kickOff = date ?? matchInDB.kickOff;
+    matchInDB.status = status ?? matchInDB.status;
 
     // 5. Persistir cambios
-    const savedMatch = await this.matchContract.save(matchInDB);
+    const savedMatch = await this.matchContract.modify(matchInDB);
     if (!savedMatch) {
       return MatchCannotBeSavedDomainEvent(matchInDB);
     }

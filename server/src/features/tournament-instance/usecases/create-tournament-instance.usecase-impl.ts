@@ -5,6 +5,7 @@ import {
   CreateTournamentInstanceUsecase,
   GetTournamentInstanceByInviteCodeUsecase,
   GottenTournamentInstanceDomainEvent,
+  NotGottenTournamentInstanceDomainEvent,
   TournamentInstanceContract,
   TournamentInstanceEntity,
   TournamentInstanceNotSavedDomainEvent,
@@ -64,6 +65,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       ownerId,
       state: 'active',
       inviteCode,
+      createdAt: new Date(),
     });
 
     if (tournamentInstanceDE.isNot(BuiltEntityDomainEvent)) {
@@ -101,7 +103,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
         state: 'active',
       });
 
-      if (existing.is(GottenTournamentInstanceDomainEvent)) {
+      if (existing.is(NotGottenTournamentInstanceDomainEvent)) {
         return code;
       }
     }

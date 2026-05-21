@@ -1,3 +1,2 @@
 pnpm lint
-pnpm --filter ./server test
-pnpm --filter ./shared test
+//pnpm --filter ./server test

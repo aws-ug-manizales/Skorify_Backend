@@ -7,7 +7,7 @@ import {
   MatchContract,
   MatchEntity,
   NotEditedMatchDomainEvent,
-  ReactiveClosedMatchDomainEvent
+  ReactiveClosedMatchDomainEvent,
 } from '@skorify/domain/match';
 
 import { DomainEvent, EventBusContract } from '@skorify/domain/core';
@@ -47,7 +47,7 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
 
     //Cerrar partido
 
-    const modified = await this.matchContract.modifyById(match.id, match);
+    const modified = await this.matchContract.modify(match);
     if (!modified) {
       return NotEditedMatchDomainEvent(match);
     }

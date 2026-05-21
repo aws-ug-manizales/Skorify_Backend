@@ -1,8 +1,5 @@
-import {
-  BuiltEntityDomainEvent,
-  DomainEvent
-} from '@skorify/domain/core';
-import {  StorageContract } from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
+import { StorageContract } from '@skorify/domain/core';
 import {
   CreateUserParam,
   CreateUserUsecase,
@@ -41,6 +38,7 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       notificationToken: '',
       isActive: true,
       createdAt: new Date(),
+      role: 'general',
     });
 
     if (userDE.isNot(BuiltEntityDomainEvent)) {

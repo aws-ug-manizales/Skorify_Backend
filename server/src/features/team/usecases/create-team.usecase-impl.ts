@@ -1,7 +1,4 @@
-import {
-  BuiltEntityDomainEvent,
-  DomainEvent
-} from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
 import {
   CreateTeamParam,
   CreateTeamUsecase,
@@ -11,19 +8,33 @@ import {
   TeamSavedDomainEvent,
   TeamWithThatNameAlreadyExistsDomainEvent,
 } from '@skorify/domain/team';
+import { GetTournamentByIdUsecase, GottenTournamentDomainEvent } from '@skorify/domain/tournament';
 
 export class CreateTeamUsecaseImpl extends CreateTeamUsecase {
-  constructor(private teamContract: TeamContract) {
+  constructor(
+    private teamContract: TeamContract,
+    private getTournamentByIdUsecase: GetTournamentByIdUsecase,
+  ) {
     super();
   }
   async call(param: CreateTeamParam): Promise<DomainEvent> {
-    const { name } = param;
+    const { name, tournamentId } = param;
+
+    const tournamentDE = await this.getTournamentByIdUsecase.call({
+      tournamentId,
+    });
+    if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
+      return tournamentDE;
+    }
+    console.log(tournamentDE.payload);
 
     const teams = await this.teamContract.filter({
       where: {
         name,
+        tournamentId,
       },
     });
+    console.log(teams);
 
     if (teams.length) {
       return TeamWithThatNameAlreadyExistsDomainEvent(teams[0]);
@@ -32,6 +43,8 @@ export class CreateTeamUsecaseImpl extends CreateTeamUsecase {
     const teamDE = TeamEntity.build({
       id: crypto.randomUUID(),
       name,
+      tournamentId,
+      createdAt: new Date(),
     });
 
     if (teamDE.isNot(BuiltEntityDomainEvent)) {

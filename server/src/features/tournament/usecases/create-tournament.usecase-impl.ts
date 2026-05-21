@@ -21,8 +21,9 @@ export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
       id: crypto.randomUUID(),
       name,
       startDate,
-      matchType,
+      matchType: matchType ?? 'single_match_per_round',
       token: crypto.randomUUID(),
+      createdAt: new Date(),
     });
 
     if (tournamentDE.isNot(BuiltEntityDomainEvent)) {

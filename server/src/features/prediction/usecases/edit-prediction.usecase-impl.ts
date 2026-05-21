@@ -52,7 +52,7 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
     prediction.awayScore = awayScore;
     prediction.homeScore = homeScore;
 
-    const edited = await this.predictionContract.modifyById(prediction.id, prediction);
+    const edited = await this.predictionContract.modify(prediction);
 
     if (!edited) {
       return NotEditedPredictionDomainEvent();

@@ -1,4 +1,4 @@
-import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent, Id } from '@skorify/domain/core';
 import {
   GetMatchByIdUsecase,
   GottenMatchDomainEvent,
@@ -55,12 +55,14 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       userId,
       tournamentInstanceId,
     });
+    console.log('userEnrollmentExistDE');
+    console.log(userEnrollmentExistDE);
 
     if (userEnrollmentExistDE.isNot(UserIsInTournamentInstanceDomainEvent)) {
       return userEnrollmentExistDE;
     }
 
-    const userEnrollment: UserEnrollmentEntity = userEnrollmentExistDE.payload;
+    const userEnrollment: { userEnrollmentId: Id } = userEnrollmentExistDE.payload;
     // 2. Valida el partido
     const matchDE = await this.getMatchByIdUsecase.call({
       matchId,
@@ -96,7 +98,8 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       homeScore,
       earnedPoints: 0,
       hasExactResult: false,
-      userEnrollmentId: userEnrollment.id,
+      userEnrollmentId: userEnrollment.userEnrollmentId,
+      createdAt: new Date(),
     });
 
     if (predictionDE.isNot(BuiltEntityDomainEvent)) {

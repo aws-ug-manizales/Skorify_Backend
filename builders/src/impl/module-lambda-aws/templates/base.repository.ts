@@ -13,14 +13,15 @@ export class {{ENTITY}}Repository<T extends Entity> extends BaseContract<any> {
     return entity;
   }
 
-  async deleteById(id: string): Promise<T | null> {
+  async delete(id: string): Promise<T | null> {
     const tem = await this.getById(id);
     this.store.delete(id);
     return tem;
   }
 
-  async modifyById(id: string, entity: T): Promise<T | null> {
-    if (!this.store.has(id)) return null;
+  async modify( entity: T): Promise<T | null> {
+    const id = entity.id;
+    if (!this.store.has(entity.id)) return null;
     const updated = { ...entity, id };
     this.store.set(id, updated);
     return updated;

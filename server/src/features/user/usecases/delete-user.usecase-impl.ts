@@ -15,7 +15,7 @@ export class DeleteUserUsecaseImpl extends DeleteUserUsecase {
   async call(param: DeleteUserParam): Promise<DomainEvent> {
     const { Id } = param;
 
-    const deletedUser = await this.userContract.deleteById(Id);
+    const deletedUser = await this.userContract.delete(Id);
 
     if (!deletedUser) {
       return NotGottenUserDomainEvent();

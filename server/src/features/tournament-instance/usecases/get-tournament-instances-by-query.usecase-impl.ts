@@ -1,4 +1,4 @@
-import { DomainEvent } from '@skorify/domain/core';
+import { DomainEvent, Like } from '@skorify/domain/core';
 import {
   GetTournamentInstancesByQueryParam,
   GetTournamentInstancesByQueryUsecase,
@@ -16,10 +16,7 @@ export class GetTournamentInstancesByQueryUsecaseImpl extends GetTournamentInsta
 
     const teams = await this.tournamentInstanceContract.filter({
       where: {
-        name: {
-          type: 'like',
-          value: query,
-        },
+        name: Like(`%${query}%`),
       },
     });
 

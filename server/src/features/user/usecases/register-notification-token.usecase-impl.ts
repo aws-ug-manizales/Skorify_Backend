@@ -1,4 +1,4 @@
-import { DomainEvent } from "@skorify/domain/core";
+import { DomainEvent } from '@skorify/domain/core';
 import {
   RegisterNotificationTokenParam,
   RegisterNotificationTokenUsecase,
@@ -6,7 +6,7 @@ import {
   NotificationTokenAssignedDomainEvent,
   NotGottenUserDomainEvent,
   NotificationTokenAssignmentFailedDomainEvent,
-} from "@skorify/domain/user";
+} from '@skorify/domain/user';
 
 export class RegisterNotificationTokenUsecaseImpl extends RegisterNotificationTokenUsecase {
   constructor(private userContract: UserContract) {
@@ -23,7 +23,7 @@ export class RegisterNotificationTokenUsecaseImpl extends RegisterNotificationTo
     }
 
     userInDB.notificationToken = token;
-    const savedUser = await this.userContract.modifyById(userInDB.id, userInDB);
+    const savedUser = await this.userContract.modify(userInDB);
 
     if (!savedUser) {
       return NotificationTokenAssignmentFailedDomainEvent();

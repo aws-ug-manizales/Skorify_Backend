@@ -1,4 +1,4 @@
-import { DomainEvent } from "@skorify/domain/core";
+import { DomainEvent } from '@skorify/domain/core';
 import {
   NotGottenTournamentDomainEvent,
   TournamentContract,
@@ -7,7 +7,7 @@ import {
   TournamentUpdatedDomainEvent,
   UpdateTournamentParam,
   UpdateTournamentUsecase,
-} from "@skorify/domain/tournament";
+} from '@skorify/domain/tournament';
 
 export class UpdateTournamentUsecaseImpl extends UpdateTournamentUsecase {
   constructor(private tournamentContract: TournamentContract) {
@@ -31,7 +31,7 @@ export class UpdateTournamentUsecaseImpl extends UpdateTournamentUsecase {
     tournament.startDate = startDate;
     tournament.endDate = endDate;
 
-    const updated = await this.tournamentContract.modifyById(tournamentId, tournament);
+    const updated = await this.tournamentContract.modify(tournament);
     if (!updated) {
       return TournamentNotUpdatedDomainEvent();
     }

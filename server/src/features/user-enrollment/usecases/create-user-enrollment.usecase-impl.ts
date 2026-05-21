@@ -77,6 +77,7 @@ export class CreateUserEnrollmentUsecaseImpl extends CreateUserEnrollmentUsecase
       tournamentId: tournamentInstance.tournamentId,
       maxStreak: 0,
       joinedAt: new Date(),
+      createdAt: new Date(),
       lastPosition: null,
       currentPosition: null,
       currentScore: 0,

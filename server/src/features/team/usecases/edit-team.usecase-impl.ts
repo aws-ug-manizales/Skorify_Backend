@@ -1,12 +1,12 @@
 import { DomainEvent } from '@skorify/domain/core';
 import {
-    EditTeamParam,
-    EditTeamUsecase,
-    GetTeamByIdUsecase,
-    GottenTeamDomainEvent,
-    TeamContract,
-    TeamEditedDomainEvent,
-    TeamNotEditedDomainEvent,
+  EditTeamParam,
+  EditTeamUsecase,
+  GetTeamByIdUsecase,
+  GottenTeamDomainEvent,
+  TeamContract,
+  TeamEditedDomainEvent,
+  TeamNotEditedDomainEvent,
 } from '@skorify/domain/team';
 
 export class EditTeamUsecaseImpl extends EditTeamUsecase {
@@ -32,7 +32,7 @@ export class EditTeamUsecaseImpl extends EditTeamUsecase {
 
     team.name = name;
 
-    const edited = await this.teamContract.modifyById(team.id, team);
+    const edited = await this.teamContract.modify(team);
     if (!edited) {
       return TeamNotEditedDomainEvent();
     }

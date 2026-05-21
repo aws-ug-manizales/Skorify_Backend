@@ -37,7 +37,6 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-
     const predictions = await this.predictionContract.filter({
       where: {
         matchId,
@@ -71,7 +70,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       prediction.calculateScore(match.awayScore!, match.homeScore!, streakBonusPoints);
 
       // Save updated prediction
-      await this.predictionContract.modifyById(prediction.id, prediction);
+      await this.predictionContract.modify(prediction);
 
       // Update user enrollment with points and streak
       await this.updateUserEnrollmentUsecase.call({

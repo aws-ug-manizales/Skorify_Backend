@@ -32,7 +32,7 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
   function makeMockPredictionContract(predictions: PredictionEntity[]): PredictionContract {
     return {
       filter: jest.fn().mockResolvedValue(predictions),
-      modifyById: jest
+      modify: jest
         .fn()
         .mockImplementation((id: string, ent: PredictionEntity) => Promise.resolve(ent)),
     } as unknown as PredictionContract;

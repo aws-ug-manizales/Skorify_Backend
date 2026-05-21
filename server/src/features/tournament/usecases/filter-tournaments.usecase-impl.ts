@@ -1,9 +1,9 @@
 import { DomainEvent, Like } from '@skorify/domain/core';
 import {
-	FilteredTournamentsDomainEvent,
-	FilterTournamentsParam,
-	FilterTournamentsUsecase,
-	TournamentContract,
+  FilteredTournamentsDomainEvent,
+  FilterTournamentsParam,
+  FilterTournamentsUsecase,
+  TournamentContract,
 } from '@skorify/domain/tournament';
 
 export class FilterTournamentsUsecaseImpl extends FilterTournamentsUsecase {
@@ -11,11 +11,11 @@ export class FilterTournamentsUsecaseImpl extends FilterTournamentsUsecase {
     super();
   }
   async call(param: FilterTournamentsParam): Promise<DomainEvent> {
-    const { name } = param;
+    const { name } = param ?? {};
 
     const tournaments = await this.tournamentContract.filter({
       where: {
-        name: Like(name),
+        name: Like(`%${name ?? ''}%`),
       },
     });
     return FilteredTournamentsDomainEvent(tournaments);
