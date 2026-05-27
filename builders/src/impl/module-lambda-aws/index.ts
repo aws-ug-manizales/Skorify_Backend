@@ -160,7 +160,7 @@ Parameters:
     Default: '/skorify/s3/buckets'
   BusParameterArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/skorify/dev/bus-arn'
+    Default: '/skorify/dev/data-bus-name'
 
 Resources:
   LambdaSecurityGroup:
