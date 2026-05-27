@@ -3,12 +3,38 @@
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs22.x
+      Tags:
+        Project: skorify
+        Environment: dev
       Handler: {{MODULE}}/index.handler
       CodeUri: .
       Environment:
         Variables:
-          DB_PARAMETER_ARN: !Ref DbParameterArn
-          STORAGE_PARAMETER_ARN: !Ref StorageParameterArn
-          BUS_PARAMETER_ARN: !Ref BusParameterArn
+          DbParameterArn: !Ref DbParameterArn
+          StorageParameterArn: !Ref StorageParameterArn
+          BusParameterArn: !Ref BusParameterArn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: 
+          - subnet-07f33dc5f4d480fae
+          - subnet-0c2c638f6f6e93757
+          - subnet-0e899440c64d5b6e8
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+          Resource:
+            - !Ref DbParameterArn
+            - !Ref StorageParameterArn
+            - !Ref BusParameterArn
+
+        - Effect: Allow
+          Action:
+            - kms:Decrypt
+          Resource:
+            - arn:aws:kms:us-east-1:123456789012:key/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       Events:
         

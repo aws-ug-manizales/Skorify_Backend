@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@scifamek-open-source/iraca": "9.1.0",
-    "@skorify/domain": "link:../../../domain/dist",
-    "@skorify/shared": "link:../../../shared/dist",
-    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.2.1-beta.5",
+    "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
+    "@skorify/shared": "github:aws-ug-manizales/Skorify_Shared#main",
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.3.0",
     "@aws-sdk/client-lambda": "^3.600.0",
     "@aws-sdk/client-ssm": "3.1050.0",
     "@aws-sdk/client-secrets-manager": "3.1050.0"
