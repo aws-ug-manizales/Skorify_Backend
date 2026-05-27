@@ -150,12 +150,18 @@ export class ModuleLambdaAWSBuilder extends Builder {
     const finalYml = `AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
   DbParameterArn:
-    Type: String
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/dev/db-secret-arn'
   StorageParameterArn:
-    Type: String
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/s3/buckets'
   BusParameterArn:
-    Type: String
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/dev/bus-arn'
+
 Resources:
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -187,7 +193,7 @@ confirm_changeset = false
 disable_rollback = false
 image_repositories = []
 
-parameter_overrides = "VpcId=vpc-0b9b441356f809cd7;ParameterKey=DbParameterArn,ParameterValue=arn:aws:ssm:us-east-1:968306633562:parameter/skorify/dev/db-secret-arn ParameterKey=StorageParameterArn,ParameterValue=arn:aws:ssm:us-east-1:968306633562:parameter/skorify/s3/buckets ParameterKey=BusParameterArn,ParameterValue=xxx"
+parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameterArn=/skorify/s3/buckets BusParameterArn=/skorify/dev/bus-arn"
     `);
   }
 
