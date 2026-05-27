@@ -53,15 +53,6 @@ export const handler = async (event: any) => {
   const StorageParameterArn = process.env.StorageParameterArn!;
   const BusParameterArn = process.env.BusParameterArn!;
 
-
-  const DbParameterARNResponse = await ssmClient.send(
-    new GetParameterCommand({
-      Name: DbParameterARN!,
-      WithDecryption: true,
-    }),
-  );
-  const DBSecretArn = DbParameterARNResponse.Parameter?.Value;
-  
   const StorageParameterArnResponse = await ssmClient.send(
     new GetParameterCommand({
       Name: StorageParameterArn!,
@@ -77,7 +68,7 @@ export const handler = async (event: any) => {
 
   const DBConfigObject = await secretManagerClient.send(
     new GetSecretValueCommand({
-      SecretId: DBSecretArn
+      SecretId: DbParameterARN
     })
   );
 
