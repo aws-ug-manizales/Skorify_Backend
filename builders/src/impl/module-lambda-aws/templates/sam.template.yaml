@@ -11,7 +11,7 @@
       Environment:
         Variables:
           DbParameterArn: !Ref DbParameterArn
-          StorageParameterArn: !Ref StorageParameterArn
+          StorageParameter: !Ref StorageParameter
           BusParameterArn: !Ref BusParameterArn
       VpcConfig:
         SecurityGroupIds:
@@ -28,7 +28,7 @@
             - ssm:GetParameter
           Resource:
             - !Ref DbParameterArn
-            - !Ref StorageParameterArn
+            - !Ref StorageParameter
             - !Ref BusParameterArn
 
         - Effect: Allow
