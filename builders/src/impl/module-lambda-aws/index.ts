@@ -155,8 +155,8 @@ Parameters:
   DbParameterArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/dev/db-secret-arn'
-  StorageParameterArn:
-    Type: String
+  StorageParameter:
+    Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/s3/buckets'
   BusParameterArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
@@ -178,7 +178,7 @@ Globals:
     Environment:
       Variables:
         DbParameterArn: !Ref DbParameterArn
-        StorageParameterArn: !Ref StorageParameterArn
+        StorageParameter: !Ref StorageParameter
         BusParameterArn: !Ref BusParameterArn
 
 Resources:
@@ -194,7 +194,7 @@ Resources:
               - ssm:GetParameter
             Resource:
               - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${DbParameterArn}
-              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${StorageParameterArn}
+              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${StorageParameter}
               - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${BusParameterArn}
 
           - Effect: Allow
@@ -232,7 +232,7 @@ confirm_changeset = false
 disable_rollback = false
 image_repositories = []
 
-parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameterArn=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name"
+parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameter=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name"
     `);
   }
 

@@ -50,20 +50,9 @@ export const handler = async (event: any) => {
 
 
   const DbParameterARN = process.env.DbParameterArn!;
-  const StorageParameterArn = process.env.StorageParameterArn!;
+  const StorageParameterValue = process.env.StorageParameter!;
   const BusParameterArn = process.env.BusParameterArn!;
 
-  console.log({DbParameterARN});
-  console.log({StorageParameterArn});
-  console.log({BusParameterArn});
-
-  const StorageParameterArnResponse = await ssmClient.send(
-    new GetParameterCommand({
-      Name: StorageParameterArn!,
-      WithDecryption: true,
-    }),
-  );
-  const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
   const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
 
 
