@@ -193,7 +193,7 @@ Resources:
             Action:
               - ssm:GetParameter
             Resource:
-              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${DbParameterArn}
+              - !Ref DbParameterArn
               - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${StorageParameterArn}
               - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${BusParameterArn}
 
