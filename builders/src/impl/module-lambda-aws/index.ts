@@ -232,7 +232,7 @@ confirm_changeset = false
 disable_rollback = false
 image_repositories = []
 
-parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameter=/skorify/s3/buckets BusParameterArn=/skorify/dev/bus-arn"
+parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameter=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name"
     `);
   }
 
