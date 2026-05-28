@@ -7,7 +7,7 @@ import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection
 import { generate } from "./helpers";
 import { {{MODULE_PASCAL}}Controller } from "./controller";
 import { DBClient } from '@skorify/data';
-import { StorageContract } from '@skorify/domain/core';
+import { StorageContract, EventBusContract } from '@skorify/domain/core';
 import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
 
 import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
@@ -52,6 +52,10 @@ export const handler = async (event: any) => {
   const DbParameterARN = process.env.DbParameterArn!;
   const StorageParameterArn = process.env.StorageParameterArn!;
   const BusParameterArn = process.env.BusParameterArn!;
+
+  console.log({DbParameterARN});
+  console.log({StorageParameterArn});
+  console.log({BusParameterArn});
 
   const StorageParameterArnResponse = await ssmClient.send(
     new GetParameterCommand({

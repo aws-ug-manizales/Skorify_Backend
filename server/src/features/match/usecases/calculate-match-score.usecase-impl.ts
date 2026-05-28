@@ -7,7 +7,12 @@ import {
   MatchDoesNotExistDomainEvent,
   MatchEntity,
 } from '@skorify/domain/match';
-import { PredictionContract, PredictionEntity } from '@skorify/domain/prediction';
+import {
+  EditPredictionDirectlyUsecase,
+  GetPredictionsByMatchAndTournamentInstanceUsecase,
+  PredictionContract,
+  PredictionEntity,
+} from '@skorify/domain/prediction';
 import {
   GetUserEnrollmentByIdUsecase,
   GottenUserEnrollmentDomainEvent,
@@ -20,8 +25,9 @@ import {
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
-    private predictionContract: PredictionContract,
+    private editPredictionDirectlyUsecase: EditPredictionDirectlyUsecase,
     private getUserEnrollmentByIdUsecase: GetUserEnrollmentByIdUsecase,
+    private getPredictionsByMatchAndTournamentInstanceUsecase: GetPredictionsByMatchAndTournamentInstanceUsecase,
     private updateUserEnrollmentUsecase: UpdateUserEnrollmentUsecase,
     private getEnrollmentsWithoutPredictionUsecase: GetEnrollmentsWithoutPredictionUsecase,
   ) {
@@ -37,12 +43,11 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-    const predictions = await this.predictionContract.filter({
-      where: {
-        matchId,
-        tournamentInstanceId,
-      },
+    const predictionsDE = await this.getPredictionsByMatchAndTournamentInstanceUsecase.call({
+      matchId,
+      tournamentInstanceId,
     });
+    const predictions: PredictionEntity[] = predictionsDE.payload as PredictionEntity[];
 
     if (predictions && predictions.length > 0) {
       await this.calculateScores(match, predictions);
@@ -70,7 +75,10 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       prediction.calculateScore(match.awayScore!, match.homeScore!, streakBonusPoints);
 
       // Save updated prediction
-      await this.predictionContract.modify(prediction);
+      await this.editPredictionDirectlyUsecase.call({
+        predictionId: prediction.id,
+        ...prediction,
+      });
 
       // Update user enrollment with points and streak
       await this.updateUserEnrollmentUsecase.call({
