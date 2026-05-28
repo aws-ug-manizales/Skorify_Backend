@@ -161,6 +161,12 @@ Parameters:
   BusParameterArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/dev/data-bus-name'
+  CognitoUserPoolClient:
+    Type: String
+    Default: '6rib1qgtp9rco11qjpvo3bc3dn'
+  CognitoUserPool:
+    Type: String
+    Default: 'us-east-1_bVD1sCViE'
 Globals:
   Function:
     Runtime: nodejs22.x
@@ -207,6 +213,30 @@ Resources:
     Properties:
       GroupDescription: Lambda security group
       VpcId: !Ref VpcId
+  
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - "*"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub 'https://cognito-idp.\${AWS::Region}.amazonaws.com/\${CognitoUserPool}'
+              audience:
+                - !Ref CognitoUserPoolClient
+        DefaultAuthorizer: CognitoAuthorizer
 
 ${samTemplates.join('\n')}
 Outputs:
