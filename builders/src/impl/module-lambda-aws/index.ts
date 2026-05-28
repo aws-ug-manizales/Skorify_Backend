@@ -161,8 +161,47 @@ Parameters:
   BusParameterArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/dev/data-bus-name'
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Tags:
+      Project: skorify
+      Environment: dev
+    CodeUri: .
+    VpcConfig:
+      SecurityGroupIds:
+        - !Ref LambdaSecurityGroup
+      SubnetIds:
+        - subnet-07f33dc5f4d480fae
+        - subnet-0c2c638f6f6e93757
+        - subnet-0e899440c64d5b6e8
+    Environment:
+      Variables:
+        DbParameterArn: !Ref DbParameterArn
+        StorageParameter: !Ref StorageParameter
+        BusParameterArn: !Ref BusParameterArn
 
 Resources:
+  LambdaSharedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: skorify-dev-lambda-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${DbParameterArn}
+              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${StorageParameter}
+              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${BusParameterArn}
+
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+              - !Ref DbParameterArn
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -188,7 +227,7 @@ stack_name = "Skorify-Backend-DEV"
 resolve_s3 = true
 s3_prefix = "skorify-api"
 region = "us-east-1"
-capabilities = "CAPABILITY_IAM"
+capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
@@ -321,7 +360,7 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
             container.add({
               abstraction: ${klass.usecaseName},
               implementation: ${klass.usecaseName}Impl,
-			  dependencies:  [${dependencies.join(',')}]
+			  dependencies:  [${dependencies.map((d) => `'${d}'`).join(',')}]
             });`);
 
     return {
