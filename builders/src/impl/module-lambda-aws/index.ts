@@ -191,6 +191,11 @@ Resources:
         Version: '2012-10-17'
         Statement:
           - Effect: Allow
+            Action: 
+              - lambda:InvokeFunction
+            Resource:
+              - !Sub arn:aws:lambda:\${AWS::Region}:\${AWS::AccountId}:function:Skorify-Backend-DEV-*
+          - Effect: Allow
             Action:
               - ssm:GetParameter
             Resource:
@@ -253,6 +258,24 @@ Resources:
         AccessToken: hours
         IdToken: hours
         RefreshToken: days
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn:
+              Fn::GetAtt:
+                - CognitoUserPool
+                - Arn
+
+        DefaultAuthorizer: CognitoAuthorizer
 
 
 ${samTemplates.join('\n')}
@@ -262,7 +285,9 @@ Outputs:
 `;
     // await writeFile(join(fullGeneratedFolder, `template.yaml`), finalYml);
     await writeFile(join(fullDistFolder, `template.yaml`), finalYml);
-    await writeFile(join(fullDistFolder, `samconfig.toml`), `
+    await writeFile(
+      join(fullDistFolder, `samconfig.toml`),
+      `
 version = 0.1
 
 [default.build.parameters]
@@ -280,7 +305,8 @@ disable_rollback = false
 image_repositories = []
 
 parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameterArn=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name"
-    `);
+    `,
+    );
   }
 
   async constructUsecase(
@@ -374,18 +400,27 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
 
     klass.attributes.forEach((param) => {
       const { kind, name, type, module } = param;
+      let mm = module;
       dependencies.push(type);
       if (kind == 'usecase') {
         if (module != klass.module) {
           this.addImport(imports, allUsecases, type, source);
+
+          const usecase = allUsecases.find((x) => x.usecaseName == type);
+          if (usecase) {
+            mm = usecase.module;
+          }
+
           injections.push(`
-            container.add({
-              abstraction: ${type},
-              implementation: generate({
+
+            generate(container, {
                 dependencyName: "${type}",
+                module: "${mm}",
                 methodMapper
-              }),
-            });`);
+              }, headers);
+       
+            
+            `);
         } else {
           this.addImport(imports, allUsecases, type, source);
         }

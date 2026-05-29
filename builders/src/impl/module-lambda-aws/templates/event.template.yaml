@@ -4,12 +4,5 @@
           Properties:
             Path: /{{KEBAD_MAIN_USECASE}}
             Method: {{METHOD}}
-            Auth:
-              Authorizers:
-                CognitoAuthorizer:
-                  IdentitySource: $request.header.Authorization
-                  JwtConfiguration:
-                    issuer: !Sub 'https://cognito-idp.\${AWS::Region}.amazonaws.com/\${CognitoUserPool}'
-                    audience:
-                      - !Ref CognitoUserPoolClient
-              DefaultAuthorizer: CognitoAuthorizer
+            RestApiId:
+              Ref: ApiGatewayApi

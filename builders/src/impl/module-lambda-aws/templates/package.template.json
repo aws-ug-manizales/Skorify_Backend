@@ -8,7 +8,7 @@
     "copy-template": "copyfiles template.yaml ./dist"
   },
   "dependencies": {
-    "@scifamek-open-source/iraca": "9.1.0",
+    "@scifamek-open-source/iraca": "9.2.0",
     "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
     "@skorify/shared": "github:aws-ug-manizales/Skorify_Shared#main",
     "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.3.0",

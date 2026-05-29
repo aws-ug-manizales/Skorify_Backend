@@ -10,7 +10,7 @@ import { DBClient } from '@skorify/data';
 import { StorageContract, EventBusContract } from '@skorify/domain/core';
 import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
 
-import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
+import { EventBusImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
 
 
 {{IMPORTS}}
@@ -44,10 +44,12 @@ type LambdaEvent = {
 
 
 export const handler = async (event: any) => {
+  const headers = event.headers;
 
   const secretManagerClient = new SecretsManagerClient();
   const ssmClient = new SSMClient();
-
+  const method = getMethod(event)
+  console.log({method})
 
   const DbParameterARN = process.env.DbParameterArn!;
   const StorageParameterArn = process.env.StorageParameterArn!;
@@ -75,6 +77,11 @@ export const handler = async (event: any) => {
       SecretId: DbParameterARN
     })
   );
+
+  const eventBusConfig = {
+    eventBusName: BusParameterArn,
+    source: 'SkorifyBackend'
+  }
 
   const externalDBConfig = DBConfigObject.SecretString;
   const parsedDBSecrets = JSON.parse(externalDBConfig!);
@@ -136,6 +143,15 @@ export const handler = async (event: any) => {
     implementation: StorageImpl,
     dependencies: ['StorageConfig'],
   });
+  container.addValue({
+    id: 'eventBusConfig',
+    value: eventBusConfig,
+  });
+  container.add({
+    abstraction: EventBusContract,
+    implementation: EventBusImpl,
+    dependencies: ['eventBusConfig'],
+  });
 
 
   container.addValue({
@@ -156,8 +172,13 @@ export const handler = async (event: any) => {
 
 
 
+    const baseHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': '*'
+    }
 try {
-    const path = getPath(event)
+    const path = getPath(event);
 
     const useCaseName = `${toPascalCase(path)}Usecase`
 
@@ -181,14 +202,21 @@ try {
     return {
       statusCode: 200,
       headers: {
+        ...baseHeaders,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(result),
+      body: JSON.stringify({
+        data: result.payload,
+        meta: {
+          code: '{{MODULE_PASCAL}}:'+result.eventName
+        }
+      }),
     }
   } catch (error) {
     return {
       statusCode: 500,
       headers: {
+        ...baseHeaders,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
