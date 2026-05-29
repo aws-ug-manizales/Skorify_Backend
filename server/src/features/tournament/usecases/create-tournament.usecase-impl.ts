@@ -7,9 +7,13 @@ import {
   TournamentNotSavedDomainEvent,
   TournamentSavedDomainEvent,
 } from '@skorify/domain/tournament';
+import { CreateTournamentInstanceUsecase } from '@skorify/domain/tournament-instance';
 
 export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
-  constructor(private tournamentContract: TournamentContract) {
+  constructor(
+    private tournamentContract: TournamentContract,
+    private createTournamentInstanceUsecase: CreateTournamentInstanceUsecase,
+  ) {
     super();
   }
 
@@ -37,6 +41,16 @@ export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
       return TournamentNotSavedDomainEvent();
     }
 
+    await this.createTournamentInstanceUsecase.call({
+      name: 'Global',
+      tournamentId: saved.id,
+      ownerId: null as any,
+    });
+
     return TournamentSavedDomainEvent(saved);
+  }
+
+  getGlobalInstanceName(tournamentName: string): string{
+    return `${tournamentName}-Global`
   }
 }

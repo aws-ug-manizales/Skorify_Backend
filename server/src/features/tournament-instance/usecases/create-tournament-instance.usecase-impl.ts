@@ -38,12 +38,14 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return tournamentDE;
     }
 
-    const ownerDE = await this.getUserByIdUsecase.call({
-      userId: ownerId,
-    });
+    if (ownerId) {
+      const ownerDE = await this.getUserByIdUsecase.call({
+        userId: ownerId,
+      });
 
-    if (ownerDE.isNot(GottenUserDomainEvent)) {
-      return ownerDE;
+      if (ownerDE.isNot(GottenUserDomainEvent)) {
+        return ownerDE;
+      }
     }
 
     const exist = await this.tournamentInstanceContract.filter({ where: { name } });
@@ -62,7 +64,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       id: crypto.randomUUID(),
       name,
       tournamentId,
-      ownerId,
+      ownerId: ownerId ?? (null as any),
       state: 'active',
       inviteCode,
       createdAt: new Date(),
@@ -80,10 +82,12 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return TournamentInstanceNotSavedDomainEvent();
     }
 
-    await this.createUserEnrollmentUsecase.call({
-      userId: ownerId,
-      tournamentInstanceId: tournamentInstance.id,
-    });
+    if (ownerId) {
+      await this.createUserEnrollmentUsecase.call({
+        userId: ownerId,
+        tournamentInstanceId: tournamentInstance.id,
+      });
+    }
 
     return TournamentInstanceSavedDomainEvent(tournamentInstance);
   }
