@@ -161,12 +161,7 @@ Parameters:
   BusParameterArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/dev/data-bus-name'
-  CognitoUserPoolClient:
-    Type: String
-    Default: '6rib1qgtp9rco11qjpvo3bc3dn'
-  CognitoUserPool:
-    Type: String
-    Default: 'us-east-1_bVD1sCViE'
+
 Globals:
   Function:
     Runtime: nodejs22.x
@@ -213,30 +208,52 @@ Resources:
     Properties:
       GroupDescription: Lambda security group
       VpcId: !Ref VpcId
-  
-  HttpApi:
-    Type: AWS::Serverless::HttpApi
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
     Properties:
-      CorsConfiguration:
-        AllowOrigins:
-          - "*"
-        AllowMethods:
-          - GET
-          - POST
-          - PUT
-          - DELETE
-          - OPTIONS
-        AllowHeaders:
-          - "*"
-      Auth:
-        Authorizers:
-          CognitoAuthorizer:
-            IdentitySource: $request.header.Authorization
-            JwtConfiguration:
-              issuer: !Sub 'https://cognito-idp.\${AWS::Region}.amazonaws.com/\${CognitoUserPool}'
-              audience:
-                - !Ref CognitoUserPoolClient
-        DefaultAuthorizer: CognitoAuthorizer
+      UserPoolName: 'Skorify-user-pool-dev'
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+        - Name: name
+          Required: true
+          Mutable: true
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: 'Skorify-user-pool-client-dev'
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      PreventUserExistenceErrors: ENABLED
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
 
 ${samTemplates.join('\n')}
 Outputs:
