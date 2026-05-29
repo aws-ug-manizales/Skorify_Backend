@@ -1,17 +1,51 @@
-import { DomainEvent, Like } from '@skorify/domain/core';
+import { DomainEvent } from '@skorify/domain/core';
 import {
   FilteredTournamentsDomainEvent,
   GetAvailableTournamentsParam,
   GetAvailableTournamentsUsecase,
   TournamentContract,
+  TournamentEntity,
 } from '@skorify/domain/tournament';
+import {
+  GetGlobalTournamentInstanceUsecase,
+  GottenTournamentInstanceDomainEvent,
+  TournamentInstanceEntity,
+} from '@skorify/domain/tournament-instance';
+
+type AvailableTournament = TournamentEntity & {
+  globalInstanceId: string | null;
+};
 
 export class GetAvailableTournamentsUsecaseImpl extends GetAvailableTournamentsUsecase {
-  constructor(private tournamentContract: TournamentContract) {
+  constructor(
+    private tournamentContract: TournamentContract,
+    private getGlobalTournamentInstanceUsecase: GetGlobalTournamentInstanceUsecase,
+  ) {
     super();
   }
+
   async call(param: GetAvailableTournamentsParam): Promise<DomainEvent> {
     const tournaments = await this.tournamentContract.getAll();
-    return FilteredTournamentsDomainEvent(tournaments);
+    const now = new Date();
+    const activeTournaments = tournaments.filter(
+      (tournament) => tournament.startDate <= now && tournament.endDate >= now,
+    );
+    const availableTournaments: AvailableTournament[] = [];
+
+    for (const tournament of activeTournaments) {
+      const globalInstanceDE = await this.getGlobalTournamentInstanceUsecase.call({
+        tournamentId: tournament.id,
+      });
+
+      const globalInstanceId = globalInstanceDE.is(GottenTournamentInstanceDomainEvent)
+        ? (globalInstanceDE.payload as TournamentInstanceEntity).id
+        : null;
+
+      const availableTournament = tournament as AvailableTournament;
+      availableTournament.globalInstanceId = globalInstanceId;
+      availableTournaments.push(availableTournament);
+    }
+
+    return FilteredTournamentsDomainEvent(availableTournaments);
   }
 }

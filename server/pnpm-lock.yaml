@@ -19,7 +19,7 @@ importers:
         version: skorifydata@https://codeload.github.com/aws-ug-manizales/Skorify_Data/tar.gz/b8f1adeaae980daf6a377bc82cd7baaf3a164d00(ts-node@10.9.2(@types/node@22.5.0)(typescript@5.8.3))
       '@skorify/domain':
         specifier: github:aws-ug-manizales/Skorify_Domain#main
-        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/35efcf4700eea72d1c77f75a7738af6694d46fdb
+        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/edf5d8e45bc0e145385839a01f2bff0d66547046
       '@skorify/shared':
         specifier: github:aws-ug-manizales/Skorify_Shared#main
         version: https://codeload.github.com/aws-ug-manizales/Skorify_Shared/tar.gz/d78b6cb32135798cbd76f3548284d0085a4048b3
@@ -505,8 +505,8 @@ packages:
   '@sinonjs/fake-timers@15.4.0':
     resolution: {integrity: sha512-DsG+8/LscQIQg68J6Ef3dv10u6nVyetYn923s3/sus5eaGfTo1of5WMZSLf0UJc9KDuKPilPH0UDJCjvNbDNCA==}
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/35efcf4700eea72d1c77f75a7738af6694d46fdb':
-    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/35efcf4700eea72d1c77f75a7738af6694d46fdb}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/edf5d8e45bc0e145385839a01f2bff0d66547046':
+    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/edf5d8e45bc0e145385839a01f2bff0d66547046}
     version: 1.0.0
 
   '@skorify/shared@https://codeload.github.com/aws-ug-manizales/Skorify_Shared/tar.gz/d78b6cb32135798cbd76f3548284d0085a4048b3':
@@ -517,8 +517,8 @@ packages:
     resolution: {integrity: sha512-Kt8phUg45M15EjhYAbZ+fFikYneijLu9Liugz8ZsYz2i8j0hzGv27LWKpEHYRfvj+LyCOSijpcR/2i8RouV+cA==}
     engines: {node: '>=18.0.0'}
 
-  '@smithy/credential-provider-imds@4.3.5':
-    resolution: {integrity: sha512-yiF8xHpdkaTfzLVqFzsP6WvNghEK+qZzLYWFD13L2SsFhbXwBGlxdocKF95qjr7s5lE5NRage+EJFK4mAsx88Q==}
+  '@smithy/credential-provider-imds@4.3.6':
+    resolution: {integrity: sha512-tHhdiWZfG1ZIh2YcRfPJmY2gHcBmqbAzqm3ER4TIDFYsSEqTD5tICT7cgQ/kI8LRakxp12myOYyK68XPn7MnHw==}
     engines: {node: '>=18.0.0'}
 
   '@smithy/fetch-http-handler@5.4.5':
@@ -1001,8 +1001,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron-to-chromium@1.5.363:
-    resolution: {integrity: sha512-VjUKPyWzGnT1fujlkEGC/BvN70Hh70KXtAqcmniXviYlJC/ivcT+BWGPyxWVbJZLfvtKR6dqg1L7T7pgAMBtWA==}
+  electron-to-chromium@1.5.364:
+    resolution: {integrity: sha512-G/dYE3+AYhyHwzTwg8UbnXf7zqMERYh7l2jJ3QujhFsH8agSYwtnGAR2aZ7f0AakIKJXd5En/Hre4igIUrdlYw==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -2289,7 +2289,7 @@ snapshots:
       '@aws-sdk/nested-clients': 3.997.13
       '@aws-sdk/types': 3.973.9
       '@smithy/core': 3.24.5
-      '@smithy/credential-provider-imds': 4.3.5
+      '@smithy/credential-provider-imds': 4.3.6
       '@smithy/types': 4.14.2
       tslib: 2.8.1
 
@@ -2312,7 +2312,7 @@ snapshots:
       '@aws-sdk/credential-provider-web-identity': 3.972.45
       '@aws-sdk/types': 3.973.9
       '@smithy/core': 3.24.5
-      '@smithy/credential-provider-imds': 4.3.5
+      '@smithy/credential-provider-imds': 4.3.6
       '@smithy/types': 4.14.2
       tslib: 2.8.1
 
@@ -2904,7 +2904,7 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/35efcf4700eea72d1c77f75a7738af6694d46fdb': {}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/edf5d8e45bc0e145385839a01f2bff0d66547046': {}
 
   '@skorify/shared@https://codeload.github.com/aws-ug-manizales/Skorify_Shared/tar.gz/d78b6cb32135798cbd76f3548284d0085a4048b3':
     dependencies:
@@ -2912,7 +2912,7 @@ snapshots:
       '@aws-sdk/client-s3': 3.1056.0
       '@aws-sdk/client-sns': 3.1056.0
       '@aws-sdk/s3-request-presigner': 3.1056.0
-      '@skorify/domain': https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/35efcf4700eea72d1c77f75a7738af6694d46fdb
+      '@skorify/domain': https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/edf5d8e45bc0e145385839a01f2bff0d66547046
 
   '@smithy/core@3.24.5':
     dependencies:
@@ -2920,7 +2920,7 @@ snapshots:
       '@smithy/types': 4.14.2
       tslib: 2.8.1
 
-  '@smithy/credential-provider-imds@4.3.5':
+  '@smithy/credential-provider-imds@4.3.6':
     dependencies:
       '@smithy/core': 3.24.5
       '@smithy/types': 4.14.2
@@ -3219,7 +3219,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.10.32
       caniuse-lite: 1.0.30001793
-      electron-to-chromium: 1.5.363
+      electron-to-chromium: 1.5.364
       node-releases: 2.0.46
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
@@ -3380,7 +3380,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron-to-chromium@1.5.363: {}
+  electron-to-chromium@1.5.364: {}
 
   emittery@0.13.1: {}
 

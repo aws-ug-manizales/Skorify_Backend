@@ -7,7 +7,7 @@ import {
   TournamentNotSavedDomainEvent,
   TournamentSavedDomainEvent,
 } from '@skorify/domain/tournament';
-import { CreateTournamentInstanceUsecase } from '@skorify/domain/tournament-instance';
+import { CreateTournamentInstanceUsecase, TournamentInstanceWithSameNameDomainEvent } from '@skorify/domain/tournament-instance';
 
 export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
   constructor(
@@ -41,16 +41,21 @@ export class CreateTournamentUsecaseImpl extends CreateTournamentUsecase {
       return TournamentNotSavedDomainEvent();
     }
 
-    await this.createTournamentInstanceUsecase.call({
-      name: 'Global',
+    const tournamentInstanceDE = await this.createTournamentInstanceUsecase.call({
+      name: this.getGlobalInstanceName(tournament.name),
       tournamentId: saved.id,
       ownerId: null as any,
     });
 
+    if (tournamentInstanceDE.is(TournamentInstanceWithSameNameDomainEvent)) {
+      await this.tournamentContract.delete(tournament.id)
+      return tournamentInstanceDE;
+    }
+
     return TournamentSavedDomainEvent(saved);
   }
 
-  getGlobalInstanceName(tournamentName: string): string{
+  getGlobalInstanceName(tournamentName: string): string {
     return `${tournamentName}-Global`
   }
 }
