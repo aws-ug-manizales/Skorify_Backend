@@ -11,6 +11,10 @@ export type ConnectionConfig = {
 };
 
 export const responseMapper = (response: any) => {
+  console.log('Response ');
+  console.log(response);
+  
+  
   const body = response;
   const code = body['code'];
   const pureCode = code;
