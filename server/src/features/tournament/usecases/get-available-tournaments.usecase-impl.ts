@@ -28,23 +28,30 @@ export class GetAvailableTournamentsUsecaseImpl extends GetAvailableTournamentsU
     const tournaments = await this.tournamentContract.getAll();
     const now = new Date();
     const activeTournaments = tournaments.filter(
-      (tournament) => tournament.startDate <= now && tournament.endDate >= now,
+      (tournament) =>
+        tournament.startDate <= now &&
+        tournament.endDate >= now,
     );
-    const availableTournaments: AvailableTournament[] = [];
 
-    for (const tournament of activeTournaments) {
-      const globalInstanceDE = await this.getGlobalTournamentInstanceUsecase.call({
-        tournamentId: tournament.id,
-      });
+    const availableTournaments = await Promise.all(
+      activeTournaments.map(async (tournament) => {
+        const globalInstanceDE =
+          await this.getGlobalTournamentInstanceUsecase.call({
+            tournamentId: tournament.id,
+          });
 
-      const globalInstanceId = globalInstanceDE.is(GottenTournamentInstanceDomainEvent)
-        ? (globalInstanceDE.payload as TournamentInstanceEntity).id
-        : null;
+        const globalInstanceId = globalInstanceDE.is(
+          GottenTournamentInstanceDomainEvent,
+        )
+          ? (globalInstanceDE.payload as TournamentInstanceEntity).id
+          : null;
 
-      const availableTournament = tournament as AvailableTournament;
-      availableTournament.globalInstanceId = globalInstanceId;
-      availableTournaments.push(availableTournament);
-    }
+        return {
+          ...tournament,
+          globalInstanceId,
+        } as AvailableTournament;
+      }),
+    );
 
     return FilteredTournamentsDomainEvent(availableTournaments);
   }
