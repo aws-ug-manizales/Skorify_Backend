@@ -10,7 +10,7 @@ import {
   PredictionEntity,
 } from '@skorify/domain/prediction';
 
-export class EditPredictionUsecaseDirectlyImpl extends EditPredictionDirectlyUsecase {
+export class EditPredictionDirectlyUsecaseImpl extends EditPredictionDirectlyUsecase {
   constructor(
     private getPredictionByIdUsecase: GetPredictionByIdUsecase,
     private predictionContract: PredictionContract,

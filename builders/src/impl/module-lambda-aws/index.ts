@@ -137,7 +137,9 @@ export class ModuleLambdaAWSBuilder extends Builder {
         new RegExp(toToken('MODULE_SERVICE'), 'g'),
         `${repositoriesMapper[moduleConfig.modulePascal]}`,
       );
-      await writeFile(join(moduleFolder, `index.ts`), replacedLambdaTemplate);
+      await writeFile(join(moduleFolder, `index.ts`), replacedLambdaTemplate, {
+        mode: 0o777,
+      });
 
       samTemplates.push(samTemplate);
       const n = new Promise<void>((resolve, reject) => {
@@ -284,7 +286,9 @@ Outputs:
     Value: !Ref LambdaSecurityGroup
 `;
     // await writeFile(join(fullGeneratedFolder, `template.yaml`), finalYml);
-    await writeFile(join(fullDistFolder, `template.yaml`), finalYml);
+    await writeFile(join(fullDistFolder, `template.yaml`), finalYml, {
+      mode: 0o777,
+    });
     await writeFile(
       join(fullDistFolder, `samconfig.toml`),
       `
@@ -306,6 +310,9 @@ image_repositories = []
 
 parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameterArn=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name"
     `,
+      {
+        mode: 0o777,
+      },
     );
   }
 
@@ -343,6 +350,9 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
     await writeFile(
       join(moduleFolder, 'usecases', `${usecaseConfig.kebadUsecaseName}.usecase-impl.ts`),
       source,
+      {
+        mode: 0o777,
+      },
     );
 
     const originalControllerPath = join(
@@ -362,7 +372,9 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
       const controllerContent = await readFile(originalControllerPath, {
         encoding: 'utf-8',
       });
-      await writeFile(join(moduleFolder, `controller.ts`), controllerContent);
+      await writeFile(join(moduleFolder, `controller.ts`), controllerContent, {
+        mode: 0o777,
+      });
     }
 
     await writeFile(
@@ -370,11 +382,20 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
       packageTemplate
         .replace(toToken('MODULE'), usecaseConfig.module)
         .replace(toToken('USECASE'), usecaseConfig.kebadUsecaseName),
+      {
+        mode: 0o777,
+      },
     );
 
-    await writeFile(join(moduleFolder, `tsconfig.json`), tsconfigTemplate);
-    await writeFile(join(moduleFolder, `pnpm-workspace.yaml`), pnpmworkspaceTemplate);
-    await writeFile(join(moduleFolder, `helpers.ts`), helpersTemplate);
+    await writeFile(join(moduleFolder, `tsconfig.json`), tsconfigTemplate, {
+      mode: 0o777,
+    });
+    await writeFile(join(moduleFolder, `pnpm-workspace.yaml`), pnpmworkspaceTemplate, {
+      mode: 0o777,
+    });
+    await writeFile(join(moduleFolder, `helpers.ts`), helpersTemplate, {
+      mode: 0o777,
+    });
 
     const sourceFile = klass.compiledSourceCode;
 

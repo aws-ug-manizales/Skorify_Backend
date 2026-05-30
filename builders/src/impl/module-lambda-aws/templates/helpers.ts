@@ -16,8 +16,9 @@ export const responseMapper = (response: any) => {
   
   
   const body = response;
-  const code = body['code'];
-  const pureCode = code;
+  const code = body['meta']['code'];
+  const fragments =code.split(':') ?? ['-','-']; 
+  const pureCode = fragments[1];
   const data = body['data'];
   return new DomainEvent(pureCode, data);
 };
@@ -53,14 +54,15 @@ export const responseMapper = (response: any) => {
 
 export function generate(container: IracaContainer, config: ConnectionConfig, headers: any) {
   const { dependencyName, methodMapper, module } = config;
+  console.log(methodMapper);
 
   IracaHttpIntegrator.generate(container, [
     {
       dependencyNames: [dependencyName],
       methodMapper,
       responseMapper,
-      runtimeUrl: 'https://ub8tvuzm0m.execute-api.us-east-1.amazonaws.com/Stage',
-      prefix: module,
+      runtimeUrl: 'https://ub8tvuzm0m.execute-api.us-east-1.amazonaws.com',
+      prefix: `prod/${module}`,
       headers,
       kind: 'class',
     },

@@ -9,6 +9,7 @@ import { {{MODULE_PASCAL}}Controller } from "./controller";
 import { DBClient } from '@skorify/data';
 import { StorageContract, EventBusContract } from '@skorify/domain/core';
 import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
+import { generalMethodMapper } from '@skorify/domain/core';
 
 import { EventBusImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
 
@@ -45,10 +46,15 @@ type LambdaEvent = {
 
 export const handler = async (event: any) => {
   const headers = event.headers;
+    console.log('HEADERS');
+    console.log('headers');
+    console.log(headers);
+    console.log('HEADERS');
 
   const secretManagerClient = new SecretsManagerClient();
   const ssmClient = new SSMClient();
   const method = getMethod(event)
+  console.log('mÉTODO QUE LLEGA');
   console.log({method})
 
   const DbParameterARN = process.env.DbParameterArn!;
@@ -105,12 +111,8 @@ export const handler = async (event: any) => {
 
   const identifier = "{{IDENTIFIER}}";
 
-    const methodMapper: any = [
-  {
-    method: "get",
-    patterns: [/[\w]+/],
-  },
-];
+    const methodMapper: any = generalMethodMapper;
+
   const container = new IracaContainer();
 
 {{INJECTIONS}}
@@ -160,18 +162,6 @@ export const handler = async (event: any) => {
     });
     
 
-  const myController = new {{MODULE_PASCAL}}Controller(
-        {
-      container,
-      prefix: '{{MODULE}}'
-    }
-  );
-
-
-
-
-
-
     const baseHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
@@ -181,10 +171,15 @@ try {
     const path = getPath(event);
 
     const useCaseName = `${toPascalCase(path)}Usecase`
+    console.log(useCaseName);
+
+  
 
     console.log('useCase');
     console.log(container.configsTable);
     const useCase = await container.getInstance<any>(useCaseName);
+    console.log(useCase);
+
 
     if (!useCase) {
       return {
@@ -196,8 +191,22 @@ try {
     }
 
     const payload = getPayload(event)
+    console.log(payload);
 
     const result = await useCase.call(payload)
+
+
+    console.log('Usecase result');
+    console.log(result);
+    const parsed = {
+        data: result.payload,
+        meta: {
+          code: '{{MODULE_PASCAL}}:'+result.eventName
+        }
+      };
+    console.log(parsed);
+    const parsedSTR = JSON.stringify(parsed);
+    console.log(parsedSTR);
 
     return {
       statusCode: 200,
@@ -205,12 +214,7 @@ try {
         ...baseHeaders,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        data: result.payload,
-        meta: {
-          code: '{{MODULE_PASCAL}}:'+result.eventName
-        }
-      }),
+      body: parsedSTR,
     }
   } catch (error) {
     return {
