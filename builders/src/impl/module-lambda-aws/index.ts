@@ -195,7 +195,7 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
     const extraResources = join(myFolder, 'extra-resources');
 
     const flatFolders = ['post-confirmation', 'pre-signup'];
-    const lambdaNames = ['PostConfirmation', 'PreSignup'];
+    const lambdaNames = ['PostConfirmation', 'PreSignUp'];
 
     let template = `{{LAMBDA}}Lambda:
     Type: AWS::Serverless::Function

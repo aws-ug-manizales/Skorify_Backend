@@ -45,14 +45,14 @@ Resources:
             Action: 
               - lambda:InvokeFunction
             Resource:
-              - !Sub arn:aws:lambda:\${AWS::Region}:\${AWS::AccountId}:function:Skorify-Backend-DEV-*
+              - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:Skorify-Backend-DEV-*
           - Effect: Allow
             Action:
               - ssm:GetParameter
             Resource:
               - !Ref DbParameterArn
-              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${StorageParameterArn}
-              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${BusParameterArn}
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${StorageParameterArn}
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${BusParameterArn}
 
           - Effect: Allow
             Action:
