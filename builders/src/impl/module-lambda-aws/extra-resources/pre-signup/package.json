@@ -1,0 +1,15 @@
+{
+  "name": "skorify-pre-signup",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "aws-lambda": "1.0.7",
+    "@aws-sdk/client-cognito-identity-provider": "3.1058.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.17.19"
+  },
+  "scripts": {
+    "build": "npx esbuild index.ts  --bundle --keep-names --platform=node --target=node22 --outfile=../../dist/pre-signup/index.js"
+  }
+}

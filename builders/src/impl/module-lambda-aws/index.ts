@@ -1,7 +1,7 @@
 import { getMethodToUse, MassiveRegisterConfiguration } from '@scifamek-open-source/iraca/web-api';
 import { generalMethodMapper } from '@skorify/domain/core';
 import { exec } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Builder, BuilderConfiguration } from '../../general/builder';
 import { existsFile, toToken, UsecaseInfo, UsecasesInfo } from '../../general/helpers';
@@ -38,6 +38,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
       join(templatesFolder, './pnpm-workspace.yaml'),
       'utf-8',
     );
+    const globalTemplate = await readFile(join(templatesFolder, './global.template.yaml'), 'utf-8');
     let samYMLTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
     let eventSamTemplate = await readFile(join(templatesFolder, './event.template.yaml'), 'utf-8');
     const helpersTemplate = await readFile(join(templatesFolder, './helpers.ts'), 'utf-8');
@@ -149,142 +150,16 @@ export class ModuleLambdaAWSBuilder extends Builder {
       });
       await n;
     }
-    const finalYml = `AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
-Parameters:
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-  DbParameterArn:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/skorify/dev/db-secret-arn'
-  StorageParameterArn:
-    Type: String
-    Default: '/skorify/s3/buckets'
-  BusParameterArn:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: '/skorify/dev/data-bus-name'
 
-Globals:
-  Function:
-    Runtime: nodejs22.x
-    Tags:
-      Project: skorify
-      Environment: dev
-    CodeUri: .
-    VpcConfig:
-      SecurityGroupIds:
-        - !Ref LambdaSecurityGroup
-      SubnetIds:
-        - subnet-07f33dc5f4d480fae
-        - subnet-0c2c638f6f6e93757
-        - subnet-0e899440c64d5b6e8
-    Environment:
-      Variables:
-        DbParameterArn: !Ref DbParameterArn
-        StorageParameterArn: !Ref StorageParameterArn
-        BusParameterArn: !Ref BusParameterArn
+    const extraResources = await this.buildExtraResources(
+      join(config.root, 'src', 'impl', myFolder),
+    );
 
-Resources:
-  LambdaSharedPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      ManagedPolicyName: skorify-dev-lambda-policy
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Action: 
-              - lambda:InvokeFunction
-            Resource:
-              - !Sub arn:aws:lambda:\${AWS::Region}:\${AWS::AccountId}:function:Skorify-Backend-DEV-*
-          - Effect: Allow
-            Action:
-              - ssm:GetParameter
-            Resource:
-              - !Ref DbParameterArn
-              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${StorageParameterArn}
-              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${BusParameterArn}
+    const finalYml = globalTemplate.replace(
+      toToken('BODY'),
+      '  '+extraResources + '\n  ' + samTemplates.join('\n'),
+    );
 
-          - Effect: Allow
-            Action:
-              - secretsmanager:GetSecretValue
-            Resource:
-              - !Ref DbParameterArn
-  LambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Lambda security group
-      VpcId: !Ref VpcId
-
-  CognitoUserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      UserPoolName: 'Skorify-user-pool-dev'
-      UsernameAttributes:
-        - email
-      AutoVerifiedAttributes:
-        - email
-      Policies:
-        PasswordPolicy:
-          MinimumLength: 8
-          RequireUppercase: true
-          RequireLowercase: true
-          RequireNumbers: true
-          RequireSymbols: true
-      Schema:
-        - Name: email
-          Required: true
-          Mutable: false
-        - Name: name
-          Required: true
-          Mutable: true
-      UserAttributeUpdateSettings:
-        AttributesRequireVerificationBeforeUpdate:
-          - email
-
-  CognitoUserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      ClientName: 'Skorify-user-pool-client-dev'
-      UserPoolId: !Ref CognitoUserPool
-      GenerateSecret: false
-      ExplicitAuthFlows:
-        - ALLOW_USER_PASSWORD_AUTH
-        - ALLOW_REFRESH_TOKEN_AUTH
-        - ALLOW_USER_SRP_AUTH
-      PreventUserExistenceErrors: ENABLED
-      AccessTokenValidity: 1
-      IdTokenValidity: 1
-      RefreshTokenValidity: 30
-      TokenValidityUnits:
-        AccessToken: hours
-        IdToken: hours
-        RefreshToken: days
-  ApiGatewayApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: prod
-      Cors:
-        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-      Auth:
-        AddDefaultAuthorizerToCorsPreflight: false
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn:
-              Fn::GetAtt:
-                - CognitoUserPool
-                - Arn
-
-        DefaultAuthorizer: CognitoAuthorizer
-
-
-${samTemplates.join('\n')}
-Outputs:
-  SecurityGroupId:
-    Value: !Ref LambdaSecurityGroup
-`;
     // await writeFile(join(fullGeneratedFolder, `template.yaml`), finalYml);
     await writeFile(join(fullDistFolder, `template.yaml`), finalYml, {
       mode: 0o777,
@@ -316,6 +191,56 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
     );
   }
 
+  async buildExtraResources(myFolder: string): Promise<string> {
+    const extraResources = join(myFolder, 'extra-resources');
+
+    const flatFolders = ['post-confirmation', 'pre-signup'];
+    const lambdaNames = ['PostConfirmation', 'PreSignup'];
+
+    let template = `{{LAMBDA}}Lambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: {{MODULE}}/index.handler
+      Timeout: 60
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - !Ref LambdaSharedPolicy`;
+    let response = [];
+
+    for (const folder of flatFolders) {
+      const existsModuleFolder = await existsFile(join(this.generatedFolder, folder));
+      if (!existsModuleFolder) {
+        await mkdir(join(this.generatedFolder, folder));
+      }
+
+      const aaa = join(extraResources, folder);
+      const files = await readdir(aaa);
+
+      for (const file of files) {
+        const f = join(extraResources, folder, file);
+        const content = await readFile(f, 'utf-8');
+
+        await writeFile(join(this.generatedFolder, folder, file), content, {
+          mode: 0o777,
+        });
+      }
+
+      response.push(
+        template
+          .replace(new RegExp(toToken('LAMBDA'), 'g'), lambdaNames[flatFolders.indexOf(folder)])
+          .replace(new RegExp(toToken('MODULE'), 'g'), folder),
+      );
+
+      const n = new Promise<void>((resolve, reject) => {
+        exec(`cd ${join(this.generatedFolder, folder)} && pnpm i && pnpm run build `, () => {
+          resolve();
+        });
+      });
+      await n;
+    }
+
+    return response.join('\n  ');
+  }
   async constructUsecase(
     klass: Class,
     usecasesConfig: UsecasesInfo,
@@ -440,7 +365,6 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
                 methodMapper
               }, headers);
        
-            
             `);
         } else {
           this.addImport(imports, allUsecases, type, source);

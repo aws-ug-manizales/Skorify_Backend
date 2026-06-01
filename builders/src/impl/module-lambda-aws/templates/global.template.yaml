@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  DbParameterArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/dev/db-secret-arn'
+  StorageParameterArn:
+    Type: String
+    Default: '/skorify/s3/buckets'
+  BusParameterArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/dev/data-bus-name'
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Tags:
+      Project: skorify
+      Environment: dev
+    CodeUri: .
+    VpcConfig:
+      SecurityGroupIds:
+        - !Ref LambdaSecurityGroup
+      SubnetIds:
+        - subnet-07f33dc5f4d480fae
+        - subnet-0c2c638f6f6e93757
+        - subnet-0e899440c64d5b6e8
+    Environment:
+      Variables:
+        DbParameterArn: !Ref DbParameterArn
+        StorageParameterArn: !Ref StorageParameterArn
+        BusParameterArn: !Ref BusParameterArn
+
+Resources:
+  LambdaSharedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: skorify-dev-lambda-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: 
+              - lambda:InvokeFunction
+            Resource:
+              - !Sub arn:aws:lambda:\${AWS::Region}:\${AWS::AccountId}:function:Skorify-Backend-DEV-*
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              - !Ref DbParameterArn
+              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${StorageParameterArn}
+              - !Sub arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter\${BusParameterArn}
+
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+              - !Ref DbParameterArn
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Lambda security group
+      VpcId: !Ref VpcId
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: 'Skorify-user-pool-dev'
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+        - Name: name
+          Required: true
+          Mutable: true
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+      LambdaConfig:
+        PreSignUp: !GetAtt PreSignUpLambda.Arn
+        PostConfirmation: !GetAtt PostConfirmationLambda.Arn
+  PreSignUpPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PreSignUpLambda
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  PostSignUpPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PostConfirmationLambda
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+      
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: 'Skorify-user-pool-client-dev'
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      PreventUserExistenceErrors: ENABLED
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn:
+              Fn::GetAtt:
+                - CognitoUserPool
+                - Arn
+
+        DefaultAuthorizer: CognitoAuthorizer
+
+{{BODY}}
+
+Outputs:
+  SecurityGroupId:
+    Value: !Ref LambdaSecurityGroup
