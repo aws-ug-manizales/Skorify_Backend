@@ -39,8 +39,8 @@ export class ModuleLambdaAWSBuilder extends Builder {
       'utf-8',
     );
     const globalTemplate = await readFile(join(templatesFolder, './global.template.yaml'), 'utf-8');
-    let samYMLTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
-    let eventSamTemplate = await readFile(join(templatesFolder, './event.template.yaml'), 'utf-8');
+    const samYMLTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
+    const eventSamTemplate = await readFile(join(templatesFolder, './event.template.yaml'), 'utf-8');
     const helpersTemplate = await readFile(join(templatesFolder, './helpers.ts'), 'utf-8');
 
     const repositoriesMapper: any = {
@@ -143,12 +143,18 @@ export class ModuleLambdaAWSBuilder extends Builder {
       });
 
       samTemplates.push(samTemplate);
-      const n = new Promise<void>((resolve, reject) => {
-        exec(`cd ${moduleFolder} && pnpm i && pnpm run build `, () => {
-          resolve();
+      await new Promise<void>((resolve, reject) => {
+        console.log(`cd ${moduleFolder} && pnpm i && pnpm run build`);
+        exec(`cd ${moduleFolder} && pnpm i && pnpm run build`, (error, stdout, stderr) => {
+          if (stdout) console.log(`[${module}] stdout:`, stdout);
+          if (stderr) console.error(`[${module}] stderr:`, stderr);
+          if (error) {
+            reject(new Error(`Build failed for module "${module}": ${error.message}`));
+          } else {
+            resolve();
+          }
         });
       });
-      await n;
     }
 
     const extraResources = await this.buildExtraResources(
@@ -183,7 +189,7 @@ confirm_changeset = false
 disable_rollback = false
 image_repositories = []
 
-parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameterArn=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name"
+parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameterArn=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name PrivateSubnetIdsParameter=/skorify/dev/private-subnet-ids"
     `,
       {
         mode: 0o777,
@@ -235,12 +241,18 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
           .replace(new RegExp(toToken('MODULE'), 'g'), folder),
       );
 
-      const n = new Promise<void>((resolve, reject) => {
-        exec(`cd ${join(this.generatedFolder, folder)} && pnpm i && pnpm run build `, () => {
-          resolve();
+      const buildPath = join(this.generatedFolder, folder);
+      await new Promise<void>((resolve, reject) => {
+        exec(`cd ${buildPath} && pnpm i && pnpm run build`, (error, stdout, stderr) => {
+          if (stdout) console.log(`[${folder}] stdout:`, stdout);
+          if (stderr) console.error(`[${folder}] stderr:`, stderr);
+          if (error) {
+            reject(new Error(`Build failed for extra-resource "${folder}": ${error.message}`));
+          } else {
+            resolve();
+          }
         });
       });
-      await n;
     }
 
     return response.join('\n  ');
