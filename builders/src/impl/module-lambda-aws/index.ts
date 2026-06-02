@@ -204,7 +204,11 @@ parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/d
       Timeout: 60
       Policies:
         - AWSLambdaVPCAccessExecutionRole
-        - !Ref LambdaSharedPolicy`;
+        - !Ref AuthLambdasSharedPolicy
+      Environment:
+        Variables:
+          DB_SECRET_ARN: !Ref DbParameterArn
+        `;
     let response = [];
 
     for (const folder of flatFolders) {

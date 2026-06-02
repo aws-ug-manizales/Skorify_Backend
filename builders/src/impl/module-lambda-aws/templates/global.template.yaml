@@ -59,6 +59,28 @@ Resources:
               - secretsmanager:GetSecretValue
             Resource:
               - !Ref DbParameterArn
+
+
+  AuthLambdasSharedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: skorify-dev-auth-lambda-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+              - !Ref DbParameterArn
+              
+          - Effect: Allow
+            Action: 
+              - cognito-idp:ListUsers
+              - cognito-idp:AdminLinkProviderForUser
+            Resource: "*"
+
+
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -83,16 +105,16 @@ Resources:
       Schema:
         - Name: email
           Required: true
-          Mutable: false
+          AttributeDataType: String
+          Mutable: true
         - Name: name
+          AttributeDataType: String
           Required: true
           Mutable: true
-      UserAttributeUpdateSettings:
-        AttributesRequireVerificationBeforeUpdate:
-          - email
       LambdaConfig:
         PreSignUp: !GetAtt PreSignUpLambda.Arn
         PostConfirmation: !GetAtt PostConfirmationLambda.Arn
+
   PreSignUpPermission:
     Type: AWS::Lambda::Permission
     Properties:

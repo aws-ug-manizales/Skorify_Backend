@@ -29,18 +29,11 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
 
   async call(param: CreateTournamentInstanceParam): Promise<DomainEvent> {
     const { name, ownerId, tournamentId } = param;
-    
-    
-        console.log('param');
-        console.log(param);
+
     const tournamentDE = await this.getTournamentByIdUsecase.call({
       tournamentId,
     });
 
-    console.log('tournamentDE');
-    console.log(tournamentDE.eventName);
-    console.log(tournamentDE.payload);
-    
     if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
       return tournamentDE;
     }
