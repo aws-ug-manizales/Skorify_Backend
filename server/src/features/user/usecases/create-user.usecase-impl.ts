@@ -36,6 +36,7 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       name,
       email,
       notificationToken: '',
+      sub: '',
       isActive: true,
       createdAt: new Date(),
       role: 'general',
