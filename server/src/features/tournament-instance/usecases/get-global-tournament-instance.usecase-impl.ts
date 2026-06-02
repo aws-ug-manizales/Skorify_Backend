@@ -1,4 +1,5 @@
-import { DomainEvent } from '@skorify/domain/core';
+import { DomainEvent, Like } from '@skorify/domain/core';
+
 import {
   GetGlobalTournamentInstanceParam,
   GetGlobalTournamentInstanceUsecase,
@@ -15,18 +16,13 @@ export class GetGlobalTournamentInstanceUsecaseImpl extends GetGlobalTournamentI
   async call(param: GetGlobalTournamentInstanceParam): Promise<DomainEvent> {
     const { tournamentId } = param;
     const [globalInstance] = await this.tournamentInstanceContract.filter({
-      where: [
-        {
-          attribute: 'tournamentId',
+      where: {
+        tournamentId: {
           type: 'equals',
           value: tournamentId,
         },
-        {
-          attribute: 'name',
-          type: 'like',
-          value: '%Global',
-        }
-      ],
+        name: Like(`%Global`),
+      },
     });
 
     if (!globalInstance) {
