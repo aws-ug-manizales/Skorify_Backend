@@ -1,10 +1,9 @@
 import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
-import { GetTournamentByIdUsecase, GottenTournamentDomainEvent } from '@skorify/domain/tournament';
+import { GetTournamentByIdUsecase } from '@skorify/domain/tournament';
 import {
   CreateTournamentInstanceParam,
   CreateTournamentInstanceUsecase,
   GetTournamentInstanceByInviteCodeUsecase,
-  GottenTournamentInstanceDomainEvent,
   NotGottenTournamentInstanceDomainEvent,
   TournamentInstanceContract,
   TournamentInstanceEntity,
@@ -46,6 +45,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
         userId: ownerId,
       });
 
+      console.log('ownerDE', ownerDE);
       if (ownerDE.isNot(GottenUserDomainEvent)) {
         return ownerDE;
       }
