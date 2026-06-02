@@ -61,7 +61,7 @@ export function generate(container: IracaContainer, config: ConnectionConfig, he
       dependencyNames: [dependencyName],
       methodMapper,
       responseMapper,
-      runtimeUrl: 'https://ub8tvuzm0m.execute-api.us-east-1.amazonaws.com',
+      runtimeUrl: 'https://390aw3kt7j.execute-api.us-east-1.amazonaws.com',
       prefix: `prod/${module}`,
       headers,
       kind: 'class',

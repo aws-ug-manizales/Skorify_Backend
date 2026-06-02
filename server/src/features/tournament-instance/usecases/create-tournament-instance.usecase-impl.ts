@@ -28,23 +28,19 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
   }
 
   async call(param: CreateTournamentInstanceParam): Promise<DomainEvent> {
+    console.log('PARAM', param);
     const { name, ownerId, tournamentId } = param;
-    
-    
-        console.log('param');
-        console.log(param);
-    const tournamentDE = await this.getTournamentByIdUsecase.call({
-      tournamentId,
-    });
 
-    console.log('tournamentDE');
-    console.log(tournamentDE.eventName);
-    console.log(tournamentDE.payload);
-    
-    if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
-      return tournamentDE;
-    }
+    // const tournamentDE = await this.getTournamentByIdUsecase.call({
+    //   tournamentId,
+    // });
 
+    // console.log('tournamentDE', tournamentDE);
+    // if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
+    //   return tournamentDE;
+    // }
+
+    console.log('ownerId', ownerId);
     if (ownerId) {
       const ownerDE = await this.getUserByIdUsecase.call({
         userId: ownerId,
@@ -55,11 +51,15 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       }
     }
 
+    console.log('AAA');
+
     const exist = await this.tournamentInstanceContract.filter({ where: { name } });
+    console.log('AAA', exist);
 
     if (exist.length) {
       return TournamentInstanceWithSameNameDomainEvent(exist);
     }
+    console.log('BBBB', exist);
 
     const inviteCode = await this.generateUniqueInviteCode();
 

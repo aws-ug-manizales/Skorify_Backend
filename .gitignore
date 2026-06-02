@@ -148,3 +148,6 @@ server/dist
 server/data
 shared/src/data
 shared/src/storage
+
+.idea
+**/.idea

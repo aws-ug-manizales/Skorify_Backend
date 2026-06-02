@@ -22,10 +22,10 @@ export class GetGlobalTournamentInstanceUsecaseImpl extends GetGlobalTournamentI
           value: tournamentId,
         },
         {
-          attribute: 'ownerId',
-          type: 'equals',
-          value: null as unknown as string,
-        },
+          attribute: 'name',
+          type: 'like',
+          value: '%Global',
+        }
       ],
     });
 
