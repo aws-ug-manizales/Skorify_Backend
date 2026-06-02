@@ -181,7 +181,7 @@ parallel = true
 
 [default.deploy.parameters]
 stack_name = "Skorify-Backend-DEV"
-resolve_s3 = true
+s3_bucket = "cdk-hnb659fds-assets-968306633562-us-east-1"
 s3_prefix = "skorify-api"
 region = "us-east-1"
 capabilities = "CAPABILITY_NAMED_IAM"

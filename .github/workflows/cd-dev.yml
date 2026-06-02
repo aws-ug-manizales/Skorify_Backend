@@ -12,8 +12,6 @@ name: CD DEV (Backend SAM)
     paths:
       - server/**
       - builders/**
-      - domain/**
-      - shared/**
       - .github/workflows/cd-dev.yml
   workflow_dispatch: {}
 
@@ -34,6 +32,7 @@ jobs:
   deploy:
     name: Build & Deploy (Skorify-Backend-DEV)
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
     # NO declarar `environment:` aquí: el rol skorify-backend-deploy confía en
     # el sub `repo:aws-ug-manizales/Skorify_Backend:ref:refs/heads/develop`.
     # Declarar un GitHub Environment cambiaría el sub a `...:environment:NAME`
@@ -50,23 +49,17 @@ jobs:
           node-version: 22
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g pnpm@10.22.0
 
       # Sin .npmrc ni tokens: @scifamek-open-source/* está en npm público y
-      # @skorify/{domain,data,shared} son deps git sobre repos PÚBLICOS.
-
-      - name: Build dependencies (domain + shared)
-        working-directory: server
-        run: |
-          pnpm install --no-frozen-lockfile
-          pnpm run build:deps
+      # @skorify/{domain,data,shared} son deps git sobre repos públicos.
 
       # Genera builders/dist/template.yaml + builders/dist/samconfig.toml
       # (incluye Cognito, ApiGateway, LambdaSecurityGroup y una Lambda por módulo)
       - name: Generate SAM template (module-lambda-aws)
         working-directory: builders
         run: |
-          pnpm install --no-frozen-lockfile
+          pnpm install --frozen-lockfile
           pnpm run mla
 
       - name: Setup SAM CLI
@@ -85,6 +78,10 @@ jobs:
 
       # El samconfig.toml generado ya trae stack_name, region, capabilities
       # y parameter_overrides (VpcId, DbParameterArn, StorageParameterArn, BusParameterArn).
+      - name: SAM validate
+        working-directory: builders/dist
+        run: sam validate --lint
+
       - name: SAM build
         working-directory: builders/dist
         run: sam build --cached
