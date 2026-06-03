@@ -2,19 +2,23 @@ import { DomainEvent } from '@skorify/domain/core';
 import {
   GetCurrentRankingParam,
   GetCurrentRankingUsecase,
+  GetTournamentInstanceByIdUsecase,
   GottenTournamentInstanceCurrentRankingDomainEvent,
-  NotGottenTournamentInstanceCurrentRankingDomainEvent,
+  GottenTournamentInstanceDomainEvent,
   RankingItem,
-  TournamentInstanceContract,
 } from '@skorify/domain/tournament-instance';
-import { UserContract } from '@skorify/domain/user';
-import { UserEnrollmentContract } from '@skorify/domain/user-enrollment';
+import { GetUsersByIdsUsecase, GottenUserDomainEvent, UserEntity } from '@skorify/domain/user';
+import {
+  GetUserEnrollmentsByTournamentInstanceIdUsecase,
+  GottenUserEnrollmentsDomainEvent,
+  UserEnrollmentEntity,
+} from '@skorify/domain/user-enrollment';
 
 export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
   constructor(
-    private tournamentInstanceContract: TournamentInstanceContract,
-    private userEnrollmentContract: UserEnrollmentContract,
-    private userContract: UserContract,
+    private getTournamentInstanceByIdUsecase: GetTournamentInstanceByIdUsecase,
+    private getUserEnrollmentsByTournamentInstanceIdUsecase: GetUserEnrollmentsByTournamentInstanceIdUsecase,
+    private getUsersByIdsUsecase: GetUsersByIdsUsecase,
   ) {
     super();
   }
@@ -22,17 +26,20 @@ export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
   async call(param: GetCurrentRankingParam): Promise<DomainEvent> {
     const { tournamentInstanceId } = param;
 
-    const tournamentInstance = await this.tournamentInstanceContract.getById(
+    const tournamentInstanceDE = await this.getTournamentInstanceByIdUsecase.call({
       tournamentInstanceId,
-    );
-
-    if (!tournamentInstance) {
-      return NotGottenTournamentInstanceCurrentRankingDomainEvent();
+    });
+    if (tournamentInstanceDE.isNot(GottenTournamentInstanceDomainEvent)) {
+      return tournamentInstanceDE;
     }
 
-    const userEnrollments = await this.userEnrollmentContract.filter({
-      where: { tournamentInstanceId },
+    const userEnrollmentsDE = await this.getUserEnrollmentsByTournamentInstanceIdUsecase.call({
+      tournamentInstanceId,
     });
+    if (userEnrollmentsDE.isNot(GottenUserEnrollmentsDomainEvent)) {
+      return userEnrollmentsDE;
+    }
+    const userEnrollments: UserEnrollmentEntity[] = userEnrollmentsDE.payload;
 
     const rankedUserEnrollmentsSorted = userEnrollments
       .filter((ue) => ue.currentPosition != null)
@@ -46,30 +53,47 @@ export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
 
     const pendingUserEnrollments = userEnrollments.filter((ue) => ue.currentPosition == null);
 
-    const orderedUserEnrollments = [
-      ...rankedUserEnrollmentsSorted,
-      ...pendingUserEnrollments,
-    ];
-
+    const orderedUserEnrollments = [...rankedUserEnrollmentsSorted, ...pendingUserEnrollments];
+    console.log('orderedUserEnrollments', orderedUserEnrollments);
+    const userIds = orderedUserEnrollments.map((ue) => ue.userId);
+    console.log('userIds', userIds);
     const ranking: RankingItem[] = [];
 
-    for (const userEnrollment of orderedUserEnrollments) {
-      const user = await this.userContract.getById(userEnrollment.userId);
+    const allUsersDE = await this.getUsersByIdsUsecase.call({
+      userIds,
+    });
+    const allUsers: UserEntity[] = allUsersDE.payload;
 
-      if (!user) {
-        continue;
-      }
+    const filteredUsers: {
+      userEnrollment: UserEnrollmentEntity;
+      user: UserEntity;
+    }[] = orderedUserEnrollments
+      .map((userEnrollment) => {
+        const user = allUsers.find((u) => u.id === userEnrollment.userId);
+        return {
+          userEnrollment,
+          user,
+        };
+      })
+      .filter((element) => element.user !== undefined) as {
+      userEnrollment: UserEnrollmentEntity;
+      user: UserEntity;
+    }[];
 
+    for (const element of filteredUsers) {
+      const { userEnrollment, user } = element;
       ranking.push({
         userId: user.id,
         userName: user.name,
-        position: userEnrollment.currentPosition,
-        points: userEnrollment.currentScore,
-        streak: userEnrollment.streak,
+        currentPosition: userEnrollment.currentPosition ?? -1,
+        lastPosition: userEnrollment.lastPosition ?? -1,
+        score: userEnrollment.currentScore ?? 0,
+        points: userEnrollment.currentScore ?? 0,
+        maxStreak: userEnrollment.maxStreak ?? 0,
+        streak: userEnrollment.streak ?? 0,
       });
     }
 
     return GottenTournamentInstanceCurrentRankingDomainEvent(ranking);
   }
 }
-

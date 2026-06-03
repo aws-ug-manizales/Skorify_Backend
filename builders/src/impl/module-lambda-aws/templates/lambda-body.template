@@ -12,6 +12,8 @@ import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
 import { generalMethodMapper } from '@skorify/domain/core';
 
 import { EventBusImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
+import qs from 'qs';
+
 
 
 {{IMPORTS}}
@@ -190,7 +192,16 @@ try {
       }
     }
 
-    const payload = getPayload(event)
+    const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
+
+
+     const strategy =  multiValueQueryUsecases.includes(useCaseName)
+        ? 'multiValueQueryStringParameters'
+        : 'queryStringParameters';
+
+
+    const payload = getPayload(event, strategy)
+    console.log('PAYLOAD');
     console.log(payload);
 
     const result = await useCase.call(payload)
@@ -256,11 +267,17 @@ const getMethod = (event: LambdaEvent) => {
   )
 }
 
-const getPayload = (event: LambdaEvent) => {
+const getPayload = (event: LambdaEvent, strategy: string) => {
   const method = getMethod(event)
 
   if (method === 'GET') {
-    return event.queryStringParameters || {}
+    console.log('QUERY');
+    console.log('EVENT');
+    console.log(event);
+    const data = event.multiValueQueryStringParameters;
+    const query = qs.parse(JSON.stringify(data));
+    console.log(query);
+    return (event[strategy]) || {}
   }
 
   if (!event.body) {
