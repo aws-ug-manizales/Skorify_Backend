@@ -1,0 +1,160 @@
+name: CD (Backend SAM)
+
+"on":
+  push:
+    branches:
+      - develop
+      - staging
+      - main
+    paths:
+      - server/**
+      - builders/**
+      - .github/workflows/cd.yml
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+permissions:
+  contents: read
+  id-token: write # requerido para asumir el rol de AWS vía OIDC
+
+jobs:
+  deploy:
+    name: Deploy ${{ matrix.config_env }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - config_env: dev
+            branch: develop
+          - config_env: staging
+            branch: staging
+          - config_env: prod
+            branch: main
+
+    concurrency:
+      group: cd-backend-${{ matrix.config_env }}
+      cancel-in-progress: false
+
+    env:
+      CONFIG_ENV: ${{ matrix.config_env }}
+      SHOULD_DEPLOY: ${{ (github.event_name == 'push' && github.ref == format('refs/heads/{0}', matrix.branch)) || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == matrix.config_env) }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      SKO_PREDICTION_EDITING_WINDOW: ${{ vars.SKO_PREDICTION_EDITING_WINDOW }}
+
+    steps:
+      - name: Checkout
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        run: npm install -g pnpm@10.22.0
+
+      - name: Generate SAM template (module-lambda-aws)
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        working-directory: builders
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run mla
+
+      - name: Setup SAM CLI
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+
+      - name: Configure AWS credentials (OIDC)
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set deploy vars (dev)
+        if: ${{ env.SHOULD_DEPLOY == 'true' && matrix.config_env == 'dev' }}
+        run: |
+          echo "STACK_NAME=${{ vars.DEV_STACK_NAME }}" >> "$GITHUB_ENV"
+          echo "S3_BUCKET=${{ vars.DEV_S3_BUCKET }}" >> "$GITHUB_ENV"
+          echo "VPC_ID=${{ vars.DEV_VPC_ID }}" >> "$GITHUB_ENV"
+          echo "PRIVATE_SUBNET_IDS_PARAMETER=${{ vars.DEV_PRIVATE_SUBNET_IDS_PARAMETER }}" >> "$GITHUB_ENV"
+          echo "COGNITO_DOMAIN=${{ vars.DEV_COGNITO_DOMAIN }}" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLIENT_ID=${{ vars.DEV_GOOGLE_CLIENT_ID }}" >> "$GITHUB_ENV"
+          echo "COGNITO_CALLBACK_URLS=${{ vars.DEV_COGNITO_CALLBACK_URLS }}" >> "$GITHUB_ENV"
+          echo "DOMAIN_NAME=${{ vars.DEV_DOMAIN_NAME }}" >> "$GITHUB_ENV"
+          echo "CERTIFICATE_ARN=${{ vars.DEV_CERTIFICATE_ARN }}" >> "$GITHUB_ENV"
+          echo "DB_PARAMETER_ARN=${{ vars.DEV_DB_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+          echo "STORAGE_PARAMETER_ARN=${{ vars.DEV_STORAGE_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+          echo "BUS_PARAMETER_ARN=${{ vars.DEV_BUS_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+
+      - name: Set deploy vars (staging)
+        if: ${{ env.SHOULD_DEPLOY == 'true' && matrix.config_env == 'staging' }}
+        run: |
+          echo "STACK_NAME=${{ vars.STAGING_STACK_NAME }}" >> "$GITHUB_ENV"
+          echo "S3_BUCKET=${{ vars.STAGING_S3_BUCKET }}" >> "$GITHUB_ENV"
+          echo "VPC_ID=${{ vars.STAGING_VPC_ID }}" >> "$GITHUB_ENV"
+          echo "PRIVATE_SUBNET_IDS_PARAMETER=${{ vars.STAGING_PRIVATE_SUBNET_IDS_PARAMETER }}" >> "$GITHUB_ENV"
+          echo "COGNITO_DOMAIN=${{ vars.STAGING_COGNITO_DOMAIN }}" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLIENT_ID=${{ vars.STAGING_GOOGLE_CLIENT_ID }}" >> "$GITHUB_ENV"
+          echo "COGNITO_CALLBACK_URLS=${{ vars.STAGING_COGNITO_CALLBACK_URLS }}" >> "$GITHUB_ENV"
+          echo "DOMAIN_NAME=${{ vars.STAGING_DOMAIN_NAME }}" >> "$GITHUB_ENV"
+          echo "CERTIFICATE_ARN=${{ vars.STAGING_CERTIFICATE_ARN }}" >> "$GITHUB_ENV"
+          echo "DB_PARAMETER_ARN=${{ vars.STAGING_DB_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+          echo "STORAGE_PARAMETER_ARN=${{ vars.STAGING_STORAGE_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+          echo "BUS_PARAMETER_ARN=${{ vars.STAGING_BUS_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+
+      - name: Set deploy vars (prod)
+        if: ${{ env.SHOULD_DEPLOY == 'true' && matrix.config_env == 'prod' }}
+        run: |
+          echo "STACK_NAME=${{ vars.PROD_STACK_NAME }}" >> "$GITHUB_ENV"
+          echo "S3_BUCKET=${{ vars.PROD_S3_BUCKET }}" >> "$GITHUB_ENV"
+          echo "VPC_ID=${{ vars.PROD_VPC_ID }}" >> "$GITHUB_ENV"
+          echo "PRIVATE_SUBNET_IDS_PARAMETER=${{ vars.PROD_PRIVATE_SUBNET_IDS_PARAMETER }}" >> "$GITHUB_ENV"
+          echo "COGNITO_DOMAIN=${{ vars.PROD_COGNITO_DOMAIN }}" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLIENT_ID=${{ vars.PROD_GOOGLE_CLIENT_ID }}" >> "$GITHUB_ENV"
+          echo "COGNITO_CALLBACK_URLS=${{ vars.PROD_COGNITO_CALLBACK_URLS }}" >> "$GITHUB_ENV"
+          echo "DOMAIN_NAME=${{ vars.PROD_DOMAIN_NAME }}" >> "$GITHUB_ENV"
+          echo "CERTIFICATE_ARN=${{ vars.PROD_CERTIFICATE_ARN }}" >> "$GITHUB_ENV"
+          echo "DB_PARAMETER_ARN=${{ vars.PROD_DB_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+          echo "STORAGE_PARAMETER_ARN=${{ vars.PROD_STORAGE_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+          echo "BUS_PARAMETER_ARN=${{ vars.PROD_BUS_PARAMETER_ARN }}" >> "$GITHUB_ENV"
+
+      - name: Render samconfig.toml from template (envsubst)
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        working-directory: builders/dist
+        run: envsubst < samconfig.toml.tpl > samconfig.toml
+
+      - name: SAM validate
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        working-directory: builders/dist
+        run: sam validate --lint
+
+      - name: SAM build
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        working-directory: builders/dist
+        run: sam build --cached
+
+      - name: SAM deploy
+        if: ${{ env.SHOULD_DEPLOY == 'true' }}
+        working-directory: builders/dist
+        run: |
+          sam deploy \
+            --config-env "${CONFIG_ENV}" \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset

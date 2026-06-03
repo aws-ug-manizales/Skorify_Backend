@@ -170,67 +170,36 @@ export class ModuleLambdaAWSBuilder extends Builder {
     await writeFile(join(fullDistFolder, `template.yaml`), finalYml, {
       mode: 0o777,
     });
-    // Config por ambiente. Cada uno genera su seccion [<env>.deploy.parameters]
-    // en el samconfig; se elige en el deploy con `sam deploy --config-env <env>`.
-    // GoogleClientSecret NO va aqui: lo resuelve el template desde Secrets Manager
-    // (skorify/<env>/google-client-secret).
-    const envConfigs: Record<
-      string,
-      {
-        account: string;
-        vpcId: string;
-        cognitoDomain: string;
-        googleClientId: string;
-        callbackUrls: string;
-        domainName: string;
-        certificateArn: string;
-      }
-    > = {
-      dev: {
-        account: '968306633562',
-        vpcId: 'vpc-0b9b441356f809cd7',
-        cognitoDomain: 'skorify-dev',
-        googleClientId: '80003356036-otakdpito4rjt32oqpj0phv3mudknnqi.apps.googleusercontent.com',
-        callbackUrls: 'http://localhost:3000/auth/callback,https://skorify-dev.cloud-manizales.com/auth/callback',
-        domainName: 'api.skorify-dev.cloud-manizales.com',
-        certificateArn: 'arn:aws:acm:us-east-1:968306633562:certificate/44456e61-449b-40f8-874d-734f97e9230c',
-      },
-      // TODO(prod): reemplazar placeholders cuando exista la cuenta/infra de prod.
-      prod: {
-        account: 'REPLACE_PROD_ACCOUNT_ID',
-        vpcId: 'REPLACE_PROD_VPC_ID',
-        cognitoDomain: 'skorify',
-        googleClientId: 'REPLACE_PROD_GOOGLE_CLIENT_ID',
-        callbackUrls: 'https://skorify.cloud-manizales.com/auth/callback',
-        domainName: 'api.skorify.cloud-manizales.com',
-        certificateArn: 'REPLACE_PROD_CERT_ARN',
-      },
-    };
-
-    const deploySection = (env: string, c: (typeof envConfigs)[string]) =>
-      `[${env}.deploy.parameters]
-stack_name = "Skorify-Backend-${env.toUpperCase()}"
-s3_bucket = "cdk-hnb659fds-assets-${c.account}-us-east-1"
-s3_prefix = "skorify-api"
-region = "us-east-1"
-capabilities = "CAPABILITY_NAMED_IAM"
-confirm_changeset = false
-disable_rollback = false
-image_repositories = []
-parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" StorageParameterArn="/skorify/s3/buckets" BusParameterArn="/skorify/${env}/data-bus-name"'`;
-
-    const samconfig = `version = 0.1
+    // Genera samconfig.toml.tpl con placeholders ${VAR} para ser procesado
+    // en GitHub Actions con `envsubst` antes del deploy.
+    // Cada ambiente (dev, staging, prod) exporta sus propias variables y
+    // ejecuta:  envsubst < samconfig.toml.tpl > samconfig.toml
+    const samconfigTemplate = `version = 0.1
 
 [default.build.parameters]
 cached = true
 parallel = true
 
-${Object.entries(envConfigs)
-  .map(([env, c]) => deploySection(env, c))
-  .join('\n\n')}
+# -----------------------------------------------------------------------
+# Este archivo es una PLANTILLA.  NO lo uses directamente con SAM.
+# En GitHub Actions ejecuta:
+#   envsubst < samconfig.toml.tpl > samconfig.toml
+# antes de correr 'sam build' / 'sam deploy'.
+# -----------------------------------------------------------------------
+
+[\${CONFIG_ENV}.deploy.parameters]
+stack_name        = "\${STACK_NAME}"
+s3_bucket         = "\${S3_BUCKET}"
+s3_prefix         = "skorify-api"
+region            = "\${AWS_REGION}"
+capabilities      = "CAPABILITY_NAMED_IAM"
+confirm_changeset = false
+disable_rollback  = false
+image_repositories = []
+parameter_overrides = 'Environment="\${CONFIG_ENV}" VpcId="\${VPC_ID}" PrivateSubnetIdsParameter="\${PRIVATE_SUBNET_IDS_PARAMETER}" CognitoUserPoolDomain="\${COGNITO_DOMAIN}" GoogleClientId="\${GOOGLE_CLIENT_ID}" CognitoCallbackURLs="\${COGNITO_CALLBACK_URLS}" DomainName="\${DOMAIN_NAME}" CertificateArn="\${CERTIFICATE_ARN}" DbParameterArn="\${DB_PARAMETER_ARN}" StorageParameterArn="\${STORAGE_PARAMETER_ARN}" BusParameterArn="\${BUS_PARAMETER_ARN}"'
 `;
 
-    await writeFile(join(fullDistFolder, `samconfig.toml`), samconfig, {
+    await writeFile(join(fullDistFolder, `samconfig.toml.tpl`), samconfigTemplate, {
       mode: 0o777,
     });
   }

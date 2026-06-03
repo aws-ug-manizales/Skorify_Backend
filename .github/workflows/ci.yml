@@ -18,7 +18,7 @@ env:
 
 jobs:
   lint:
-    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--lint-backed.yml@feature/ci-pr-validation-workflows
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--lint-backend.yml@feature/ci-pr-validation-workflows
 
   sca:                                                           
     uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--sca-generic.yml@feature/ci-pr-validation-workflows
