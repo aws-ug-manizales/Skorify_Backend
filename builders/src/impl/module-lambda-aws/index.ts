@@ -18,6 +18,7 @@ type Templates = {
 
 export class ModuleLambdaAWSBuilder extends Builder {
   async build(config: BuilderConfiguration): Promise<void> {
+    const {SKO_PARAMETERS} = process.env;
     const allUsecases = await this.getUsecases(config.serverFolder);
     const myFolder = 'module-lambda-aws';
     const templatesFolder = join(config.root, 'src', 'impl', myFolder, 'templates');
@@ -193,7 +194,7 @@ capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
-parameter_overrides = ""
+parameter_overrides = "${SKO_PARAMETERS}"
 
     `,
       {
