@@ -1,9 +1,10 @@
-import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent, Id } from '@skorify/domain/core';
 import {
   GetMatchByIdUsecase,
   GottenMatchDomainEvent,
   MatchCannotBeBetedDomainEvent,
   MatchEntity,
+  MatchStatus,
 } from '@skorify/domain/match';
 import {
   MakePredictionParam,
@@ -55,12 +56,14 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       userId,
       tournamentInstanceId,
     });
+    console.log('userEnrollmentExistDE');
+    console.log(userEnrollmentExistDE);
 
     if (userEnrollmentExistDE.isNot(UserIsInTournamentInstanceDomainEvent)) {
       return userEnrollmentExistDE;
     }
 
-    const userEnrollment: UserEnrollmentEntity = userEnrollmentExistDE.payload;
+    const userEnrollment: { userEnrollmentId: Id } = userEnrollmentExistDE.payload;
     // 2. Valida el partido
     const matchDE = await this.getMatchByIdUsecase.call({
       matchId,
@@ -72,7 +75,16 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
 
     const match: MatchEntity = matchDE.payload;
 
-    if (!match.canBet()) {
+    const validStates: MatchStatus[] = [MatchStatus.Draft];
+    const status = match.status ?? (match)['_status'];
+    const timeToClose = match.timeToCloseInMinutes ?? (match)['_timeToCloseInMinutes'];
+    const diff = new Date(match.kickOff).getTime() - Date.now();
+    const window = timeToClose * 60 * 1000;
+
+    const canBet =
+      status == MatchStatus.Draft ||
+      (status == MatchStatus.Scheduled && diff > window && diff > 0);
+    if (!canBet) {
       return MatchCannotBeBetedDomainEvent();
     }
 
@@ -96,7 +108,8 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       homeScore,
       earnedPoints: 0,
       hasExactResult: false,
-      userEnrollmentId: userEnrollment.id,
+      userEnrollmentId: userEnrollment.userEnrollmentId,
+      createdAt: new Date(),
     });
 
     if (predictionDE.isNot(BuiltEntityDomainEvent)) {

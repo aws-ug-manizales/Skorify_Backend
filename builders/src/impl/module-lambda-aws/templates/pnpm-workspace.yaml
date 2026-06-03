@@ -1,0 +1,5 @@
+allowBuilds:
+  Skorify_Domain: true
+  "@skorify/domain": true
+  "@skorify/shared": true
+  "@skorify/data": true

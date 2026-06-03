@@ -54,9 +54,13 @@ jobs:
           npm install -g pnpm
 
 
-      - run: pnpm run build:deploy
+      - run: |
+          cd domain
+          pnpm i
+          pnpm run build:deploy
 
       - run: |
+          cd domain
           cd dist
           pnpm publish --no-git-checks
         env:

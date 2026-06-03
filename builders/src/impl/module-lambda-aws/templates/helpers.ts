@@ -1,47 +1,98 @@
-import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
-import { DomainEvent } from "@skorify/domain/core";
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { DomainEvent } from '@skorify/domain/core';
+import { IracaHttpIntegrator, ResponseMapper } from '@scifamek-open-source/iraca/integrations';
+import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
 
-const client = new LambdaClient({ region: "us-east-1" });
+const client = new LambdaClient({ region: 'us-east-1' });
 export type ConnectionConfig = {
   dependencyName: string;
   methodMapper: any;
+  module: string;
 };
 
 export const responseMapper = (response: any) => {
+  console.log('Response ');
+  console.log(response);
+
   const body = response;
-  const code = body["code"];
-  const pureCode = code;
-  const data = body["data"];
+  const code = body['meta']['code'];
+  const fragments = code.split(':') ?? ['-', '-'];
+  const pureCode = fragments[1];
+  const data = body['data'];
   return new DomainEvent(pureCode, data);
 };
 
-export function generate(config: ConnectionConfig) {
-  const { dependencyName, methodMapper } = config;
-  let methodToUse = "get";
+// export function generate(config: ConnectionConfig) {
+//   const { dependencyName, methodMapper } = config;
+//   let methodToUse = "get";
 
-  methodToUse = getMethodToUse(methodMapper, dependencyName, methodToUse);
+//   methodToUse = getMethodToUse(methodMapper, dependencyName, methodToUse);
 
-  const c = class {};
+//   const c = class {};
 
-  (c as any).prototype["call"] = async function (param: any) {
-    const command = new InvokeCommand({
-      FunctionName: `${dependencyName.replace("Usecase", "")}Lambda`,
-      InvocationType: "RequestResponse",
-      Payload: Buffer.from(JSON.stringify(param)),
-    });
+//   (c as any).prototype["call"] = async function (param: any) {
+//     const command = new InvokeCommand({
+//       FunctionName: `Skorify-Backend-DEV-${dependencyName.replace("Usecase", "")}Lambda-Yvl4u2N8RXLQ`,
+//       InvocationType: "RequestResponse",
+//       Payload: Buffer.from(JSON.stringify(param)),
+//     });
 
-    const response = await client.send(command);
+//     const response = await client.send(command);
 
-    const responsePayload = response.Payload
-      ? JSON.parse(Buffer.from(response.Payload).toString())
-      : null;
+//     const responsePayload = response.Payload
+//       ? JSON.parse(Buffer.from(response.Payload).toString())
+//       : null;
 
-    const mapper = responseMapper;
-    const t = mapper(responsePayload);
-    return t;
+//     const mapper = responseMapper;
+//     const t = mapper(responsePayload);
+//     return t;
+//   };
+
+//   return c;
+// }
+
+export function generate(container: IracaContainer, config: ConnectionConfig, headers: any) {
+  const { dependencyName, methodMapper, module } = config;
+
+  // const keys = Object.keys(headers);
+
+  // const copy = {} as any;
+  // for (const key of keys) {
+  //   if (!key.startsWith('CloudFront-')) {
+  //     const value = headers[key];
+  //     copy[key] = value;
+  //   }
+  // }
+
+  // delete headers['host'];
+  // delete headers['via'];
+  // delete headers['x-amz-cf-id'];
+  // delete headers['cloudfront-forwarded-proto'];
+  // delete headers['cloudfront-is-desktop-viewer'];
+  // delete headers['cloudfront-is-mobile-viewer'];
+  // delete headers['cloudfront-is-tablet-viewer'];
+  // delete headers['cloudfront-is-smarttv-viewer'];
+  // delete headers['cloudfront-viewer-country'];
+  // delete headers['cloudfront-viewer-asn'];
+
+  const newHeaders = {
+    Authorization: headers['Authorization'] ?? headers['authorization'] ?? '',
+    'Content-Type': headers['Content-Type'] ?? headers['content-type'] ?? '',
   };
+  console.log('Nuevos headers');
+  console.log(newHeaders);
 
-  return c;
+  IracaHttpIntegrator.generate(container, [
+    {
+      dependencyNames: [dependencyName],
+      methodMapper,
+      responseMapper,
+      runtimeUrl: 'https://390aw3kt7j.execute-api.us-east-1.amazonaws.com',
+      prefix: `prod/${module}`,
+      headers: newHeaders,
+      kind: 'class',
+    },
+  ]);
 }
 
 export function getMethodToUse(

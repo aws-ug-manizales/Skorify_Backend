@@ -1,0 +1,274 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Deployment environment name used in resource names and tags.
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PrivateSubnetIdsParameter:
+    Type: AWS::SSM::Parameter::Value<List<String>>
+    Default: '/skorify/dev/private-subnet-ids'
+    Description: SSM parameter path containing a StringList of private subnet IDs for Lambda ENIs
+  CognitoUserPoolDomain:
+    Type: String
+    Description: Prefix for the Cognito hosted UI domain.
+  GoogleClientId:
+    Type: String
+    Description: Google OAuth client ID for Cognito federation
+  CognitoCallbackURLs:
+    Type: CommaDelimitedList
+    Description: Comma-separated callback URLs for the Cognito app client OAuth flow
+  DomainName:
+    Type: String
+    Description: Custom domain name for API Gateway.
+  CertificateArn:
+    Type: String
+    Description: ACM certificate ARN for the custom domain.
+  DbParameterArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/dev/db-secret-arn'
+  StorageParameterArn:
+    Type: String
+    Default: '/skorify/s3/buckets'
+  BusParameterArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/dev/data-bus-name'
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Tags:
+      Project: skorify
+      Environment: !Ref Environment
+    CodeUri: .
+    VpcConfig:
+      SecurityGroupIds:
+        - !Ref LambdaSecurityGroup
+      SubnetIds: !Ref PrivateSubnetIdsParameter
+    Environment:
+      Variables:
+        DbParameterArn: !Ref DbParameterArn
+        StorageParameterArn: !Ref StorageParameterArn
+        BusParameterArn: !Ref BusParameterArn
+
+Resources:
+  LambdaSharedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub 'skorify-${Environment}-lambda-policy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource:
+              - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-*
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              - !Ref DbParameterArn
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${StorageParameterArn}
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${BusParameterArn}
+
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+              - !Ref DbParameterArn
+
+
+  AuthLambdasSharedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub 'skorify-${Environment}-auth-lambda-policy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+              - !Ref DbParameterArn
+
+          - Effect: Allow
+            Action:
+              - cognito-idp:ListUsers
+              - cognito-idp:AdminLinkProviderForUser
+            Resource: "*"
+
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Lambda security group
+      VpcId: !Ref VpcId
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub 'Skorify-user-pool-${Environment}'
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      Schema:
+        - Name: email
+          Required: true
+          AttributeDataType: String
+          Mutable: true
+        - Name: name
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+      LambdaConfig:
+        PreSignUp: !GetAtt PreSignUpLambda.Arn
+        PostConfirmation: !GetAtt PostConfirmationLambda.Arn
+
+  PreSignUpPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PreSignUpLambda
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  PostSignUpPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PostConfirmationLambda
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    DependsOn:
+      - CognitoGoogleIdentityProvider
+    Properties:
+      ClientName: !Sub 'Skorify-user-pool-client-${Environment}'
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+        - Google
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+        - phone
+      CallbackURLs: !Ref CognitoCallbackURLs
+      PreventUserExistenceErrors: ENABLED
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
+  CognitoGoogleIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      ProviderName: Google
+      ProviderType: Google
+      ProviderDetails:
+        client_id: !Ref GoogleClientId
+        client_secret: !Sub '{{resolve:secretsmanager:skorify/${Environment}/google-client-secret}}'
+        authorize_scopes: openid email profile
+      AttributeMapping:
+        email: email
+        name: name
+        email_verified: email_verified
+        username: sub
+
+  CognitoAdminsGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: admins
+      UserPoolId: !Ref CognitoUserPool
+      Description: Admins group
+
+  CognitoManagersGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: managers
+      UserPoolId: !Ref CognitoUserPool
+      Description: Managers group
+
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS,PATCH'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        AddDefaultAuthorizerToCorsPreflight: false
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn:
+              Fn::GetAtt:
+                - CognitoUserPool
+                - Arn
+
+
+  CognitoUserPoolDomainResource:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Ref CognitoUserPoolDomain
+      UserPoolId: !Ref CognitoUserPool
+
+  ApiGatewayCustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainName
+      RegionalCertificateArn: !Ref CertificateArn
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  ApiGatewayBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref ApiGatewayCustomDomain
+      RestApiId: !Ref ApiGatewayApi
+      Stage: prod
+
+{{BODY}}
+
+Outputs:
+  SecurityGroupId:
+    Value: !Ref LambdaSecurityGroup
+
+  CustomDomainRegionalDomainName:
+    Description: Regional domain name to use for Route 53 alias or CNAME
+    Value: !GetAtt ApiGatewayCustomDomain.RegionalDomainName
+
+  CustomDomainRegionalHostedZoneId:
+    Description: Hosted zone ID for Route 53 alias record
+    Value: !GetAtt ApiGatewayCustomDomain.RegionalHostedZoneId
+
+  CognitoHostedUIDomain:
+    Description: Cognito hosted UI base URL
+    Value: !Sub https://${CognitoUserPoolDomain}.auth.${AWS::Region}.amazoncognito.com

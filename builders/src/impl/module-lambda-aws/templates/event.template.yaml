@@ -1,8 +1,8 @@
 
-
-
         {{MAIN_USECASE}}:
           Type: Api
           Properties:
             Path: /{{KEBAD_MAIN_USECASE}}
             Method: {{METHOD}}
+            RestApiId:
+              Ref: ApiGatewayApi

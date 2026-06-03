@@ -7,7 +7,12 @@ import {
   MatchDoesNotExistDomainEvent,
   MatchEntity,
 } from '@skorify/domain/match';
-import { PredictionContract, PredictionEntity } from '@skorify/domain/prediction';
+import {
+  EditPredictionDirectlyUsecase,
+  GetPredictionsByMatchAndTournamentInstanceUsecase,
+  PredictionContract,
+  PredictionEntity,
+} from '@skorify/domain/prediction';
 import {
   GetUserEnrollmentByIdUsecase,
   GottenUserEnrollmentDomainEvent,
@@ -20,8 +25,9 @@ import {
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
-    private predictionContract: PredictionContract,
+    private editPredictionDirectlyUsecase: EditPredictionDirectlyUsecase,
     private getUserEnrollmentByIdUsecase: GetUserEnrollmentByIdUsecase,
+    private getPredictionsByMatchAndTournamentInstanceUsecase: GetPredictionsByMatchAndTournamentInstanceUsecase,
     private updateUserEnrollmentUsecase: UpdateUserEnrollmentUsecase,
     private getEnrollmentsWithoutPredictionUsecase: GetEnrollmentsWithoutPredictionUsecase,
   ) {
@@ -37,13 +43,11 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-
-    const predictions = await this.predictionContract.filter({
-      where: {
-        matchId,
-        tournamentInstanceId,
-      },
+    const predictionsDE = await this.getPredictionsByMatchAndTournamentInstanceUsecase.call({
+      matchId,
+      tournamentInstanceId,
     });
+    const predictions: PredictionEntity[] = predictionsDE.payload as PredictionEntity[];
 
     if (predictions && predictions.length > 0) {
       await this.calculateScores(match, predictions);
@@ -56,6 +60,25 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
   private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]) {
     for (const prediction of predictions) {
+      /** Esto es un machetazo */
+      const clonedPredictionDE = PredictionEntity.build({
+        id: prediction.id,
+        createdAt: prediction.createdAt,
+        userEnrollmentId: prediction.userEnrollmentId,
+        matchId: prediction.matchId,
+        tournamentInstanceId: prediction.tournamentInstanceId,
+        userId: prediction.userId,
+        homeScore: prediction.homeScore,
+        awayScore: prediction.awayScore,
+        earnedPoints: prediction.earnedPoints,
+        hasExactResult: prediction.hasExactResult,
+      });
+
+      const clonedPrediction = clonedPredictionDE.payload as PredictionEntity;
+
+
+      clonedPrediction.createdAt = new Date(prediction.createdAt);
+
       const userEnrollmentDE = await this.getUserEnrollmentByIdUsecase.call({
         userEnrollmentId: prediction.userEnrollmentId,
       });
@@ -65,19 +88,43 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       }
 
       const userEnrollment: UserEnrollmentEntity = userEnrollmentDE.payload as UserEnrollmentEntity;
-      const streakBonusPoints = userEnrollment.getStreakBonusPoints();
+
+      /** Esto es un machetazo */
+      const clonedUserEnrollmentDE = UserEnrollmentEntity.build({
+        id: userEnrollment.id,
+        maxStreak: userEnrollment.maxStreak,
+        currentPosition: userEnrollment.currentPosition,
+        currentScore: userEnrollment.currentScore,
+        createdAt: userEnrollment.createdAt,
+        joinedAt: userEnrollment.joinedAt,
+        lastPosition: userEnrollment.lastPosition,
+        tournamentId: userEnrollment.tournamentId,
+        streak: userEnrollment.streak,
+        tournamentInstanceId: userEnrollment.tournamentInstanceId,
+        userId: userEnrollment.userId,
+      });
+
+      const clonedUserEnrollment = clonedUserEnrollmentDE.payload as UserEnrollmentEntity;
+
+      clonedUserEnrollment.createdAt = new Date(userEnrollment.createdAt);
+      clonedUserEnrollment.joinedAt = new Date(userEnrollment.joinedAt);
+
+      const streakBonusPoints = clonedUserEnrollment.getStreakBonusPoints();
 
       // Calculate prediction score
-      prediction.calculateScore(match.awayScore!, match.homeScore!, streakBonusPoints);
+      clonedPrediction.calculateScore(match.awayScore!, match.homeScore!, streakBonusPoints);
 
       // Save updated prediction
-      await this.predictionContract.modifyById(prediction.id, prediction);
+      await this.editPredictionDirectlyUsecase.call({
+        predictionId: prediction.id,
+        ...clonedPrediction,
+      });
 
       // Update user enrollment with points and streak
       await this.updateUserEnrollmentUsecase.call({
-        userEnrollmentId: prediction.userEnrollmentId,
-        points: prediction.earnedPoints,
-        isExact: prediction.hasExactResult,
+        userEnrollmentId: clonedPrediction.userEnrollmentId,
+        points: clonedPrediction.earnedPoints,
+        isExact: clonedPrediction.hasExactResult,
       });
     }
   }
@@ -94,7 +141,9 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     if (missingEnrollmentsDE.is(GottenUserEnrollmentsDomainEvent)) {
       const enrollments: UserEnrollmentEntity[] =
         missingEnrollmentsDE.payload as UserEnrollmentEntity[];
+
       for (const enrollment of enrollments) {
+        
         await this.updateUserEnrollmentUsecase.call({
           userEnrollmentId: enrollment.id,
           points: 0,

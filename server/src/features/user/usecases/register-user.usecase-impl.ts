@@ -19,7 +19,11 @@ export class RegisterUserUsecaseImpl extends RegisterUserUsecase {
   }
 
   async call(param: RegisterUserParam): Promise<DomainEvent> {
-    const { name, email } = param;
+    const { name, email, password, } = param;
+
+    if (!password?.trim() || password.length < 6) {
+      return UserRegistrationInvalidParamsDomainEvent();
+    }
 
     if (!name?.trim()) {
       return UserRegistrationInvalidParamsDomainEvent();
@@ -37,7 +41,7 @@ export class RegisterUserUsecaseImpl extends RegisterUserUsecase {
 
     const user = createDE.payload as UserEntity;
 
-    await this.identityProviderContract.update(user.id, {
+    await this.identityProviderContract.update(user.id, password, {
       name: user.name,
       email: user.email,
     });

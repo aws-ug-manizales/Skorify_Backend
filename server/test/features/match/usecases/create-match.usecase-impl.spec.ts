@@ -75,7 +75,7 @@ function makeMockMatchContract(
     save: jest.fn(),
     getById: jest.fn(),
     deleteById: jest.fn(),
-    modifyById: jest.fn(),
+    modify: jest.fn(),
     getAll: jest.fn(),
     getByIDs: jest.fn(),
     filter: jest.fn().mockResolvedValue([]),

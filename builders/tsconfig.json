@@ -17,5 +17,5 @@
   "compileOnSave": true,
 
   "include": ["src/*", "src/**/*"],
-  "exclude": ["**/*.test.ts"]
+  "exclude": ["**/*.test.ts", "src/**/templates/**/*", "src/**/extra-resources/**/*"]
 }

@@ -13,7 +13,7 @@
   "dependencies": {},
   "devDependencies": {
     "@scifamek-open-source/iraca": "9.2.0",
-    "@skorify/domain": "../domain/dist",
+    "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
     "@types/node": "22.5.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3"

@@ -4,10 +4,12 @@ import {
   CloseMatchUsecase,
   GetMatchByIdUsecase,
   GottenMatchDomainEvent,
+  MatchAlreadyClosedDomainEvent,
   MatchContract,
   MatchEntity,
+  MatchStatus,
   NotEditedMatchDomainEvent,
-  ReactiveClosedMatchDomainEvent
+  ReactiveClosedMatchDomainEvent,
 } from '@skorify/domain/match';
 
 import { DomainEvent, EventBusContract } from '@skorify/domain/core';
@@ -41,13 +43,13 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
     const match: MatchEntity = matchDE.payload;
     console.log(match);
 
-    // if (match.isMatchClose()) {
-    //   return MatchAlreadyClosedDomainEvent(match);
-    // }
+    if (match.status == MatchStatus.Finished) {
+      return MatchAlreadyClosedDomainEvent(match);
+    }
 
-    //Cerrar partido
+    match.status = MatchStatus.Finished;
+    const modified = await this.matchContract.modify(match);
 
-    const modified = await this.matchContract.modifyById(match.id, match);
     if (!modified) {
       return NotEditedMatchDomainEvent(match);
     }

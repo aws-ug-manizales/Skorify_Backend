@@ -1,10 +1,10 @@
 import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
-import { GetTournamentByIdUsecase, GottenTournamentDomainEvent } from '@skorify/domain/tournament';
+import { GetTournamentByIdUsecase } from '@skorify/domain/tournament';
 import {
   CreateTournamentInstanceParam,
   CreateTournamentInstanceUsecase,
   GetTournamentInstanceByInviteCodeUsecase,
-  GottenTournamentInstanceDomainEvent,
+  NotGottenTournamentInstanceDomainEvent,
   TournamentInstanceContract,
   TournamentInstanceEntity,
   TournamentInstanceNotSavedDomainEvent,
@@ -27,29 +27,39 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
   }
 
   async call(param: CreateTournamentInstanceParam): Promise<DomainEvent> {
+    console.log('PARAM', param);
     const { name, ownerId, tournamentId } = param;
 
-    const tournamentDE = await this.getTournamentByIdUsecase.call({
-      tournamentId,
-    });
+    // const tournamentDE = await this.getTournamentByIdUsecase.call({
+    //   tournamentId,
+    // });
 
-    if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
-      return tournamentDE;
+    // console.log('tournamentDE', tournamentDE);
+    // if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
+    //   return tournamentDE;
+    // }
+
+    console.log('ownerId', ownerId);
+    if (ownerId) {
+      const ownerDE = await this.getUserByIdUsecase.call({
+        userId: ownerId,
+      });
+
+      console.log('ownerDE', ownerDE);
+      if (ownerDE.isNot(GottenUserDomainEvent)) {
+        return ownerDE;
+      }
     }
 
-    const ownerDE = await this.getUserByIdUsecase.call({
-      userId: ownerId,
-    });
-
-    if (ownerDE.isNot(GottenUserDomainEvent)) {
-      return ownerDE;
-    }
+    console.log('AAA');
 
     const exist = await this.tournamentInstanceContract.filter({ where: { name } });
+    console.log('AAA', exist);
 
     if (exist.length) {
       return TournamentInstanceWithSameNameDomainEvent(exist);
     }
+    console.log('BBBB', exist);
 
     const inviteCode = await this.generateUniqueInviteCode();
 
@@ -64,6 +74,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       ownerId,
       state: 'active',
       inviteCode,
+      createdAt: new Date(),
     });
 
     if (tournamentInstanceDE.isNot(BuiltEntityDomainEvent)) {
@@ -78,10 +89,12 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return TournamentInstanceNotSavedDomainEvent();
     }
 
-    await this.createUserEnrollmentUsecase.call({
-      userId: ownerId,
-      tournamentInstanceId: tournamentInstance.id,
-    });
+    if (ownerId) {
+      await this.createUserEnrollmentUsecase.call({
+        userId: ownerId,
+        tournamentInstanceId: tournamentInstance.id,
+      });
+    }
 
     return TournamentInstanceSavedDomainEvent(tournamentInstance);
   }
@@ -101,7 +114,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
         state: 'active',
       });
 
-      if (existing.is(GottenTournamentInstanceDomainEvent)) {
+      if (existing.is(NotGottenTournamentInstanceDomainEvent)) {
         return code;
       }
     }

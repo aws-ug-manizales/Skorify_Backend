@@ -1,29 +1,24 @@
 import { DomainEvent } from '@skorify/domain/core';
-import { GetMatchByIdUsecase, MatchEntity } from '@skorify/domain/match';
 import {
-  EditPredictionParam,
-  EditPredictionUsecase,
+  EditPredictionDirectlyParam,
+  EditPredictionDirectlyUsecase,
   GetPredictionByIdUsecase,
   GottenPredictionDomainEvent,
   NotEditedPredictionDomainEvent,
-  PassedPredictionWindowDomainEvent,
   PredictionContract,
   PredictionEditedDomainEvent,
   PredictionEntity,
 } from '@skorify/domain/prediction';
 
-export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
+export class EditPredictionDirectlyUsecaseImpl extends EditPredictionDirectlyUsecase {
   constructor(
     private getPredictionByIdUsecase: GetPredictionByIdUsecase,
-    private getMatchByIdUsecase: GetMatchByIdUsecase,
     private predictionContract: PredictionContract,
   ) {
     super();
   }
-  async call(param: EditPredictionParam): Promise<DomainEvent> {
-    const editingWindow = 10;
-
-    const { awayScore, homeScore, predictionId } = param;
+  async call(param: EditPredictionDirectlyParam): Promise<DomainEvent> {
+    const { predictionId, awayScore, homeScore, earnedPoints, hasExactResult } = param;
 
     const prediontionDE = await this.getPredictionByIdUsecase.call({
       predictionId,
@@ -32,25 +27,13 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
     if (prediontionDE.isNot(GottenPredictionDomainEvent)) {
       return prediontionDE;
     }
-    const now = new Date();
 
     const prediction: PredictionEntity = prediontionDE.payload;
 
-    const matchDE = await this.getMatchByIdUsecase.call({
-      matchId: prediction.matchId,
-    });
-    const match: MatchEntity = matchDE.payload;
-
-    const diffMs = new Date(match.kickOff).getTime() - now.getTime();
-
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-    if (diffMinutes < editingWindow) {
-      return PassedPredictionWindowDomainEvent();
-    }
-
     prediction.awayScore = awayScore;
     prediction.homeScore = homeScore;
+    prediction.earnedPoints = earnedPoints;
+    prediction.hasExactResult = hasExactResult;
 
     const edited = await this.predictionContract.modify(prediction);
 

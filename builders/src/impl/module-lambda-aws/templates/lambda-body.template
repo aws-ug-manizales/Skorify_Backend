@@ -5,11 +5,13 @@ import { IracaServer } from "@scifamek-open-source/iraca/web-api";
 
 import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
 import { generate } from "./helpers";
-import { {{MODULE_PASCAL}}Repository } from "./{{MODULE}}.repository";
 import { {{MODULE_PASCAL}}Controller } from "./controller";
 import { DBClient } from '@skorify/data';
-import { StorageContract } from '@skorify/domain/core';
-import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
+import { StorageContract, EventBusContract } from '@skorify/domain/core';
+import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
+
+import { EventBusImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
+
 
 
 {{IMPORTS}}
@@ -40,50 +42,70 @@ type LambdaEvent = {
   httpMethod?: string
 }
 
+function printDateDiff(title, initialTime){
+  const now = new Date();
+
+  const diferenciaMs = now.getTime() - initialTime.getTime();
+
+  console.log('** ',title,': ',diferenciaMs);
+
+}
 
 
 export const handler = async (event: any) => {
 
+  const initialTime = new Date();
+
+  const headers = event.headers;
+    console.log('HEADERS');
+    console.log('headers');
+    console.log(headers);
+    console.log('HEADERS');
+
   const secretManagerClient = new SecretsManagerClient();
   const ssmClient = new SSMClient();
+  const method = getMethod(event)
+  console.log('mÉTODO QUE LLEGA');
+  console.log({method})
 
+  const DbParameterARN = process.env.DbParameterArn!;
+  // const StorageParameterArn = process.env.StorageParameterArn!;
+  const BusParameterArn = process.env.BusParameterArn!;
 
-  const DbParameterARN = process.env.DB_PARAMETER_ARN!;
-  const StorageParameterArn = process.env.STORAGE_PARAMETER_ARN!;
-  const BusParameterArn = process.env.BUS_PARAMETER_ARN!;
+  console.log({DbParameterARN});
+  // console.log({StorageParameterArn});
+  console.log({BusParameterArn});
 
-
-  const DbParameterARNResponse = await ssmClient.send(
-    new GetParameterCommand({
-      Name: DbParameterARN!,
-      WithDecryption: true,
-    }),
-  );
-  const DBSecretArn = DbParameterARNResponse.Parameter?.Value;
-  
+  /**
   const StorageParameterArnResponse = await ssmClient.send(
     new GetParameterCommand({
       Name: StorageParameterArn!,
       WithDecryption: true,
     }),
   );
-  const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
-  const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
+  */
+  // const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
+  // const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
 
 
-  const storageConfig = StorageParameterParsedValue[0];
+  // const storageConfig = StorageParameterParsedValue[0];
 
 
   const DBConfigObject = await secretManagerClient.send(
     new GetSecretValueCommand({
-      SecretId: DBSecretArn
+      SecretId: DbParameterARN
     })
   );
+
+  const eventBusConfig = {
+    eventBusName: BusParameterArn,
+    source: 'SkorifyBackend'
+  }
 
   const externalDBConfig = DBConfigObject.SecretString;
   const parsedDBSecrets = JSON.parse(externalDBConfig!);
 
-
+  printDateDiff('Después de ir a AWS secretos', initialTime);
 
   const dbClient = new DBClient({
     type: 'postgres',
@@ -102,16 +124,27 @@ export const handler = async (event: any) => {
 
   const identifier = "{{IDENTIFIER}}";
 
-    const methodMapper: any = [
+
+const generalMethodMapper = [
+  { method: "DELETE", patterns: [/^Delete/] },
   {
-    method: "get",
-    patterns: [/[\w]+/],
+    method: "PATCH",
+    patterns: [/^Edit/, /^Update/, /^Asign/, /^Modify/, /^Set/],
   },
+  { method: "GET", patterns: [/^Get/, /^Consult/, /^Enroll/,/^Filter/] },
+  { method: "PUT", patterns: [/^Add/, /^Create/, /^Save/, /^Register/] },
+  { method: "POST", patterns: [/.+/] },
 ];
+
+
+    const methodMapper: any = generalMethodMapper;
+
   const container = new IracaContainer();
 
 {{INJECTIONS}}
 
+
+  printDateDiff('Finalización de injecciones', initialTime);
 
  try {
     await dbClient.connect();
@@ -121,11 +154,14 @@ export const handler = async (event: any) => {
     process.exit(1);
   }
 
+  printDateDiff('Finalización de Conexión', initialTime);
+
   container.addValue({
     id: 'DBClient',
     value: dbClient,
   });
 
+  /**
   container.addValue({
     id: 'StorageConfig',
     value: {
@@ -133,34 +169,52 @@ export const handler = async (event: any) => {
       bucketName: storageConfig.bucketName
     },
   });
+  */
 
   container.add({
     abstraction: StorageContract,
     implementation: StorageImpl,
-    dependencies: ['StorageConfig'],
+    // dependencies: ['StorageConfig'],
+  });
+
+  container.addValue({
+    id: 'eventBusConfig',
+    value: eventBusConfig,
+  });
+
+  container.add({
+    abstraction: EventBusContract,
+    implementation: EventBusImpl,
+    dependencies: ['eventBusConfig'],
   });
 
 
-  const myController = new {{MODULE_PASCAL}}Controller(
-        {
-      container,
-      prefix: '{{MODULE}}'
+  container.addValue({
+      id: '{{MODULE_PASCAL}}Contract',
+      value: dbClient.{{MODULE_SERVICE}},
+    });
+    
+
+    const baseHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': '*'
     }
-  );
-
-
-
-
-
-
 try {
-    const path = getPath(event)
+    const path = getPath(event);
 
     const useCaseName = `${toPascalCase(path)}Usecase`
+    console.log(useCaseName);
+
+  
 
     console.log('useCase');
     console.log(container.configsTable);
     const useCase = await container.getInstance<any>(useCaseName);
+    console.log(useCase);
+
+    printDateDiff('Obtención del caso de uso', initialTime);
+
 
     if (!useCase) {
       return {
@@ -171,21 +225,50 @@ try {
       }
     }
 
-    const payload = getPayload(event)
+    const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
+
+
+     const strategy =  multiValueQueryUsecases.includes(useCaseName)
+        ? 'multiValueQueryStringParameters'
+        : 'queryStringParameters';
+
+
+    const payload = getPayload(event, strategy)
+    console.log('PAYLOAD');
+    console.log(payload);
 
     const result = await useCase.call(payload)
+
+    printDateDiff('Después de finalizar el caso de uso CALL', initialTime);
+
+
+    console.log('Usecase result');
+    console.log(result);
+    const parsed = {
+        data: result.payload,
+        meta: {
+          code: '{{MODULE_PASCAL}}:'+result.eventName
+        }
+      };
+    console.log(parsed);
+    const parsedSTR = JSON.stringify(parsed);
+    console.log(parsedSTR);
+    
+    printDateDiff('Respondiendo', initialTime);
 
     return {
       statusCode: 200,
       headers: {
+        ...baseHeaders,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(result),
+      body: parsedSTR,
     }
   } catch (error) {
     return {
       statusCode: 500,
       headers: {
+        ...baseHeaders,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -214,18 +297,19 @@ const getPath = (event: LambdaEvent) => {
 }
 
 const getMethod = (event: LambdaEvent) => {
-  return (
+  const method =  (
     event.requestContext?.http?.method ||
     event.httpMethod ||
     'GET'
-  )
+  );
+  return method.toUpperCase();
 }
 
-const getPayload = (event: LambdaEvent) => {
+const getPayload = (event: LambdaEvent, strategy: string) => {
   const method = getMethod(event)
 
   if (method === 'GET') {
-    return event.queryStringParameters || {}
+    return (event[strategy]) || {}
   }
 
   if (!event.body) {

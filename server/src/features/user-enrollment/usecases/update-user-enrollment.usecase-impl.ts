@@ -4,8 +4,8 @@ import {
   UserEnrollmentContract,
   NotGottenUserEnrollmentDomainEvent,
   SavedUserEnrollmentDomainEvent,
-} from "@skorify/domain/user-enrollment";
-import { DomainEvent } from "@skorify/domain/core";
+} from '@skorify/domain/user-enrollment';
+import { DomainEvent } from '@skorify/domain/core';
 
 export class UpdateUserEnrollmentUsecaseImpl extends UpdateUserEnrollmentUsecase {
   constructor(private userEnrollmentContract: UserEnrollmentContract) {
@@ -23,10 +23,10 @@ export class UpdateUserEnrollmentUsecaseImpl extends UpdateUserEnrollmentUsecase
 
     userEnrollment.applyScore(points, isExact);
 
-    const saved = await this.userEnrollmentContract.modifyById(userEnrollmentId, userEnrollment);
+    const saved = await this.userEnrollmentContract.modify(userEnrollment);
 
     if (!saved) {
-        return NotGottenUserEnrollmentDomainEvent();
+      return NotGottenUserEnrollmentDomainEvent();
     }
 
     return SavedUserEnrollmentDomainEvent(saved);

@@ -1,8 +1,5 @@
-import {
-  BuiltEntityDomainEvent,
-  DomainEvent
-} from '@skorify/domain/core';
-import {  StorageContract } from '@skorify/domain/core';
+import { BuiltEntityDomainEvent, DomainEvent } from '@skorify/domain/core';
+import { StorageContract } from '@skorify/domain/core';
 import {
   CreateUserParam,
   CreateUserUsecase,
@@ -39,8 +36,10 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
       name,
       email,
       notificationToken: '',
+      sub: '',
       isActive: true,
       createdAt: new Date(),
+      role: 'general',
     });
 
     if (userDE.isNot(BuiltEntityDomainEvent)) {
@@ -48,12 +47,14 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
     }
 
     const user = userDE.payload as UserEntity;
+    /**
     if (image) {
       const key = `user/${user.id}/profile`;
 
       await this.storageContract.uploadImage(key, image);
       user.image = key;
     }
+      */
 
     const userInDB = await this.userContract.save(user);
 
