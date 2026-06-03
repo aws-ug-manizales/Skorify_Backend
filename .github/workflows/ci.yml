@@ -20,9 +20,48 @@ jobs:
   lint:
     uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--lint-backend.yml@feature/ci-pr-validation-workflows
 
-  sca:                                                           
+  sca:
     uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--sca-generic.yml@feature/ci-pr-validation-workflows
-  
+
+  typecheck:
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--build-backend.yml@feature/ci-pr-validation-workflows
+
+  unit-tests:
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--unit-tests-backend.yml@feature/ci-pr-validation-workflows
+
+  sam-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.22.0
+
+      # Genera el template SAM (mismo paso que el deploy) para validar en el PR
+      # que el builder + el template son correctos, antes del merge a develop.
+      - name: Generate SAM template (module-lambda-aws)
+        working-directory: builders
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run mla
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+
+      - name: SAM validate (cfn-lint, sin AWS)
+        working-directory: builders/dist
+        run: sam validate --lint --region us-east-1
+
   build:
     runs-on: ubuntu-latest
     steps:
