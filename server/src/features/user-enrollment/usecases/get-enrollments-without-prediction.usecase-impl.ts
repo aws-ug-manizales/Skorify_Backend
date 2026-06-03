@@ -3,14 +3,18 @@ import {
   GetEnrollmentsWithoutPredictionUsecase,
   UserEnrollmentContract,
   GottenUserEnrollmentsDomainEvent,
-} from "@skorify/domain/user-enrollment";
-import { PredictionContract } from "@skorify/domain/prediction";
-import { DomainEvent } from "@skorify/domain/core";
+} from '@skorify/domain/user-enrollment';
+import {
+  GetPredictionsByMatchUsecase,
+  GottenPredictionsByMatchDomainEvent,
+  PredictionEntity,
+} from '@skorify/domain/prediction';
+import { DomainEvent, Id } from '@skorify/domain/core';
 
 export class GetEnrollmentsWithoutPredictionUsecaseImpl extends GetEnrollmentsWithoutPredictionUsecase {
   constructor(
     private userEnrollmentContract: UserEnrollmentContract,
-    private predictionContract: PredictionContract
+    private getPredictionsByMatchUsecase: GetPredictionsByMatchUsecase,
   ) {
     super();
   }
@@ -18,22 +22,26 @@ export class GetEnrollmentsWithoutPredictionUsecaseImpl extends GetEnrollmentsWi
   async call(param: GetEnrollmentsWithoutPredictionParam): Promise<DomainEvent> {
     const { matchId, tournamentInstanceId } = param;
 
-    const predictions = await this.predictionContract.filter({
-      where: {
-        matchId: matchId,
-      }
+    const predictionsDE = await this.getPredictionsByMatchUsecase.call({
+      matchId: matchId as Id,
     });
 
-    const enrollmentIdsWithPrediction = new Set(predictions.map(p => p.userEnrollmentId));
+    if (predictionsDE.isNot(GottenPredictionsByMatchDomainEvent)) {
+      return predictionsDE;
+    }
+
+    const predictions = predictionsDE.payload as PredictionEntity[];
+
+    const enrollmentIdsWithPrediction = new Set(predictions.map((p) => p.userEnrollmentId));
 
     const allEnrollments = await this.userEnrollmentContract.filter({
       where: {
         tournamentInstanceId: tournamentInstanceId,
-      }
+      },
     });
 
     const enrollmentsWithoutPrediction = allEnrollments.filter(
-      enrollment => !enrollmentIdsWithPrediction.has(enrollment.id)
+      (enrollment) => !enrollmentIdsWithPrediction.has(enrollment.id),
     );
 
     return GottenUserEnrollmentsDomainEvent(enrollmentsWithoutPrediction);

@@ -9,10 +9,8 @@ import { {{MODULE_PASCAL}}Controller } from "./controller";
 import { DBClient } from '@skorify/data';
 import { StorageContract, EventBusContract } from '@skorify/domain/core';
 import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
-import { generalMethodMapper } from '@skorify/domain/core';
 
 import { EventBusImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
-import qs from 'qs';
 
 
 
@@ -112,6 +110,19 @@ export const handler = async (event: any) => {
   const name = event.queryStringParameters?.name ?? "World";
 
   const identifier = "{{IDENTIFIER}}";
+
+
+const generalMethodMapper = [
+  { method: "DELETE", patterns: [/^Delete/] },
+  {
+    method: "PATCH",
+    patterns: [/^Edit/, /^Update/, /^Asign/, /^Modify/, /^Set/],
+  },
+  { method: "GET", patterns: [/^Get/, /^Consult/, /^Enroll/,/^Filter/] },
+  { method: "PUT", patterns: [/^Add/, /^Create/, /^Save/, /^Register/] },
+  { method: "POST", patterns: [/.+/] },
+];
+
 
     const methodMapper: any = generalMethodMapper;
 
@@ -260,23 +271,18 @@ const getPath = (event: LambdaEvent) => {
 }
 
 const getMethod = (event: LambdaEvent) => {
-  return (
+  const method =  (
     event.requestContext?.http?.method ||
     event.httpMethod ||
     'GET'
-  )
+  );
+  return method.toUpperCase();
 }
 
 const getPayload = (event: LambdaEvent, strategy: string) => {
   const method = getMethod(event)
 
   if (method === 'GET') {
-    console.log('QUERY');
-    console.log('EVENT');
-    console.log(event);
-    const data = event.multiValueQueryStringParameters;
-    const query = qs.parse(JSON.stringify(data));
-    console.log(query);
     return (event[strategy]) || {}
   }
 
