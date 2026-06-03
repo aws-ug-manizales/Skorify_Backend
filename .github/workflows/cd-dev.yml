@@ -90,5 +90,6 @@ jobs:
         working-directory: builders/dist
         run: |
           sam deploy \
+            --config-env dev \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset
