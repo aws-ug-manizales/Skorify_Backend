@@ -42,9 +42,20 @@ type LambdaEvent = {
   httpMethod?: string
 }
 
+function printDateDiff(title, initialTime){
+  const now = new Date();
+
+  const diferenciaMs = now.getTime() - initialTime.getTime();
+
+  console.log('** ',title,': ',diferenciaMs);
+
+}
 
 
 export const handler = async (event: any) => {
+
+  const initialTime = new Date();
+
   const headers = event.headers;
     console.log('HEADERS');
     console.log('headers');
@@ -58,24 +69,26 @@ export const handler = async (event: any) => {
   console.log({method})
 
   const DbParameterARN = process.env.DbParameterArn!;
-  const StorageParameterArn = process.env.StorageParameterArn!;
+  // const StorageParameterArn = process.env.StorageParameterArn!;
   const BusParameterArn = process.env.BusParameterArn!;
 
   console.log({DbParameterARN});
-  console.log({StorageParameterArn});
+  // console.log({StorageParameterArn});
   console.log({BusParameterArn});
 
+  /**
   const StorageParameterArnResponse = await ssmClient.send(
     new GetParameterCommand({
       Name: StorageParameterArn!,
       WithDecryption: true,
     }),
   );
-  const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
-  const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
+  */
+  // const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
+  // const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
 
 
-  const storageConfig = StorageParameterParsedValue[0];
+  // const storageConfig = StorageParameterParsedValue[0];
 
 
   const DBConfigObject = await secretManagerClient.send(
@@ -92,7 +105,7 @@ export const handler = async (event: any) => {
   const externalDBConfig = DBConfigObject.SecretString;
   const parsedDBSecrets = JSON.parse(externalDBConfig!);
 
-
+  printDateDiff('Después de ir a AWS secretos', initialTime);
 
   const dbClient = new DBClient({
     type: 'postgres',
@@ -131,6 +144,7 @@ const generalMethodMapper = [
 {{INJECTIONS}}
 
 
+  printDateDiff('Finalización de injecciones', initialTime);
 
  try {
     await dbClient.connect();
@@ -140,11 +154,14 @@ const generalMethodMapper = [
     process.exit(1);
   }
 
+  printDateDiff('Finalización de Conexión', initialTime);
+
   container.addValue({
     id: 'DBClient',
     value: dbClient,
   });
 
+  /**
   container.addValue({
     id: 'StorageConfig',
     value: {
@@ -152,16 +169,19 @@ const generalMethodMapper = [
       bucketName: storageConfig.bucketName
     },
   });
+  */
 
   container.add({
     abstraction: StorageContract,
     implementation: StorageImpl,
-    dependencies: ['StorageConfig'],
+    // dependencies: ['StorageConfig'],
   });
+
   container.addValue({
     id: 'eventBusConfig',
     value: eventBusConfig,
   });
+
   container.add({
     abstraction: EventBusContract,
     implementation: EventBusImpl,
@@ -193,6 +213,8 @@ try {
     const useCase = await container.getInstance<any>(useCaseName);
     console.log(useCase);
 
+    printDateDiff('Obtención del caso de uso', initialTime);
+
 
     if (!useCase) {
       return {
@@ -217,6 +239,8 @@ try {
 
     const result = await useCase.call(payload)
 
+    printDateDiff('Después de finalizar el caso de uso CALL', initialTime);
+
 
     console.log('Usecase result');
     console.log(result);
@@ -229,6 +253,8 @@ try {
     console.log(parsed);
     const parsedSTR = JSON.stringify(parsed);
     console.log(parsedSTR);
+    
+    printDateDiff('Respondiendo', initialTime);
 
     return {
       statusCode: 200,

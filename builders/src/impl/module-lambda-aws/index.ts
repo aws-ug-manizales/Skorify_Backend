@@ -224,7 +224,7 @@ capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
-parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" StorageParameterArn="/skorify/s3/buckets" BusParameterArn="/skorify/${env}/data-bus-name"'`;
+parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name"'`;
 
     const samconfig = `version = 0.1
 

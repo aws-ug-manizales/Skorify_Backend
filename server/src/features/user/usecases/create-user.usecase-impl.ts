@@ -47,12 +47,14 @@ export class CreateUserUsecaseImpl extends CreateUserUsecase {
     }
 
     const user = userDE.payload as UserEntity;
+    /**
     if (image) {
       const key = `user/${user.id}/profile`;
 
       await this.storageContract.uploadImage(key, image);
       user.image = key;
     }
+      */
 
     const userInDB = await this.userContract.save(user);
 

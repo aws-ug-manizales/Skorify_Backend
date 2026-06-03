@@ -1,19 +1,8 @@
 import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
 import { DBClient } from '@skorify/data';
 import { EventBusContract, StorageContract } from '@skorify/domain/core';
-import {
-  CalculateMatchScoreUsecase,
-  MatchEntity,
-  ReactiveClosedMatchDomainEvent,
-} from '@skorify/domain/match';
-import { PredictionEntity } from '@skorify/domain/prediction';
-import { TeamEntity } from '@skorify/domain/team';
-import { TournamentEntity } from '@skorify/domain/tournament';
-import { TournamentInstanceEntity } from '@skorify/domain/tournament-instance';
-import { UserEntity } from '@skorify/domain/user';
-import { UserEnrollmentContract, UserEnrollmentEntity } from '@skorify/domain/user-enrollment';
-import { EventBusMemoryImpl, JsonDataSource, Queue, StorageMemoryImpl } from '@skorify/shared';
-import { UserEnrollmentService } from 'node_modules/@skorify/data/dist/lib/services/UserEnrollment.service';
+import { CalculateMatchScoreUsecase, ReactiveClosedMatchDomainEvent } from '@skorify/domain/match';
+import { EventBusMemoryImpl, Queue, StorageMemoryImpl } from '@skorify/shared';
 import { join } from 'path';
 
 type DatabaseConfig = {
