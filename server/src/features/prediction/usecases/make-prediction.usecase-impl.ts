@@ -4,6 +4,7 @@ import {
   GottenMatchDomainEvent,
   MatchCannotBeBetedDomainEvent,
   MatchEntity,
+  MatchStatus,
 } from '@skorify/domain/match';
 import {
   MakePredictionParam,
@@ -74,7 +75,16 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
 
     const match: MatchEntity = matchDE.payload;
 
-    if (!match.canBet()) {
+    const validStates: MatchStatus[] = [MatchStatus.Draft];
+    const status = match.status ?? (match)['_status'];
+    const timeToClose = match.timeToCloseInMinutes ?? (match)['_timeToCloseInMinutes'];
+    const diff = new Date(match.kickOff).getTime() - Date.now();
+    const window = timeToClose * 60 * 1000;
+
+    const canBet =
+      status == MatchStatus.Draft ||
+      (status == MatchStatus.Scheduled && diff > window && diff > 0);
+    if (!canBet) {
       return MatchCannotBeBetedDomainEvent();
     }
 

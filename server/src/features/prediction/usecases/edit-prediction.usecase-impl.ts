@@ -41,7 +41,7 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
     });
     const match: MatchEntity = matchDE.payload;
 
-    const diffMs = match.kickOff.getTime() - now.getTime();
+    const diffMs = new Date(match.kickOff).getTime() - now.getTime();
 
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
 

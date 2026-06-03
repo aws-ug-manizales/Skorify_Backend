@@ -13,11 +13,10 @@ export type ConnectionConfig = {
 export const responseMapper = (response: any) => {
   console.log('Response ');
   console.log(response);
-  
-  
+
   const body = response;
   const code = body['meta']['code'];
-  const fragments =code.split(':') ?? ['-','-']; 
+  const fragments = code.split(':') ?? ['-', '-'];
   const pureCode = fragments[1];
   const data = body['data'];
   return new DomainEvent(pureCode, data);
@@ -54,7 +53,34 @@ export const responseMapper = (response: any) => {
 
 export function generate(container: IracaContainer, config: ConnectionConfig, headers: any) {
   const { dependencyName, methodMapper, module } = config;
-  console.log(methodMapper);
+
+  // const keys = Object.keys(headers);
+
+  // const copy = {} as any;
+  // for (const key of keys) {
+  //   if (!key.startsWith('CloudFront-')) {
+  //     const value = headers[key];
+  //     copy[key] = value;
+  //   }
+  // }
+
+  // delete headers['host'];
+  // delete headers['via'];
+  // delete headers['x-amz-cf-id'];
+  // delete headers['cloudfront-forwarded-proto'];
+  // delete headers['cloudfront-is-desktop-viewer'];
+  // delete headers['cloudfront-is-mobile-viewer'];
+  // delete headers['cloudfront-is-tablet-viewer'];
+  // delete headers['cloudfront-is-smarttv-viewer'];
+  // delete headers['cloudfront-viewer-country'];
+  // delete headers['cloudfront-viewer-asn'];
+
+  const newHeaders = {
+    Authorization: headers['Authorization'] ?? headers['authorization'] ?? '',
+    'Content-Type': headers['Content-Type'] ?? headers['content-type'] ?? '',
+  };
+  console.log('Nuevos headers');
+  console.log(newHeaders);
 
   IracaHttpIntegrator.generate(container, [
     {
@@ -63,13 +89,10 @@ export function generate(container: IracaContainer, config: ConnectionConfig, he
       responseMapper,
       runtimeUrl: 'https://390aw3kt7j.execute-api.us-east-1.amazonaws.com',
       prefix: `prod/${module}`,
-      headers,
+      headers: newHeaders,
       kind: 'class',
     },
   ]);
-
-
-
 }
 
 export function getMethodToUse(

@@ -18,6 +18,7 @@ type Templates = {
 
 export class ModuleLambdaAWSBuilder extends Builder {
   async build(config: BuilderConfiguration): Promise<void> {
+    const { SKO_PARAMETERS } = process.env;
     const allUsecases = await this.getUsecases(config.serverFolder);
     const myFolder = 'module-lambda-aws';
     const templatesFolder = join(config.root, 'src', 'impl', myFolder, 'templates');
@@ -40,7 +41,10 @@ export class ModuleLambdaAWSBuilder extends Builder {
     );
     const globalTemplate = await readFile(join(templatesFolder, './global.template.yaml'), 'utf-8');
     const samYMLTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
-    const eventSamTemplate = await readFile(join(templatesFolder, './event.template.yaml'), 'utf-8');
+    const eventSamTemplate = await readFile(
+      join(templatesFolder, './event.template.yaml'),
+      'utf-8',
+    );
     const helpersTemplate = await readFile(join(templatesFolder, './helpers.ts'), 'utf-8');
 
     const repositoriesMapper: any = {
@@ -110,6 +114,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
           eventSamTemplate,
         );
         samTemplate += innerEventSamTemplate;
+
         // fullImports.push(...imports);
       }
 
@@ -163,7 +168,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
 
     const finalYml = globalTemplate.replace(
       toToken('BODY'),
-      '  '+extraResources + '\n  ' + samTemplates.join('\n'),
+      '  ' + extraResources + '\n  ' + samTemplates.join('\n'),
     );
 
     // await writeFile(join(fullGeneratedFolder, `template.yaml`), finalYml);
