@@ -191,19 +191,21 @@ export class ModuleLambdaAWSBuilder extends Builder {
         vpcId: 'vpc-0b9b441356f809cd7',
         cognitoDomain: 'skorify-dev',
         googleClientId: '80003356036-otakdpito4rjt32oqpj0phv3mudknnqi.apps.googleusercontent.com',
-        callbackUrls: 'http://localhost:3000/auth/callback,https://skorify-dev.cloud-manizales.com/auth/callback',
+        callbackUrls:
+          'http://localhost:3000/auth/callback,https://skorify-dev.cloud-manizales.com/auth/callback',
         domainName: 'api.skorify-dev.cloud-manizales.com',
-        certificateArn: 'arn:aws:acm:us-east-1:968306633562:certificate/44456e61-449b-40f8-874d-734f97e9230c',
+        certificateArn:
+          'arn:aws:acm:us-east-1:968306633562:certificate/44456e61-449b-40f8-874d-734f97e9230c',
       },
-      // TODO(prod): reemplazar placeholders cuando exista la cuenta/infra de prod.
       prod: {
-        account: 'REPLACE_PROD_ACCOUNT_ID',
-        vpcId: 'REPLACE_PROD_VPC_ID',
+        account: '151646410766',
+        vpcId: 'vpc-08506af24531f2dcb',
         cognitoDomain: 'skorify',
-        googleClientId: 'REPLACE_PROD_GOOGLE_CLIENT_ID',
+        googleClientId: '80003356036-otakdpito4rjt32oqpj0phv3mudknnqi.apps.googleusercontent.com',
         callbackUrls: 'https://skorify.cloud-manizales.com/auth/callback',
         domainName: 'api.skorify.cloud-manizales.com',
-        certificateArn: 'REPLACE_PROD_CERT_ARN',
+        certificateArn:
+          'arn:aws:acm:us-east-1:151646410766:certificate/5a4624ab-b3ff-4703-9b8a-a792c7fa094f',
       },
     };
 
