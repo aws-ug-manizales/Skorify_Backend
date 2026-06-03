@@ -189,7 +189,7 @@ confirm_changeset = false
 disable_rollback = false
 image_repositories = []
 
-parameter_overrides = "VpcId=vpc-0b9b441356f809cd7 DbParameterArn=/skorify/dev/db-secret-arn StorageParameterArn=/skorify/s3/buckets BusParameterArn=/skorify/dev/data-bus-name PrivateSubnetIdsParameter=/skorify/dev/private-subnet-ids"
+parameter_overrides = 'Environment="dev" VpcId="vpc-0b9b441356f809cd7" PrivateSubnetIdsParameter="/skorify/dev/private-subnet-ids" CognitoUserPoolDomain="skorify-dev" GoogleClientId="80003356036-otakdpito4rjt32oqpj0phv3mudknnqi.apps.googleusercontent.com" CognitoCallbackURLs="http://localhost:3000/auth/callback,https://skorify-dev.cloud-manizales.com/auth/callback" DomainName="api.skorify-dev.cloud-manizales.com" CertificateArn="arn:aws:acm:us-east-1:968306633562:certificate/44456e61-449b-40f8-874d-734f97e9230c" DbParameterArn="/skorify/dev/db-secret-arn" StorageParameterArn="/skorify/s3/buckets" BusParameterArn="/skorify/dev/data-bus-name"'
     `,
       {
         mode: 0o777,
