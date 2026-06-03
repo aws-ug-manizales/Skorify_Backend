@@ -6,7 +6,7 @@ import {
   GottenUsersDomainEvent,
 } from '@skorify/domain/user';
 
-export class GetUserByIdUsecaseImpl extends GetAvailableUsersUsecase {
+export class GetAvailableUsersUsecaseImpl extends GetAvailableUsersUsecase {
   constructor(private userContract: UserContract) {
     super();
   }
