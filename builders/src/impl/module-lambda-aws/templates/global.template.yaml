@@ -17,10 +17,6 @@ Parameters:
   GoogleClientId:
     Type: String
     Description: Google OAuth client ID for Cognito federation
-  GoogleClientSecret:
-    Type: String
-    NoEcho: true
-    Description: Google OAuth client secret for Cognito federation
   CognitoCallbackURLs:
     Type: CommaDelimitedList
     Description: Comma-separated callback URLs for the Cognito app client OAuth flow
@@ -196,7 +192,7 @@ Resources:
       ProviderType: Google
       ProviderDetails:
         client_id: !Ref GoogleClientId
-        client_secret: !Ref GoogleClientSecret
+        client_secret: !Sub '{{resolve:secretsmanager:skorify/${Environment}/google-client-secret}}'
         authorize_scopes: openid email profile
       AttributeMapping:
         email: email
@@ -254,7 +250,6 @@ Resources:
 
   ApiGatewayBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: ApiGatewayApi
     Properties:
       DomainName: !Ref ApiGatewayCustomDomain
       RestApiId: !Ref ApiGatewayApi

@@ -176,31 +176,71 @@ export class ModuleLambdaAWSBuilder extends Builder {
     await writeFile(join(fullDistFolder, `template.yaml`), finalYml, {
       mode: 0o777,
     });
-    await writeFile(
-      join(fullDistFolder, `samconfig.toml`),
-      `
-version = 0.1
+    // Config por ambiente. Cada uno genera su seccion [<env>.deploy.parameters]
+    // en el samconfig; se elige en el deploy con `sam deploy --config-env <env>`.
+    // GoogleClientSecret NO va aqui: lo resuelve el template desde Secrets Manager
+    // (skorify/<env>/google-client-secret).
+    const envConfigs: Record<
+      string,
+      {
+        account: string;
+        vpcId: string;
+        cognitoDomain: string;
+        googleClientId: string;
+        callbackUrls: string;
+        domainName: string;
+        certificateArn: string;
+      }
+    > = {
+      dev: {
+        account: '968306633562',
+        vpcId: 'vpc-0b9b441356f809cd7',
+        cognitoDomain: 'skorify-dev',
+        googleClientId: '80003356036-otakdpito4rjt32oqpj0phv3mudknnqi.apps.googleusercontent.com',
+        callbackUrls:
+          'http://localhost:3000/auth/callback,https://skorify-dev.cloud-manizales.com/auth/callback',
+        domainName: 'api.skorify-dev.cloud-manizales.com',
+        certificateArn:
+          'arn:aws:acm:us-east-1:968306633562:certificate/44456e61-449b-40f8-874d-734f97e9230c',
+      },
+      prod: {
+        account: '151646410766',
+        vpcId: 'vpc-08506af24531f2dcb',
+        cognitoDomain: 'skorify',
+        googleClientId: '80003356036-ks13nilig3bvel2qt9icrapsv2325is5.apps.googleusercontent.com',
+        callbackUrls: 'https://skorify.cloud-manizales.com/auth/callback',
+        domainName: 'api.skorify.cloud-manizales.com',
+        certificateArn:
+          'arn:aws:acm:us-east-1:151646410766:certificate/5a4624ab-b3ff-4703-9b8a-a792c7fa094f',
+      },
+    };
 
-[default.build.parameters]
-cached = true
-parallel = true
-
-[default.deploy.parameters]
-stack_name = "Skorify-Backend-DEV"
-resolve_s3 = true
+    const deploySection = (env: string, c: (typeof envConfigs)[string]) =>
+      `[${env}.deploy.parameters]
+stack_name = "Skorify-Backend-${env.toUpperCase()}"
+s3_bucket = "cdk-hnb659fds-assets-${c.account}-us-east-1"
 s3_prefix = "skorify-api"
 region = "us-east-1"
 capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
-parameter_overrides = "${SKO_PARAMETERS}"
+parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" StorageParameterArn="/skorify/s3/buckets" BusParameterArn="/skorify/${env}/data-bus-name"'`;
 
-    `,
-      {
-        mode: 0o777,
-      },
-    );
+    const samconfig = `version = 0.1
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+${Object.entries(envConfigs)
+  .map(([env, c]) => deploySection(env, c))
+  .join('\n\n')}
+`;
+
+    await writeFile(join(fullDistFolder, `samconfig.toml`), samconfig, {
+      mode: 0o777,
+    });
   }
 
   async buildExtraResources(myFolder: string): Promise<string> {

@@ -166,7 +166,7 @@ export abstract class Builder {
       recursive: true,
     });
 
-    const pattern = /([\w-]+)[/\\]usecases[/\\]([\w-]+)\.usecase-impl\.ts/;
+    const pattern = /^([\w-]+)[/\\]usecases[/\\](?:.*[/\\])?([\w-]+)\.usecase-impl\.ts$/;
 
     const validFiles = files
       .map((f) => pattern.exec(f))

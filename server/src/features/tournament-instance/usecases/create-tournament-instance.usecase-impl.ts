@@ -71,7 +71,7 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       id: crypto.randomUUID(),
       name,
       tournamentId,
-      ownerId: ownerId ?? (null as any),
+      ownerId,
       state: 'active',
       inviteCode,
       createdAt: new Date(),

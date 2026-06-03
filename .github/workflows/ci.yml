@@ -18,11 +18,53 @@ env:
 
 jobs:
   lint:
-    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--lint-backed.yml@feature/ci-pr-validation-workflows
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--lint-backend.yml@feature/ci-pr-validation-workflows
 
-  sca:                                                           
+  sca:
     uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--sca-generic.yml@feature/ci-pr-validation-workflows
-  
+
+  typecheck:
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--build-backend.yml@feature/ci-pr-validation-workflows
+
+  # TODO: reactivar cuando se arregle el setup de jest (falta @types/jest en los
+  # types y ts-jest fuerza commonjs, que no resuelve los exports subpath de
+  # @skorify/domain). El reusable shared--unit-tests-backend.yml ya está listo.
+  # unit-tests:
+  #   uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--unit-tests-backend.yml@feature/ci-pr-validation-workflows
+
+  sam-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.22.0
+
+      # Genera el template SAM (mismo paso que el deploy) para validar en el PR
+      # que el builder + el template son correctos, antes del merge a develop.
+      - name: Generate SAM template (module-lambda-aws)
+        working-directory: builders
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run mla
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+
+      - name: SAM validate (cfn-lint, sin AWS)
+        working-directory: builders/dist
+        run: sam validate --lint --region us-east-1
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -35,33 +77,18 @@ jobs:
           echo 'github.event.pull_request.action ${{ github.event.pull_request.action }}'
 
       - name: CHECKOUT
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: SETUP NODE
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: 22
 
       - name: INSTALL PNPM
         run: |
           npm install -g pnpm
-
-      - name: BUILD DOMAIN
-        run: |
-          cd domain
-          pnpm i --no-frozen-lockfile
-          pnpm run build
-
-      - name: Delay 10 segundos
-        run: sleep 1
-
-      - name: BUILD SHARED
-        run: |
-          cd shared
-          pnpm i --no-frozen-lockfile
-          pnpm run build
 
       - name: INSTALL
         run: |
