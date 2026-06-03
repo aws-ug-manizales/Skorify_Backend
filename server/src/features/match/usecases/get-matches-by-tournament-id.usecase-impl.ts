@@ -26,7 +26,7 @@ export class GetMatchesByTournamentIdUsecaseImpl extends GetMatchesByTournamentI
       },
     });
 
-    const teamIds = matches.map((match) => [match.teamAId, match.teamBId]).flat();
+    const teamIds = matches.map((match) => [match.awayTeamId, match.homeTeamId]).flat();
     const uniqueTeamIds = [...new Set(teamIds)];
 
     const teamsDE = await this.getTeamByIdsUsecase.call({ teamIds: uniqueTeamIds });
