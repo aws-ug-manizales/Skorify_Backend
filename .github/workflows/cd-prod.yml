@@ -1,0 +1,85 @@
+name: CD PROD (Backend SAM)
+
+# Se dispara con push directo o merge de un PR a main.
+"on":
+  push:
+    branches:
+      - main
+    # Solo redesplegar si cambió código que afecta al artefacto SAM.
+    paths:
+      - server/**
+      - builders/**
+      - .github/workflows/cd-prod.yml
+  workflow_dispatch: {}
+
+# Evita despliegues solapados sobre el mismo stack.
+concurrency:
+  group: cd-prod-backend
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write   # requerido para asumir el rol de AWS vía OIDC
+
+env:
+  AWS_REGION: us-east-1
+  SKO_PREDICTION_EDITING_WINDOW: ${{ vars.SKO_PREDICTION_EDITING_WINDOW }}
+
+jobs:
+  deploy:
+    name: Build & Deploy (Skorify-Backend-PROD)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    # NO declarar `environment:` aquí: el rol skorify-backend-deploy (cuenta prod)
+    # confía en el sub `repo:aws-ug-manizales/Skorify_Backend:ref:refs/heads/main`.
+    # Declarar un GitHub Environment cambiaría el sub a `...:environment:NAME`
+    # y el AssumeRoleWithWebIdentity fallaría.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.22.0
+
+      # Genera builders/dist/template.yaml + builders/dist/samconfig.toml
+      - name: Generate SAM template (module-lambda-aws)
+        working-directory: builders
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run mla
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          # Rol skorify-backend-deploy en la cuenta de PROD.
+          # Guardar su ARN en el secret AWS_DEPLOY_ROLE_ARN_PROD del repo.
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: SAM validate
+        working-directory: builders/dist
+        run: sam validate --lint
+
+      - name: SAM build
+        working-directory: builders/dist
+        run: sam build --cached
+
+      - name: SAM deploy
+        working-directory: builders/dist
+        run: |
+          sam deploy \
+            --config-env prod \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
