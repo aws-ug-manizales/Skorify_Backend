@@ -201,7 +201,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
         account: '151646410766',
         vpcId: 'vpc-08506af24531f2dcb',
         cognitoDomain: 'skorify',
-        googleClientId: '80003356036-otakdpito4rjt32oqpj0phv3mudknnqi.apps.googleusercontent.com',
+        googleClientId: '80003356036-ks13nilig3bvel2qt9icrapsv2325is5.apps.googleusercontent.com',
         callbackUrls: 'https://skorify.cloud-manizales.com/auth/callback',
         domainName: 'api.skorify.cloud-manizales.com',
         certificateArn:
