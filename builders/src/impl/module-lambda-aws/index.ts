@@ -18,7 +18,7 @@ type Templates = {
 
 export class ModuleLambdaAWSBuilder extends Builder {
   async build(config: BuilderConfiguration): Promise<void> {
-    const {SKO_PARAMETERS} = process.env;
+    const { SKO_PARAMETERS } = process.env;
     const allUsecases = await this.getUsecases(config.serverFolder);
     const myFolder = 'module-lambda-aws';
     const templatesFolder = join(config.root, 'src', 'impl', myFolder, 'templates');
@@ -114,7 +114,6 @@ export class ModuleLambdaAWSBuilder extends Builder {
           eventSamTemplate,
         );
         samTemplate += innerEventSamTemplate;
-       
 
         // fullImports.push(...imports);
       }
@@ -327,7 +326,6 @@ ${Object.entries(envConfigs)
 
     const source = klass.sourceCode;
 
-
     const moduleFolder = join(fullGeneratedFolder, usecaseConfig.module);
 
     const existsUsecaseFolder = await existsFile(moduleFolder);
@@ -456,8 +454,7 @@ ${Object.entries(envConfigs)
     return {
       imports,
       moduleFolder,
-      innerEventSamTemplate
-    
+      innerEventSamTemplate,
     };
   }
 }
