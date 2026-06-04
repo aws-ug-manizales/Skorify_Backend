@@ -13,7 +13,7 @@ importers:
         version: 9.2.0
       '@skorify/domain':
         specifier: github:aws-ug-manizales/Skorify_Domain#main
-        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/6bb3a93272f8561b3f062f5fbec764e92f1f6d09
+        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1
       '@types/node':
         specifier: 22.5.0
         version: 22.5.0
@@ -43,8 +43,8 @@ packages:
   '@scifamek-open-source/iraca@9.2.0':
     resolution: {integrity: sha512-YUyAT5+lfq6+/ARc1TlewTQsm2fR3iZZGNxjaodciX7nDpFJVyu85qtGQvfEaxKJoJT9+KxtMw+Vl4qmz6JHBA==}
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/6bb3a93272f8561b3f062f5fbec764e92f1f6d09':
-    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/6bb3a93272f8561b3f062f5fbec764e92f1f6d09}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1':
+    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1}
     version: 1.2.0
 
   '@tsconfig/node10@1.0.12':
@@ -130,7 +130,7 @@ snapshots:
 
   '@scifamek-open-source/iraca@9.2.0': {}
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/6bb3a93272f8561b3f062f5fbec764e92f1f6d09': {}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1': {}
 
   '@tsconfig/node10@1.0.12': {}
 

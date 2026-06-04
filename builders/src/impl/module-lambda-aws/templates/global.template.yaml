@@ -79,6 +79,11 @@ Resources:
               - secretsmanager:GetSecretValue
             Resource:
               - !Ref DbParameterArn
+          - Effect: Allow
+            Action:
+              - events:PutEvents
+            Resource:
+              - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${BusParameterArn}
 
 
   AuthLambdasSharedPolicy:

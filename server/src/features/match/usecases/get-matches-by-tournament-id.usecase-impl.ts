@@ -26,6 +26,9 @@ export class GetMatchesByTournamentIdUsecaseImpl extends GetMatchesByTournamentI
       },
     });
 
+    if (!matches.length) {
+      return GottenMatchesByTournamentDomainEvent([]);
+    }
     const teamIds = matches.map((match) => [match.awayTeamId, match.homeTeamId]).flat();
     const uniqueTeamIds = [...new Set(teamIds)];
 

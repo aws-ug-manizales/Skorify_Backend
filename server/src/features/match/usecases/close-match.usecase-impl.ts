@@ -30,24 +30,26 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
   }
 
   async call(param: CloseMatchParam): Promise<DomainEvent> {
-    const { matchId } = param;
+    const { matchId, homeScore, awayScore } = param;
 
     const matchDE = await this.getMatchByIdUsecase.call({
       matchId,
     });
-    console.log(matchDE);
 
     if (matchDE.isNot(GottenMatchDomainEvent)) {
       return matchDE;
     }
     const match: MatchEntity = matchDE.payload;
     console.log(match);
+    const status = match.status ?? match['_status'];
 
-    if (match.status == MatchStatus.Finished) {
+    if (status == MatchStatus.Finished) {
       return MatchAlreadyClosedDomainEvent(match);
     }
 
     match.status = MatchStatus.Finished;
+    match.homeScore = homeScore;
+    match.awayScore = awayScore;
     const modified = await this.matchContract.modify(match);
 
     if (!modified) {
