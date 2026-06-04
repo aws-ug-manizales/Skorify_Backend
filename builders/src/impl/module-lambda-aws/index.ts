@@ -115,7 +115,6 @@ export class ModuleLambdaAWSBuilder extends Builder {
           env
         );
         samTemplate += innerEventSamTemplate;
-
         // fullImports.push(...imports);
       }
 
