@@ -53,7 +53,7 @@ jobs:
         working-directory: builders
         run: |
           pnpm install --frozen-lockfile
-          pnpm run mla
+          pnpm run mla prod
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v3
