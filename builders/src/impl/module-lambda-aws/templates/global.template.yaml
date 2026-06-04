@@ -83,7 +83,7 @@ Resources:
             Action:
               - events:PutEvents
             Resource:
-              - arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${BusParameterArn}
+              - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${BusParameterArn}
 
 
   AuthLambdasSharedPolicy:
