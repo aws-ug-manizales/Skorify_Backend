@@ -250,7 +250,7 @@ Resources:
 
   ApiGatewayBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: ApiGatewayApiProdStage
+    DependsOn: ApiGatewayApi
     Properties:
       DomainName: !Ref ApiGatewayCustomDomain
       RestApiId: !Ref ApiGatewayApi
