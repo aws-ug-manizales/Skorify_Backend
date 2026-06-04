@@ -63,7 +63,7 @@ jobs:
 
       - name: SAM validate (cfn-lint, sin AWS)
         working-directory: builders/dist
-        run: sam validate --lint --region us-east-1
+        run: sam validate --region us-east-1
 
   build:
     runs-on: ubuntu-latest

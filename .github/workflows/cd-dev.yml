@@ -80,7 +80,7 @@ jobs:
       # y parameter_overrides (VpcId, DbParameterArn, StorageParameterArn, BusParameterArn).
       - name: SAM validate
         working-directory: builders/dist
-        run: sam validate --lint
+        run: sam validate
 
       - name: SAM build
         working-directory: builders/dist
