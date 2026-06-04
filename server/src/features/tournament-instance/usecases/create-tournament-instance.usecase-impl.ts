@@ -27,7 +27,6 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
   }
 
   async call(param: CreateTournamentInstanceParam): Promise<DomainEvent> {
-    console.log('PARAM', param);
     const { name, ownerId, tournamentId } = param;
 
     // const tournamentDE = await this.getTournamentByIdUsecase.call({
@@ -39,27 +38,21 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
     //   return tournamentDE;
     // }
 
-    console.log('ownerId', ownerId);
     if (ownerId) {
       const ownerDE = await this.getUserByIdUsecase.call({
         userId: ownerId,
       });
 
-      console.log('ownerDE', ownerDE);
       if (ownerDE.isNot(GottenUserDomainEvent)) {
         return ownerDE;
       }
     }
 
-    console.log('AAA');
-
     const exist = await this.tournamentInstanceContract.filter({ where: { name } });
-    console.log('AAA', exist);
 
     if (exist.length) {
       return TournamentInstanceWithSameNameDomainEvent(exist);
     }
-    console.log('BBBB', exist);
 
     const inviteCode = await this.generateUniqueInviteCode();
 
@@ -89,12 +82,12 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
       return TournamentInstanceNotSavedDomainEvent();
     }
 
-    if (ownerId) {
-      await this.createUserEnrollmentUsecase.call({
-        userId: ownerId,
-        tournamentInstanceId: tournamentInstance.id,
-      });
-    }
+    // if (ownerId) {
+    //   await this.createUserEnrollmentUsecase.call({
+    //     userId: ownerId,
+    //     tournamentInstanceId: tournamentInstance.id,
+    //   });
+    // }
 
     return TournamentInstanceSavedDomainEvent(tournamentInstance);
   }
