@@ -6,20 +6,21 @@ import {
   MatchContract,
   MatchDoesNotExistDomainEvent,
   MatchEntity,
+  MatchHasNotFinishedDomainEvent,
+  MatchStatus
 } from '@skorify/domain/match';
 import {
   EditPredictionDirectlyUsecase,
   GetPredictionsByMatchAndTournamentInstanceUsecase,
-  PredictionContract,
-  PredictionEntity,
+  PredictionEntity
 } from '@skorify/domain/prediction';
 import {
+  GetEnrollmentsWithoutPredictionUsecase,
   GetUserEnrollmentByIdUsecase,
   GottenUserEnrollmentDomainEvent,
   GottenUserEnrollmentsDomainEvent,
-  UserEnrollmentEntity,
   UpdateUserEnrollmentUsecase,
-  GetEnrollmentsWithoutPredictionUsecase,
+  UserEnrollmentEntity,
 } from '@skorify/domain/user-enrollment';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
@@ -41,6 +42,11 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
     if (!match) {
       return MatchDoesNotExistDomainEvent();
+    }
+
+    if(match.status !== MatchStatus.Finished) {
+      return MatchHasNotFinishedDomainEvent(match);
+
     }
 
     const predictionsDE = await this.getPredictionsByMatchAndTournamentInstanceUsecase.call({
