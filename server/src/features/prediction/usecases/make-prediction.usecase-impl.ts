@@ -18,9 +18,7 @@ import {
 } from '@skorify/domain/prediction';
 import { GetUserByIdUsecase, GottenUserDomainEvent, UserEntity } from '@skorify/domain/user';
 import {
-  GetUserEnrollmentsByUserIdParam,
   IsAUserInTournamentInstanceUsecase,
-  UserEnrollmentEntity,
   UserIsInTournamentInstanceDomainEvent,
 } from '@skorify/domain/user-enrollment';
 
@@ -37,10 +35,18 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
   async call(param: MakePredictionParam): Promise<DomainEvent> {
     const { awayScore, tournamentInstanceId, homeScore, matchId, userId } = param;
 
-    // 1. Validación de que dalia exista
-    const userDE = await this.getUserByIdUsecase.call({
-      userId,
-    });
+    const [userDE, userEnrollmentExistDE, matchDE] = await Promise.all([
+      this.getUserByIdUsecase.call({
+        userId,
+      }),
+      this.isAUserInTournamentInstanceUsecase.call({
+        userId,
+        tournamentInstanceId,
+      }),
+      this.getMatchByIdUsecase.call({
+        matchId,
+      }),
+    ]);
 
     if (userDE.isNot(GottenUserDomainEvent)) {
       return userDE;
@@ -52,22 +58,11 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       return UserNotActiveDomainEvent();
     }
 
-    const userEnrollmentExistDE = await this.isAUserInTournamentInstanceUsecase.call({
-      userId,
-      tournamentInstanceId,
-    });
-    console.log('userEnrollmentExistDE');
-    console.log(userEnrollmentExistDE);
-
     if (userEnrollmentExistDE.isNot(UserIsInTournamentInstanceDomainEvent)) {
       return userEnrollmentExistDE;
     }
 
     const userEnrollment: { userEnrollmentId: Id } = userEnrollmentExistDE.payload;
-    // 2. Valida el partido
-    const matchDE = await this.getMatchByIdUsecase.call({
-      matchId,
-    });
 
     if (matchDE.isNot(GottenMatchDomainEvent)) {
       return matchDE;
@@ -75,15 +70,13 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
 
     const match: MatchEntity = matchDE.payload;
 
-    const validStates: MatchStatus[] = [MatchStatus.Draft];
-    const status = match.status ?? (match)['_status'];
-    const timeToClose = match.timeToCloseInMinutes ?? (match)['_timeToCloseInMinutes'];
+    const status = match.status ?? match['_status'];
+    const timeToClose = match.timeToCloseInMinutes ?? match['_timeToCloseInMinutes'];
     const diff = new Date(match.kickOff).getTime() - Date.now();
     const window = timeToClose * 60 * 1000;
 
     const canBet =
-      status == MatchStatus.Draft ||
-      (status == MatchStatus.Scheduled && diff > window && diff > 0);
+      status == MatchStatus.Draft || (status == MatchStatus.Scheduled && diff > window && diff > 0);
     if (!canBet) {
       return MatchCannotBeBetedDomainEvent();
     }
