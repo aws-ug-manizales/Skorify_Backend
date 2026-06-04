@@ -17,7 +17,7 @@ type Templates = {
 };
 
 export class ModuleLambdaAWSBuilder extends Builder {
-  async build(config: BuilderConfiguration): Promise<void> {
+  async build(config: BuilderConfiguration, env: string): Promise<void> {
     const { SKO_PARAMETERS } = process.env;
     const allUsecases = await this.getUsecases(config.serverFolder);
     const myFolder = 'module-lambda-aws';
@@ -112,6 +112,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
           fullImports,
           config.serverFolder,
           eventSamTemplate,
+          env
         );
         samTemplate += innerEventSamTemplate;
 
@@ -314,6 +315,7 @@ ${Object.entries(envConfigs)
     imports: string[],
     serverFolder: string,
     eventSamTemplate: string,
+    env: string,
   ): Promise<any> {
     const {
       packageTemplate,
@@ -420,11 +422,15 @@ ${Object.entries(envConfigs)
 
           injections.push(`
 
-            generate(container, {
-                dependencyName: "${type}",
-                module: "${mm}",
-                methodMapper
-              }, headers);
+            generate(
+                '${env}',
+                container, {
+                  dependencyName: "${type}",
+                  module: "${mm}",
+                  methodMapper
+                },
+                headers
+              );
        
             `);
         } else {

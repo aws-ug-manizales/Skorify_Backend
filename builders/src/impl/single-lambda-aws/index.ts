@@ -1,20 +1,19 @@
 import {
-  existsFile,
-  toToken,
-  UsecaseInfo,
-  UsecasesInfo,
-} from "../../general/helpers";
-import { Builder, BuilderConfiguration } from "../../general/builder";
-import { pathToFileURL } from "node:url";
-import * as ts from "typescript";
-import { mkdir, statfs, readFile, writeFile, rm } from "node:fs/promises";
-import { join } from "node:path";
-import {
   getMethodToUse,
   MassiveRegisterConfiguration,
 } from "@scifamek-open-source/iraca/web-api";
 import { generalMethodMapper } from "@skorify/domain/core";
 import { exec } from "node:child_process";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import * as ts from "typescript";
+import { Builder, BuilderConfiguration } from "../../general/builder";
+import {
+  existsFile,
+  toToken,
+  UsecaseInfo,
+  UsecasesInfo,
+} from "../../general/helpers";
 
 type Templates = {
   packageTemplate: string;
@@ -25,7 +24,7 @@ type Templates = {
   repositoryTemplate: string;
 };
 export class SingleLambdaAWSBuilder extends Builder {
-  async build(config: BuilderConfiguration): Promise<void> {
+  async build(config: BuilderConfiguration, env: string): Promise<void> {
     const usecases = await this.getUsecases(config.serverFolder);
 
     console.log(usecases);

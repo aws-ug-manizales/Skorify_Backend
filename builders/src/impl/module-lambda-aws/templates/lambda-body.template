@@ -240,7 +240,8 @@ try {
     const result = await useCase.call(payload)
 
     printDateDiff('Después de finalizar el caso de uso CALL', initialTime);
-
+    
+    
 
     console.log('Usecase result');
     console.log(result);

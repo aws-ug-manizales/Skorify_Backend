@@ -1,7 +1,7 @@
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-import { DomainEvent } from '@skorify/domain/core';
-import { IracaHttpIntegrator, ResponseMapper } from '@scifamek-open-source/iraca/integrations';
+import { LambdaClient } from '@aws-sdk/client-lambda';
 import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
+import { IracaHttpIntegrator } from '@scifamek-open-source/iraca/integrations';
+import { DomainEvent } from '@skorify/domain/core';
 
 const client = new LambdaClient({ region: 'us-east-1' });
 export type ConnectionConfig = {
@@ -51,7 +51,12 @@ export const responseMapper = (response: any) => {
 //   return c;
 // }
 
-export function generate(container: IracaContainer, config: ConnectionConfig, headers: any) {
+export function generate(
+  env: string,
+  container: IracaContainer,
+  config: ConnectionConfig,
+  headers: any,
+) {
   const { dependencyName, methodMapper, module } = config;
 
   // const keys = Object.keys(headers);
@@ -82,13 +87,17 @@ export function generate(container: IracaContainer, config: ConnectionConfig, he
   console.log('Nuevos headers');
   console.log(newHeaders);
 
+  const runtimeUrl =
+    env == 'prod'
+      ? 'https://api.skorify.cloud-manizales.com'
+      : 'https://api.skorify-dev.cloud-manizales.com';
   IracaHttpIntegrator.generate(container, [
     {
       dependencyNames: [dependencyName],
       methodMapper,
       responseMapper,
-      runtimeUrl: 'https://390aw3kt7j.execute-api.us-east-1.amazonaws.com',
-      prefix: `prod/${module}`,
+      runtimeUrl,
+      prefix: `${module}`,
       headers: newHeaders,
       kind: 'class',
     },
