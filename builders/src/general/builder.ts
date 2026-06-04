@@ -16,7 +16,7 @@ export interface BuilderConfiguration {
 export abstract class Builder {
   generatedFolder = "generated";
   distFolder = "dist";
-  abstract build(config: BuilderConfiguration): Promise<void>;
+  abstract build(config: BuilderConfiguration, env: string): Promise<void>;
 
   async getPropertiesByUsecase(
     usecasesConfig: UsecasesInfo,

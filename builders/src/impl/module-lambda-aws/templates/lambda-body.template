@@ -42,7 +42,7 @@ type LambdaEvent = {
   httpMethod?: string
 }
 
-function printDateDiff(title, initialTime){
+function printDateDiff(title: string, initialTime: Date){
   const now = new Date();
 
   const diferenciaMs = now.getTime() - initialTime.getTime();
@@ -52,80 +52,60 @@ function printDateDiff(title, initialTime){
 }
 
 
-export const handler = async (event: any) => {
-
-  const initialTime = new Date();
-
-  const headers = event.headers;
-    console.log('HEADERS');
-    console.log('headers');
-    console.log(headers);
-    console.log('HEADERS');
-
   const secretManagerClient = new SecretsManagerClient();
   const ssmClient = new SSMClient();
-  const method = getMethod(event)
-  console.log('mÉTODO QUE LLEGA');
-  console.log({method})
 
   const DbParameterARN = process.env.DbParameterArn!;
-  // const StorageParameterArn = process.env.StorageParameterArn!;
   const BusParameterArn = process.env.BusParameterArn!;
 
-  console.log({DbParameterARN});
-  // console.log({StorageParameterArn});
-  console.log({BusParameterArn});
 
-  /**
-  const StorageParameterArnResponse = await ssmClient.send(
-    new GetParameterCommand({
-      Name: StorageParameterArn!,
-      WithDecryption: true,
-    }),
-  );
-  */
-  // const StorageParameterValue = StorageParameterArnResponse.Parameter?.Value;
-  // const StorageParameterParsedValue = JSON.parse(StorageParameterValue!);
-
-
-  // const storageConfig = StorageParameterParsedValue[0];
-
-
-  const DBConfigObject = await secretManagerClient.send(
-    new GetSecretValueCommand({
-      SecretId: DbParameterARN
-    })
-  );
-
-  const eventBusConfig = {
-    eventBusName: BusParameterArn,
-    source: 'SkorifyBackend'
+  const globalConfig: any = {
+    DBConfigObject: null,
+    dbClient: null,
   }
 
-  const externalDBConfig = DBConfigObject.SecretString;
-  const parsedDBSecrets = JSON.parse(externalDBConfig!);
-
-  printDateDiff('Después de ir a AWS secretos', initialTime);
-
-  const dbClient = new DBClient({
-    type: 'postgres',
-    host: parsedDBSecrets.host,
-    port: parseInt(parsedDBSecrets.port),
-    username: parsedDBSecrets.username,
-    password: parsedDBSecrets.password,
-    database: parsedDBSecrets.dbname,
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  });
 
 
-  const name = event.queryStringParameters?.name ?? "World";
+async function init(){
+    
+    if(!globalConfig['DBConfigObject']){
+      const DBConfigObject = await secretManagerClient.send(
+        new GetSecretValueCommand({
+          SecretId: DbParameterARN
+        })
+      );
 
-  const identifier = "{{IDENTIFIER}}";
+      const externalDBConfig = DBConfigObject.SecretString;
+      const parsedDBSecrets = JSON.parse(externalDBConfig!);    
+      
+      const dbClient = new DBClient({
+        type: 'postgres',
+        host: parsedDBSecrets.host,
+        port: parseInt(parsedDBSecrets.port),
+        username: parsedDBSecrets.username,
+        password: parsedDBSecrets.password,
+        database: parsedDBSecrets.dbname,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      });
 
+        try {
+          await dbClient.connect();
+          console.log('Database connected successfully');
+        } catch (error) {
+          console.error('Failed to connect to database:', error);
+          process.exit(1);
+        }
 
-const generalMethodMapper = [
+   
+
+      globalConfig['DBConfigObject'] = DBConfigObject;
+      globalConfig['dbClient'] = dbClient;
+    }
+  }
+
+const methodMapper = [
   { method: "DELETE", patterns: [/^Delete/] },
   {
     method: "PATCH",
@@ -136,46 +116,27 @@ const generalMethodMapper = [
   { method: "POST", patterns: [/.+/] },
 ];
 
+const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
 
-    const methodMapper: any = generalMethodMapper;
+
+export const handler = async (event: any) => {
+  const initialTime = new Date();
+
+  await init();
 
   const container = new IracaContainer();
 
-{{INJECTIONS}}
 
-
-  printDateDiff('Finalización de injecciones', initialTime);
-
- try {
-    await dbClient.connect();
-    console.log('Database connected successfully');
-  } catch (error) {
-    console.error('Failed to connect to database:', error);
-    process.exit(1);
-  }
-
-  printDateDiff('Finalización de Conexión', initialTime);
-
-  container.addValue({
-    id: 'DBClient',
-    value: dbClient,
-  });
-
-  /**
-  container.addValue({
-    id: 'StorageConfig',
-    value: {
-      region: 'us-east-1',
-      bucketName: storageConfig.bucketName
-    },
-  });
-  */
 
   container.add({
     abstraction: StorageContract,
     implementation: StorageImpl,
-    // dependencies: ['StorageConfig'],
   });
+
+  const eventBusConfig = {
+    eventBusName: BusParameterArn,
+    source: 'SkorifyBackend'
+  }
 
   container.addValue({
     id: 'eventBusConfig',
@@ -189,32 +150,49 @@ const generalMethodMapper = [
   });
 
 
-  container.addValue({
-      id: '{{MODULE_PASCAL}}Contract',
-      value: dbClient.{{MODULE_SERVICE}},
-    });
-    
+ 
 
-    const baseHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': '*'
-    }
-try {
-    const path = getPath(event);
+
+
+  const headers = event.headers;
+  const method = getMethod(event)
+  const path = getPath(event);
+
+  const {DBConfigObject, dbClient} = globalConfig;
+
+  container.addValue({
+    id: 'DBClient',
+    value: dbClient,
+  });
+
+  container.addValue({
+    id: '{{MODULE_PASCAL}}Contract',
+    value: dbClient.{{MODULE_SERVICE}},
+  });
+
+  printDateDiff('Después de ir a AWS secretos', initialTime);
+
+  const identifier = "{{IDENTIFIER}}";
+
+      {{INJECTIONS}}
+
+
+  const baseHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    'Access-Control-Allow-Headers': '*'
+  }
+  
+  try {
 
     const useCaseName = `${toPascalCase(path)}Usecase`
     console.log(useCaseName);
-
-  
-
     console.log('useCase');
     console.log(container.configsTable);
     const useCase = await container.getInstance<any>(useCaseName);
     console.log(useCase);
 
     printDateDiff('Obtención del caso de uso', initialTime);
-
 
     if (!useCase) {
       return {
@@ -225,8 +203,6 @@ try {
       }
     }
 
-    const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
-
 
      const strategy =  multiValueQueryUsecases.includes(useCaseName)
         ? 'multiValueQueryStringParameters'
@@ -234,13 +210,11 @@ try {
 
 
     const payload = getPayload(event, strategy)
-    console.log('PAYLOAD');
-    console.log(payload);
 
     const result = await useCase.call(payload)
 
     printDateDiff('Después de finalizar el caso de uso CALL', initialTime);
-
+    
 
     console.log('Usecase result');
     console.log(result);
