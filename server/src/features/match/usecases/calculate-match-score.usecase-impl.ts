@@ -1,8 +1,9 @@
 import { DomainEvent } from '@skorify/domain/core';
 import {
+  CalculatedMatchDomainEvent,
   CalculateMatchScoreParam,
   CalculateMatchScoreUsecase,
-  GottenMatchDomainEvent,
+  MatchAlreadyCalculatedDomainEvent,
   MatchContract,
   MatchDoesNotExistDomainEvent,
   MatchEntity,
@@ -44,6 +45,10 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
+    if(match.status == MatchStatus.Calculated) {
+      return MatchAlreadyCalculatedDomainEvent(match);
+
+    }
     if(match.status !== MatchStatus.Finished) {
       return MatchHasNotFinishedDomainEvent(match);
 
@@ -61,7 +66,10 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
     await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
 
-    return GottenMatchDomainEvent(match);
+    match.status = MatchStatus.Calculated;
+    await this.matchContract.modify(match);
+
+    return CalculatedMatchDomainEvent(match);
   }
 
   private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]) {
