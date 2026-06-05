@@ -84,6 +84,7 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
     const predictionInDB = await this.predictionContract.filter({
       where: {
         userId,
+        tournamentInstanceId,
         matchId,
       },
     });

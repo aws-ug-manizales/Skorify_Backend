@@ -1,5 +1,5 @@
 import { DomainEvent } from '@skorify/domain/core';
-import { GetMatchByIdUsecase, MatchEntity } from '@skorify/domain/match';
+import { GetMatchByIdUsecase, MatchEntity, MatchStatus } from '@skorify/domain/match';
 import {
   EditPredictionParam,
   EditPredictionUsecase,
@@ -44,8 +44,11 @@ export class EditPredictionUsecaseImpl extends EditPredictionUsecase {
     const diffMs = new Date(match.kickOff).getTime() - now.getTime();
 
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const status = match.status ?? match['_status'];
 
-    if (diffMinutes < editingWindow) {
+    const canBet =
+      status == MatchStatus.Draft || (status == MatchStatus.Scheduled && diffMinutes > editingWindow && diffMinutes > 0);
+    if (!canBet) {
       return PassedPredictionWindowDomainEvent();
     }
 
