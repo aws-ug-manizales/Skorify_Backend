@@ -22,11 +22,16 @@ export class SimulatePredictionUsecaseImpl extends SimulatePredictionUsecase {
     const enrollmentDE = UserEnrollmentEntity.forSimulation({ streak, });
     const mockEnrollment = enrollmentDE.payload as UserEnrollmentEntity;
     const streakBonusPoints = mockEnrollment.getStreakBonusPoints();
-
+    console.log("predictionHomeScore", predictionHomeScore)
+    console.log("predictionAwayScore", predictionAwayScore)
+    console.log("matchHomeScore", matchHomeScore)
+    console.log("matchAwayScore", matchAwayScore)
+    console.log("streak", streak)
     const prediction = PredictionEntity.forSimulation({
       homeScore: predictionHomeScore, awayScore: predictionAwayScore
     });
     const result = prediction.calculateScore(matchAwayScore, matchHomeScore, streakBonusPoints);
+    console.log("result", result)
 
     return SimulatedPredictionDomainEvent({
       total: prediction.earnedPoints,
