@@ -20,7 +20,7 @@
   "dependencies": {
     "@scifamek-open-source/iraca": "9.2.0",
     "@scifamek-open-source/logger": "1.1.2",
-    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.4.1",
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.4.5",
     "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
     "@skorify/shared": "github:aws-ug-manizales/Skorify_Shared#main"
   },
