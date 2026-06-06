@@ -15,12 +15,16 @@ export class GetUsersByIdsUsecaseImpl extends GetUsersByIdsUsecase {
     const { userIds } = param;
 
     const parsed = Array.isArray(userIds) ? userIds : [userIds];
-    const promises = parsed.map((userId) => this.userContract.getById(userId));
 
-    const usersInDB = await Promise.all(promises);
+    if (parsed.length === 0) {
+      return GottenUsersDomainEvent([]);
+    }
+
+    const usersInDB = await this.userContract.getByIDs(parsed);
 
     const userInDB = usersInDB.filter((user) => user !== null);
 
     return GottenUsersDomainEvent(userInDB);
+
   }
 }
