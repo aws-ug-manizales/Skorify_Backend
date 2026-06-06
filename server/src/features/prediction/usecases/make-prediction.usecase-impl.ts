@@ -102,6 +102,7 @@ export class MakePredictionUsecaseImpl extends MakePredictionUsecase {
       homeScore,
       earnedPoints: 0,
       hasExactResult: false,
+      isCalculated: false,
       userEnrollmentId: userEnrollment.userEnrollmentId,
       createdAt: new Date(),
     });
