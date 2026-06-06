@@ -235,6 +235,11 @@ export const handler = async (event: any, context: Context) => {
       value: dbClient.{{MODULE_SERVICE}},
     });
 
+    container.addValue({
+      id: 'Logger',
+      value: logger,
+    });
+
     printDateDiff('After AWS secrets', initialTime);
 
     const identifier = "{{IDENTIFIER}}";

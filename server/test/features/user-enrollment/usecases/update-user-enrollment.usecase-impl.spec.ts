@@ -13,9 +13,7 @@ describe('UpdateUserEnrollmentUsecaseImpl', () => {
   function makeMockContract(enrollment: UserEnrollmentEntity | null): UserEnrollmentContract {
     return {
       getById: jest.fn().mockResolvedValue(enrollment),
-      modify: jest
-        .fn()
-        .mockImplementation((id: string, ent: UserEnrollmentEntity) => Promise.resolve(ent)),
+      modify: jest.fn().mockImplementation((ent: UserEnrollmentEntity) => Promise.resolve(ent)),
       save: jest.fn(),
       deleteById: jest.fn(),
       getAll: jest.fn(),
@@ -54,7 +52,7 @@ describe('UpdateUserEnrollmentUsecaseImpl', () => {
     expect(enrollment.currentScore).toBe(15);
     expect(enrollment.streak).toBe(3);
     expect(enrollment.maxStreak).toBe(3);
-    expect(contract.modify).toHaveBeenCalledWith(enrollmentId, enrollment);
+    expect(contract.modify).toHaveBeenCalledWith(enrollment);
   });
 
   it('should return NotGottenUserEnrollmentDomainEvent if enrollment does not exist', async () => {

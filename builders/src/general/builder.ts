@@ -123,7 +123,7 @@ export abstract class Builder {
     usecases: UsecasesInfo,
     myClass: string,
     impl: string,
-    subPath?: string
+    subPath: string = ""
   ) {
     let toAdd = "";
 

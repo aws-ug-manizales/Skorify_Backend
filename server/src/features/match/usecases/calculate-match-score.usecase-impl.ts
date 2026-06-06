@@ -23,6 +23,7 @@ import {
   UpdateUserEnrollmentUsecase,
   UserEnrollmentEntity,
 } from '@skorify/domain/user-enrollment';
+import { Logger } from '@aws-lambda-powertools/logger';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
@@ -32,6 +33,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     private getPredictionsByMatchAndTournamentInstanceUsecase: GetPredictionsByMatchAndTournamentInstanceUsecase,
     private updateUserEnrollmentUsecase: UpdateUserEnrollmentUsecase,
     private getEnrollmentsWithoutPredictionUsecase: GetEnrollmentsWithoutPredictionUsecase,
+    private logger: Logger,
   ) {
     super();
   }
@@ -103,6 +105,12 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     });
 
     if (userEnrollmentDE.isNot(GottenUserEnrollmentDomainEvent)) {
+      this.logger.warn('Prediction score skipped', {
+        matchId: match.id,
+        predictionId: prediction.id,
+        userEnrollmentId: prediction.userEnrollmentId,
+        reason: 'enrollment_not_found',
+      });
       return;
     }
 

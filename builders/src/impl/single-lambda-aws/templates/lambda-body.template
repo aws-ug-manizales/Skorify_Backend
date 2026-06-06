@@ -38,6 +38,8 @@ export const handler = async (event: any, context: Context) => {
   ];
     const container = new IracaContainer();
 
+    container.addValue({ id: "Logger", value: logger });
+
   {{INJECTIONS}}
 
     container.add({

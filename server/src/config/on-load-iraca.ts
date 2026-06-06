@@ -48,6 +48,11 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
     },
   });
 
+  container.addValue({
+    id: 'Logger',
+    value: logger,
+  });
+
   const dataPath = join(__dirname, '../../../shared/src/data');
 
   if (enabled != 'true') {

@@ -9,7 +9,7 @@ import {
   UserWithEmailAlreadyExistDomainEvent,
   type RegisterUserParam,
 } from '@skorify/domain/user';
-import { UserEntity } from '@skorify/domain/user/user.entity';
+import { UserEntity } from '@skorify/domain/user';
 import { RegisterUserUsecaseImpl } from '../../../../src/features/user/usecases/register-user.usecase-impl';
 
 describe('RegisterUserUsecaseImpl', () => {
@@ -18,9 +18,14 @@ describe('RegisterUserUsecaseImpl', () => {
   type MockCreateUser = Pick<CreateUserUsecase, 'call'>;
   type MockIdentityProvider = Pick<IdentityProviderContract, 'update'>;
 
+  // Cumple la política real de Cognito (>=8, mayúscula, número y símbolo),
+  // además del mínimo que valida el usecase (>=6).
+  const validPassword = 'Secret123!';
+
   const defaultParam: RegisterUserParam = {
     name: 'Bryan Arroyave',
     email: 'bryan@test.com',
+    password: validPassword,
   };
 
   function makeUser(): UserEntity {
@@ -121,7 +126,7 @@ describe('RegisterUserUsecaseImpl', () => {
 
     expect(res.eventName).toBe(UserRegisteredDomainEvent.eventName);
     expect(res.payload).toEqual(user);
-    expect(identityProviderContract.update).toHaveBeenCalledWith(user.id, {
+    expect(identityProviderContract.update).toHaveBeenCalledWith(user.id, validPassword, {
       name: user.name,
       email: user.email,
     });

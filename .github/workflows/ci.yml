@@ -26,11 +26,8 @@ jobs:
   typecheck:
     uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--build-backend.yml@feature/ci-pr-validation-workflows
 
-  # TODO: reactivar cuando se arregle el setup de jest (falta @types/jest en los
-  # types y ts-jest fuerza commonjs, que no resuelve los exports subpath de
-  # @skorify/domain). El reusable shared--unit-tests-backend.yml ya está listo.
-  # unit-tests:
-  #   uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--unit-tests-backend.yml@feature/ci-pr-validation-workflows
+  unit-tests:
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--unit-tests-backend.yml@feature/ci-pr-validation-workflows
 
   sam-validate:
     runs-on: ubuntu-latest

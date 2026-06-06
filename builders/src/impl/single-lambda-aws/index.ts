@@ -221,6 +221,12 @@ ${resourcesYML.join("\n")}`,
             const name = param.name.getText();
             const type = param.type?.getText() ?? "any";
             dependencies.push(type);
+            // `Logger` ya lo importa el template y se registra con addValue
+            // (Logger.name === "Logger" resuelve la dependencia); no re-importar
+            // para evitar un import duplicado.
+            if (type === "Logger") {
+              return;
+            }
             this.addImport(imports, usecasesConfig, type, source);
             if (type.includes("Usecase")) {
               injections.push(`
