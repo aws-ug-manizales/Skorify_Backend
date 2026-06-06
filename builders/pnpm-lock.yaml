@@ -7,13 +7,20 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@aws-lambda-powertools/logger':
+        specifier: ^2.33.1
+        version: 2.33.1
     devDependencies:
       '@scifamek-open-source/iraca':
         specifier: 9.2.0
         version: 9.2.0
       '@skorify/domain':
         specifier: github:aws-ug-manizales/Skorify_Domain#main
-        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1
+        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/de097216dce6e755b04e9da9023012694830166f
+      '@types/aws-lambda':
+        specifier: ^8.10.161
+        version: 8.10.161
       '@types/node':
         specifier: 22.5.0
         version: 22.5.0
@@ -25,6 +32,24 @@ importers:
         version: 5.8.3
 
 packages:
+
+  '@aws-lambda-powertools/commons@2.33.1':
+    resolution: {integrity: sha512-edzvz+zqBl8p9J2Cgo1rFmhd+3ANqr0PQDqowElS3CJ10ioHN2wUYiANGxfalcgbB8ulZxGkRbK3wvEEziV/5w==}
+
+  '@aws-lambda-powertools/logger@2.33.1':
+    resolution: {integrity: sha512-DDnKcv2zghslh2AtrVsa4wHcAuI5M7+JlX65CgdXLk2th0Nr0octJQq0f4Bnp+DzuwFynmH4GJqsBe33rZapAw==}
+    peerDependencies:
+      '@aws-lambda-powertools/jmespath': 2.33.1
+      '@middy/core': 4.x || 5.x || 6.x || 7.x
+    peerDependenciesMeta:
+      '@aws-lambda-powertools/jmespath':
+        optional: true
+      '@middy/core':
+        optional: true
+
+  '@aws/lambda-invoke-store@0.2.4':
+    resolution: {integrity: sha512-iY8yvjE0y651BixKNPgmv1WrQc+GZ142sb0z4gYnChDDY2YqI4P/jsSopBWrKfAt7LOJAkOXt7rC/hms+WclQQ==}
+    engines: {node: '>=18.0.0'}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -43,8 +68,8 @@ packages:
   '@scifamek-open-source/iraca@9.2.0':
     resolution: {integrity: sha512-YUyAT5+lfq6+/ARc1TlewTQsm2fR3iZZGNxjaodciX7nDpFJVyu85qtGQvfEaxKJoJT9+KxtMw+Vl4qmz6JHBA==}
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1':
-    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/de097216dce6e755b04e9da9023012694830166f':
+    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/de097216dce6e755b04e9da9023012694830166f}
     version: 1.2.0
 
   '@tsconfig/node10@1.0.12':
@@ -58,6 +83,9 @@ packages:
 
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
+
+  '@types/aws-lambda@8.10.161':
+    resolution: {integrity: sha512-rUYdp+MQwSFocxIOcSsYSF3YYYC/uUpMbCY/mbO21vGqfrEYvNSoPyKYDj6RhXXpPfS0KstW9RwG3qXh9sL7FQ==}
 
   '@types/node@22.5.0':
     resolution: {integrity: sha512-DkFrJOe+rfdHTqqMg0bSNlGlQ85hSoh2TPzZyhHsXnMtligRWpxUySiyw8FY14ITt24HVCiQPWxS3KO/QlGmWg==}
@@ -115,6 +143,17 @@ packages:
 
 snapshots:
 
+  '@aws-lambda-powertools/commons@2.33.1':
+    dependencies:
+      '@aws/lambda-invoke-store': 0.2.4
+
+  '@aws-lambda-powertools/logger@2.33.1':
+    dependencies:
+      '@aws-lambda-powertools/commons': 2.33.1
+      '@aws/lambda-invoke-store': 0.2.4
+
+  '@aws/lambda-invoke-store@0.2.4': {}
+
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -130,7 +169,7 @@ snapshots:
 
   '@scifamek-open-source/iraca@9.2.0': {}
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/979063aa542f6f2e07366a9de72a71f5a1c72dd1': {}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/de097216dce6e755b04e9da9023012694830166f': {}
 
   '@tsconfig/node10@1.0.12': {}
 
@@ -139,6 +178,8 @@ snapshots:
   '@tsconfig/node14@1.0.3': {}
 
   '@tsconfig/node16@1.0.4': {}
+
+  '@types/aws-lambda@8.10.161': {}
 
   '@types/node@22.5.0':
     dependencies:

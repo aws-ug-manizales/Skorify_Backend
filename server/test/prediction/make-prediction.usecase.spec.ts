@@ -2,14 +2,18 @@ import { DomainEvent, type Id } from '@skorify/domain/core';
 import {
   GottenMatchDomainEvent,
   MatchDoesNotExistDomainEvent,
+  MatchEntity,
+  MatchStatus,
   type GetMatchByIdUsecase,
 } from '@skorify/domain/match';
-import { MatchEntity } from '@skorify/domain/match/match.entity';
-import { MatchStatus } from '@skorify/domain/match/match.state';
-import { PredictionCreatedDomainEvent, PredictionNotCreatedDomainEvent, type MakePredictionParam, type PredictionContract } from '@skorify/domain/prediction';
-import { PredictionEntity } from '@skorify/domain/prediction/prediction.entity';
-import { GottenUserDomainEvent, type GetUserByIdUsecase } from '@skorify/domain/user';
-import { UserEntity } from '@skorify/domain/user/user.entity';
+import {
+  PredictionCreatedDomainEvent,
+  PredictionEntity,
+  PredictionNotCreatedDomainEvent,
+  type MakePredictionParam,
+  type PredictionContract,
+} from '@skorify/domain/prediction';
+import { GottenUserDomainEvent, UserEntity, type GetUserByIdUsecase } from '@skorify/domain/user';
 import { MakePredictionUsecaseImpl } from '../../src/features/prediction/usecases/make-prediction.usecase-impl';
 import {
   UserEnrollmentEntity,

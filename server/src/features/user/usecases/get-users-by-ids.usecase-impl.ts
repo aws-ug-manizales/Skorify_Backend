@@ -14,9 +14,7 @@ export class GetUsersByIdsUsecaseImpl extends GetUsersByIdsUsecase {
   async call(param: GetUsersByIdsParam): Promise<DomainEvent> {
     const { userIds } = param;
 
-    console.log('userIds', userIds);
-    const parsed= Array.isArray(userIds) ? userIds : [userIds];
-    console.log('parsed', parsed);
+    const parsed = Array.isArray(userIds) ? userIds : [userIds];
     const promises = parsed.map((userId) => this.userContract.getById(userId));
 
     const usersInDB = await Promise.all(promises);

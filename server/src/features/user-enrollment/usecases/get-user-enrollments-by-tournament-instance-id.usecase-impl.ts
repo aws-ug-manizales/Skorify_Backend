@@ -1,5 +1,4 @@
 import { DomainEvent } from '@skorify/domain/core';
-
 import {
   GetUserEnrollmentsByTournamentInstanceIdParam,
   GetUserEnrollmentsByTournamentInstanceIdUsecase,
@@ -14,8 +13,6 @@ export class GetUserEnrollmentsByTournamentInstanceIdUsecaseImpl extends GetUser
   }
 
   async call(param: GetUserEnrollmentsByTournamentInstanceIdParam): Promise<DomainEvent> {
-    console.log('GetUserEnrollmentsByTournamentInstanceIdParam');
-    console.log(param);
     const { tournamentInstanceId } = param;
 
     if (!tournamentInstanceId) {

@@ -10,10 +10,13 @@
     "mla": "pnpm ts-node src/index.ts module-lambda-aws",
     "build": "tsc -p tsconfig.json"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.33.1"
+  },
   "devDependencies": {
     "@scifamek-open-source/iraca": "9.2.0",
     "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
+    "@types/aws-lambda": "^8.10.161",
     "@types/node": "22.5.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3"

@@ -54,9 +54,7 @@ export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
     const pendingUserEnrollments = userEnrollments.filter((ue) => ue.currentPosition == null);
 
     const orderedUserEnrollments = [...rankedUserEnrollmentsSorted, ...pendingUserEnrollments];
-    console.log('orderedUserEnrollments', orderedUserEnrollments);
     const userIds = orderedUserEnrollments.map((ue) => ue.userId);
-    console.log('userIds', userIds);
     const ranking: RankingItem[] = [];
 
     const allUsersDE = await this.getUsersByIdsUsecase.call({

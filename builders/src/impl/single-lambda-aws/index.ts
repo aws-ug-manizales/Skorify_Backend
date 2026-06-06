@@ -14,6 +14,7 @@ import {
   UsecaseInfo,
   UsecasesInfo,
 } from "../../general/helpers";
+import { logger } from "../../general/logger";
 
 type Templates = {
   packageTemplate: string;
@@ -27,7 +28,10 @@ export class SingleLambdaAWSBuilder extends Builder {
   async build(config: BuilderConfiguration, env: string): Promise<void> {
     const usecases = await this.getUsecases(config.serverFolder);
 
-    console.log(usecases);
+    logger.debug("Single Lambda usecases discovered", {
+      usecaseCount: usecases.length,
+      modules: [...new Set(usecases.map((usecase) => usecase.module))],
+    });
 
     const myFolder = "single-lambda-aws";
 
@@ -217,6 +221,12 @@ ${resourcesYML.join("\n")}`,
             const name = param.name.getText();
             const type = param.type?.getText() ?? "any";
             dependencies.push(type);
+            // `Logger` ya lo importa el template y se registra con addValue
+            // (Logger.name === "Logger" resuelve la dependencia); no re-importar
+            // para evitar un import duplicado.
+            if (type === "Logger") {
+              return;
+            }
             this.addImport(imports, usecasesConfig, type, source);
             if (type.includes("Usecase")) {
               injections.push(`

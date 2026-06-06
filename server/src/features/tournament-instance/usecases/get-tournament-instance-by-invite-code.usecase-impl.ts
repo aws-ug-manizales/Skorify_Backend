@@ -30,8 +30,6 @@ export class GetTournamentInstanceByInviteCodeUsecaseImpl extends GetTournamentI
       };
     }
     const tournamentInstances = await this.tournamentInstanceContract.filter(filters);
-    console.log({tournamentInstances});
-    
 
     if (!tournamentInstances.length) {
       return NotGottenTournamentInstanceDomainEvent();
