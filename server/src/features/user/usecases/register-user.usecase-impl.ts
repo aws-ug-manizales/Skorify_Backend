@@ -21,7 +21,7 @@ export class RegisterUserUsecaseImpl extends RegisterUserUsecase {
   async call(param: RegisterUserParam): Promise<DomainEvent> {
     const { name, email, password, } = param;
 
-    if (!password?.trim() || password.length < 6) {
+    if (!this.isValidPassword(password)) {
       return UserRegistrationInvalidParamsDomainEvent();
     }
 
@@ -49,6 +49,15 @@ export class RegisterUserUsecaseImpl extends RegisterUserUsecase {
     return UserRegisteredDomainEvent(user);
   }
 
+  private isValidPassword(password: string): boolean {
+    return (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[a-z]/.test(password) &&
+      /\d/.test(password) &&
+      /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)
+    );
+  }
   private isValidEmail(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
