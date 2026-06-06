@@ -33,7 +33,6 @@ export class CreateTournamentInstanceUsecaseImpl extends CreateTournamentInstanc
     //   tournamentId,
     // });
 
-    // console.log('tournamentDE', tournamentDE);
     // if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
     //   return tournamentDE;
     // }

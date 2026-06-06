@@ -6,6 +6,7 @@
     "build": "npx esbuild index.ts  --bundle --keep-names --platform=node --target=node22 --outfile=../../dist/post-confirmation/index.js"
   },
   "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.33.1",
     "pg": "^8.13.1",
     "aws-lambda": "1.0.7",
     "@aws-sdk/client-secrets-manager": "3.1058.0"

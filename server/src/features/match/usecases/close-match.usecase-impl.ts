@@ -40,7 +40,6 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
       return matchDE;
     }
     const match: MatchEntity = matchDE.payload;
-    console.log(match);
     const status = match.status ?? match['_status'];
 
     if (status == MatchStatus.Finished) {

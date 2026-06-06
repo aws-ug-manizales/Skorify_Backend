@@ -4,6 +4,7 @@ import { EventBusContract, StorageContract } from '@skorify/domain/core';
 import { CalculateMatchScoreUsecase, ReactiveClosedMatchDomainEvent } from '@skorify/domain/match';
 import { EventBusMemoryImpl, Queue, StorageMemoryImpl } from '@skorify/shared';
 import { join } from 'path';
+import { logger, serializeError } from './logger';
 
 type DatabaseConfig = {
   host: string;
@@ -34,9 +35,18 @@ type Injections = {
   [key: string]: unknown;
 };
 export const onLoadIraca = async (container: IracaContainer, injections: Injections) => {
-  console.log(injections);
   const { database } = injections;
   const { host, port, username, engine, password, name, logging, enabled } = database;
+  logger.debug('Loading Iraca container', {
+    database: {
+      enabled,
+      engine,
+      host,
+      port,
+      name,
+      logging,
+    },
+  });
 
   const dataPath = join(__dirname, '../../../shared/src/data');
 
@@ -53,9 +63,9 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
     // Connect to database
     try {
       await dbClient.connect();
-      console.log('Database connected successfully');
+      logger.debug('Database connected successfully');
     } catch (error) {
-      console.error('Failed to connect to database:', error);
+      logger.error('Failed to connect to database', { error: serializeError(error) });
       process.exit(1);
     }
 
@@ -137,16 +147,28 @@ export const onLoadIraca = async (container: IracaContainer, injections: Injecti
   const queue = new Queue();
 
   queue.subscribe(ReactiveClosedMatchDomainEvent.eventName, async (data) => {
-    console.log('Hola mundo', data);
+    logger.debug('Reactive match close event received', {
+      matchId: data.match?.id,
+      tournamentInstanceId: data.tournamentInstance?.id,
+    });
 
-    const usecase = await container.getInstance<CalculateMatchScoreUsecase>(
-      CalculateMatchScoreUsecase,
-    );
-    if (usecase) {
-      await usecase.call({
-        matchId: data.match.id,
-        tournamentInstanceId: data.tournamentInstance.id,
+    try {
+      const usecase = await container.getInstance<CalculateMatchScoreUsecase>(
+        CalculateMatchScoreUsecase,
+      );
+      if (usecase) {
+        await usecase.call({
+          matchId: data.match.id,
+          tournamentInstanceId: data.tournamentInstance.id,
+        });
+      }
+    } catch (error) {
+      logger.error('Reactive match score calculation failed', {
+        matchId: data.match?.id,
+        tournamentInstanceId: data.tournamentInstance?.id,
+        error: serializeError(error),
       });
+      throw error;
     }
   });
 

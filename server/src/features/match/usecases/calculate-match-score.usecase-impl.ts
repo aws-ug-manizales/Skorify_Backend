@@ -45,13 +45,8 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-    if(match.status == MatchStatus.Calculated) {
-      return MatchAlreadyCalculatedDomainEvent(match);
-
-    }
-    if(match.status !== MatchStatus.Finished) {
+    if (match.status !== MatchStatus.Finished) {
       return MatchHasNotFinishedDomainEvent(match);
-
     }
 
     const predictionsDE = await this.getPredictionsByMatchAndTournamentInstanceUsecase.call({
@@ -59,15 +54,17 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       tournamentInstanceId,
     });
     const predictions: PredictionEntity[] = predictionsDE.payload as PredictionEntity[];
+    const pendingPredictions = predictions.filter((prediction) => !prediction.isCalculated);
 
-    if (predictions && predictions.length > 0) {
-      await this.calculateScores(match, predictions);
+    if (predictions.length > 0 && pendingPredictions.length === 0) {
+      return MatchAlreadyCalculatedDomainEvent(match);
+    }
+
+    if (pendingPredictions.length > 0) {
+      await this.calculateScores(match, pendingPredictions);
     }
 
     await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
-
-    match.status = MatchStatus.Calculated;
-    await this.matchContract.modify(match);
 
     return CalculatedMatchDomainEvent(match);
   }
@@ -94,6 +91,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       awayScore: prediction.awayScore,
       earnedPoints: prediction.earnedPoints,
       hasExactResult: prediction.hasExactResult,
+      isCalculated: prediction.isCalculated,
     });
 
     const clonedPrediction = clonedPredictionDE.payload as PredictionEntity;

@@ -5,6 +5,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Builder, BuilderConfiguration } from '../../general/builder';
 import { existsFile, toToken, UsecaseInfo, UsecasesInfo } from '../../general/helpers';
+import { logger } from '../../general/logger';
 import { Class } from '../../general/models';
 
 type Templates = {
@@ -74,7 +75,13 @@ export class ModuleLambdaAWSBuilder extends Builder {
       acc[curr.module].usecases.push(curr);
       return acc;
     }, {});
-    console.log(modulesConfig);
+    logger.debug('Module Lambda configuration created', {
+      moduleCount: Object.keys(modulesConfig).length,
+      modules: Object.entries(modulesConfig).map(([module, moduleConfig]: [string, any]) => ({
+        module,
+        usecaseCount: moduleConfig.usecases.length,
+      })),
+    });
 
     for (const module in modulesConfig) {
       let samTemplate = samYMLTemplate;
@@ -149,10 +156,20 @@ export class ModuleLambdaAWSBuilder extends Builder {
 
       samTemplates.push(samTemplate);
       await new Promise<void>((resolve, reject) => {
-        console.log(`cd ${moduleFolder} && pnpm i && pnpm run build`);
+        logger.info('Building generated Lambda module', { module, moduleFolder });
         exec(`cd ${moduleFolder} && pnpm i && pnpm run build`, (error, stdout, stderr) => {
-          if (stdout) console.log(`[${module}] stdout:`, stdout);
-          if (stderr) console.error(`[${module}] stderr:`, stderr);
+          if (stdout) {
+            logger.debug('Generated Lambda module build output', {
+              module,
+              output: stdout.trim(),
+            });
+          }
+          if (stderr) {
+            logger.warn('Generated Lambda module build stderr', {
+              module,
+              output: stderr.trim(),
+            });
+          }
           if (error) {
             reject(new Error(`Build failed for module "${module}": ${error.message}`));
           } else {
@@ -289,8 +306,18 @@ ${Object.entries(envConfigs)
       const buildPath = join(this.generatedFolder, folder);
       await new Promise<void>((resolve, reject) => {
         exec(`cd ${buildPath} && pnpm i && pnpm run build`, (error, stdout, stderr) => {
-          if (stdout) console.log(`[${folder}] stdout:`, stdout);
-          if (stderr) console.error(`[${folder}] stderr:`, stderr);
+          if (stdout) {
+            logger.debug('Extra resource build output', {
+              resource: folder,
+              output: stdout.trim(),
+            });
+          }
+          if (stderr) {
+            logger.warn('Extra resource build stderr', {
+              resource: folder,
+              output: stderr.trim(),
+            });
+          }
           if (error) {
             reject(new Error(`Build failed for extra-resource "${folder}": ${error.message}`));
           } else {
@@ -354,7 +381,10 @@ ${Object.entries(envConfigs)
 
     const existsControllerPath = await existsFile(originalControllerPath);
     if (existsControllerPath) {
-      console.log(originalControllerPath);
+      logger.debug('Copying module controller', {
+        module: usecaseConfig.module,
+        source: originalControllerPath,
+      });
 
       const controllerContent = await readFile(originalControllerPath, {
         encoding: 'utf-8',

@@ -14,6 +14,7 @@ import {
   UsecaseInfo,
   UsecasesInfo,
 } from "../../general/helpers";
+import { logger } from "../../general/logger";
 
 type Templates = {
   packageTemplate: string;
@@ -27,7 +28,10 @@ export class SingleLambdaAWSBuilder extends Builder {
   async build(config: BuilderConfiguration, env: string): Promise<void> {
     const usecases = await this.getUsecases(config.serverFolder);
 
-    console.log(usecases);
+    logger.debug("Single Lambda usecases discovered", {
+      usecaseCount: usecases.length,
+      modules: [...new Set(usecases.map((usecase) => usecase.module))],
+    });
 
     const myFolder = "single-lambda-aws";
 

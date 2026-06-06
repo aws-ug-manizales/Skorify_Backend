@@ -1,45 +1,89 @@
 // handler.ts
+import { Logger } from '@aws-lambda-powertools/logger';
+import type { Context } from 'aws-lambda';
 // import { APIGatewayProxyEvent } from "aws-lambda";
 // import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
 import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
 import { generate } from "./helpers";
 import { {{MODULE_PASCAL}}Repository } from "./{{MODULE}}.repository";
 
+const logger = new Logger({
+  serviceName: process.env.POWERTOOLS_SERVICE_NAME || 'skorify-{{MODULE}}',
+});
+
+const serializeError = (error: unknown): unknown => {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack };
+  }
+
+  return error;
+};
+
 {{IMPORTS}}
 
-export const handler = async (event: any) => {
-  const name = event.queryStringParameters?.name ?? "World";
+export const handler = async (event: any, context: Context) => {
+  const startedAt = Date.now();
+  logger.addContext(context);
 
-  const identifier = "{{IDENTIFIER}}";
+  try {
+    const name = event.queryStringParameters?.name ?? "World";
 
-    const methodMapper: any = [
-  {
-    method: "get",
-    patterns: [/[\w]+/],
-  },
-];
-  const container = new IracaContainer();
+    const identifier = "{{IDENTIFIER}}";
 
-{{INJECTIONS}}
-
-  container.add({
-    abstraction: {{MAIN_USECASE}},
-    implementation: {{MAIN_USECASE_IMPL}},
-    dependencies: {{MAIN_USECASE_DEPENDENCIES}},
-  });
-
-  const instance = await container.getInstance<{{MAIN_USECASE}}>({{MAIN_USECASE}});
-  const param = {}
-  const usecaseResponse = await instance.call(param as any);
-  const response = {
-    meta: {
-      code: `${identifier}:${usecaseResponse.eventName}`,
+      const methodMapper: any = [
+    {
+      method: "get",
+      patterns: [/[\w]+/],
     },
-    data: usecaseResponse.payload 
-  };
+  ];
+    const container = new IracaContainer();
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(response),
-  };
+  {{INJECTIONS}}
+
+    container.add({
+      abstraction: {{MAIN_USECASE}},
+      implementation: {{MAIN_USECASE_IMPL}},
+      dependencies: {{MAIN_USECASE_DEPENDENCIES}},
+    });
+
+    const instance = await container.getInstance<{{MAIN_USECASE}}>({{MAIN_USECASE}});
+    const param = {}
+    const usecaseResponse = await instance.call(param as any);
+    const response = {
+      meta: {
+        code: `${identifier}:${usecaseResponse.eventName}`,
+      },
+      data: usecaseResponse.payload
+    };
+
+    logger.info('Lambda request completed', {
+      usecase: '{{MAIN_USECASE}}',
+      outcome: usecaseResponse.eventName,
+      statusCode: 200,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(response),
+    };
+  } catch (error) {
+    logger.error('Lambda request failed', {
+      usecase: '{{MAIN_USECASE}}',
+      statusCode: 500,
+      durationMs: Date.now() - startedAt,
+      error: serializeError(error),
+    });
+
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: 'Internal server error',
+        requestId: context.awsRequestId,
+      }),
+    };
+  }
 };

@@ -26,7 +26,6 @@ export class CreateTeamUsecaseImpl extends CreateTeamUsecase {
     if (tournamentDE.isNot(GottenTournamentDomainEvent)) {
       return tournamentDE;
     }
-    console.log(tournamentDE.payload);
 
     const teams = await this.teamContract.filter({
       where: {
@@ -34,7 +33,6 @@ export class CreateTeamUsecaseImpl extends CreateTeamUsecase {
         tournamentId,
       },
     });
-    console.log(teams);
 
     if (teams.length) {
       return TeamWithThatNameAlreadyExistsDomainEvent(teams[0]);

@@ -34,6 +34,7 @@ export class EditPredictionDirectlyUsecaseImpl extends EditPredictionDirectlyUse
     prediction.homeScore = homeScore;
     prediction.earnedPoints = earnedPoints;
     prediction.hasExactResult = hasExactResult;
+    prediction.isCalculated = true;
 
     const edited = await this.predictionContract.modify(prediction);
 

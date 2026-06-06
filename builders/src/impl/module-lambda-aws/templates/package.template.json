@@ -8,6 +8,7 @@
     "copy-template": "copyfiles template.yaml ./dist"
   },
   "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.33.1",
     "@scifamek-open-source/iraca": "9.2.0",
     "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
     "@skorify/shared": "github:aws-ug-manizales/Skorify_Shared#main",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "copyfiles": "^2.4.1",
+    "@types/aws-lambda": "^8.10.161",
     "@types/node": "22.5.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",

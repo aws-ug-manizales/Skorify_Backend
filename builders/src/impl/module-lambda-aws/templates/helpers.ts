@@ -11,9 +11,6 @@ export type ConnectionConfig = {
 };
 
 export const responseMapper = (response: any) => {
-  console.log('Response ');
-  console.log(response);
-
   const body = response;
   const code = body['meta']['code'];
   const fragments = code.split(':') ?? ['-', '-'];
@@ -84,9 +81,6 @@ export function generate(
     Authorization: headers['Authorization'] ?? headers['authorization'] ?? '',
     'Content-Type': headers['Content-Type'] ?? headers['content-type'] ?? '',
   };
-  console.log('Nuevos headers');
-  console.log(newHeaders);
-
   const runtimeUrl =
     env == 'prod'
       ? 'https://api.skorify.cloud-manizales.com'
