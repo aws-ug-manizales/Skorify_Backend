@@ -3,34 +3,29 @@ import {
   CalculatedMatchDomainEvent,
   CalculateMatchScoreParam,
   CalculateMatchScoreUsecase,
-  MatchAlreadyCalculatedDomainEvent,
   MatchContract,
   MatchDoesNotExistDomainEvent,
-  MatchEntity,
   MatchHasNotFinishedDomainEvent,
-  MatchStatus
+  MatchStatus,
 } from '@skorify/domain/match';
 import {
-  EditPredictionDirectlyUsecase,
   GetPredictionsByMatchAndTournamentInstanceUsecase,
-  PredictionEntity
+  PredictionEntity,
 } from '@skorify/domain/prediction';
 import {
   GetEnrollmentsWithoutPredictionUsecase,
-  GetUserEnrollmentByIdUsecase,
-  GottenUserEnrollmentDomainEvent,
   GottenUserEnrollmentsDomainEvent,
-  UpdateUserEnrollmentUsecase,
+  ResetStreakForMatchUsecase,
+  ScorePredictionUsecase,
   UserEnrollmentEntity,
 } from '@skorify/domain/user-enrollment';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
-    private editPredictionDirectlyUsecase: EditPredictionDirectlyUsecase,
-    private getUserEnrollmentByIdUsecase: GetUserEnrollmentByIdUsecase,
+    private scorePredictionUsecase: ScorePredictionUsecase,
+    private resetStreakForMatchUsecase: ResetStreakForMatchUsecase,
     private getPredictionsByMatchAndTournamentInstanceUsecase: GetPredictionsByMatchAndTournamentInstanceUsecase,
-    private updateUserEnrollmentUsecase: UpdateUserEnrollmentUsecase,
     private getEnrollmentsWithoutPredictionUsecase: GetEnrollmentsWithoutPredictionUsecase,
   ) {
     super();
@@ -45,108 +40,43 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchDoesNotExistDomainEvent();
     }
 
-    if(match.status == MatchStatus.Calculated) {
-      return MatchAlreadyCalculatedDomainEvent(match);
-
-    }
-    if(match.status !== MatchStatus.Finished) {
+    // Only score once the match is finished (has a result). The match status is
+    // GLOBAL across tournament instances and stays Finished; per-prediction
+    // idempotency comes from the `is_calculated` flag, so every instance can
+    // score its own predictions without a global lock.
+    if (match.status !== MatchStatus.Finished) {
       return MatchHasNotFinishedDomainEvent(match);
-
     }
 
     const predictionsDE = await this.getPredictionsByMatchAndTournamentInstanceUsecase.call({
       matchId,
       tournamentInstanceId,
     });
-    const predictions: PredictionEntity[] = predictionsDE.payload as PredictionEntity[];
+    const predictions: PredictionEntity[] =
+      (predictionsDE.payload as PredictionEntity[]) ?? [];
 
-    if (predictions && predictions.length > 0) {
-      await this.calculateScores(match, predictions);
+    // Only score predictions not yet calculated (optimization; scorePrediction
+    // is idempotent and re-checks the flag under the lock anyway).
+    const pending = predictions.filter((p) => !p.isCalculated);
+
+    if (pending.length > 0) {
+      await Promise.all(
+        pending.map((prediction) =>
+          this.scorePredictionUsecase.call({
+            predictionId: prediction.id,
+            matchAwayScore: match.awayScore!,
+            matchHomeScore: match.homeScore!,
+          }),
+        ),
+      );
     }
 
     await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
 
-    match.status = MatchStatus.Calculated;
-    await this.matchContract.modify(match);
-
+    // No global status change: the match stays Finished. Idempotency is per
+    // prediction via `is_calculated`, so re-runs (other instances, retries) are
+    // safe and do not double-count.
     return CalculatedMatchDomainEvent(match);
-  }
-
-  private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]) {
-    await Promise.all(
-      predictions.map((prediction) => this.calculatePredictionScore(match, prediction)),
-    );
-  }
-
-  private async calculatePredictionScore(
-    match: MatchEntity,
-    prediction: PredictionEntity,
-  ): Promise<void> {
-    /** Esto es un machetazo */
-    const clonedPredictionDE = PredictionEntity.build({
-      id: prediction.id,
-      createdAt: prediction.createdAt,
-      userEnrollmentId: prediction.userEnrollmentId,
-      matchId: prediction.matchId,
-      tournamentInstanceId: prediction.tournamentInstanceId,
-      userId: prediction.userId,
-      homeScore: prediction.homeScore,
-      awayScore: prediction.awayScore,
-      earnedPoints: prediction.earnedPoints,
-      hasExactResult: prediction.hasExactResult,
-    });
-
-    const clonedPrediction = clonedPredictionDE.payload as PredictionEntity;
-
-    clonedPrediction.createdAt = new Date(prediction.createdAt);
-
-    const userEnrollmentDE = await this.getUserEnrollmentByIdUsecase.call({
-      userEnrollmentId: prediction.userEnrollmentId,
-    });
-
-    if (userEnrollmentDE.isNot(GottenUserEnrollmentDomainEvent)) {
-      return;
-    }
-
-    const userEnrollment: UserEnrollmentEntity = userEnrollmentDE.payload as UserEnrollmentEntity;
-
-    /** Esto es un machetazo */
-    const clonedUserEnrollmentDE = UserEnrollmentEntity.build({
-      id: userEnrollment.id,
-      maxStreak: userEnrollment.maxStreak,
-      currentPosition: userEnrollment.currentPosition,
-      currentScore: userEnrollment.currentScore,
-      createdAt: userEnrollment.createdAt,
-      joinedAt: userEnrollment.joinedAt,
-      lastPosition: userEnrollment.lastPosition,
-      tournamentId: userEnrollment.tournamentId,
-      streak: userEnrollment.streak,
-      tournamentInstanceId: userEnrollment.tournamentInstanceId,
-      userId: userEnrollment.userId,
-    });
-
-    const clonedUserEnrollment = clonedUserEnrollmentDE.payload as UserEnrollmentEntity;
-
-    clonedUserEnrollment.createdAt = new Date(userEnrollment.createdAt);
-    clonedUserEnrollment.joinedAt = new Date(userEnrollment.joinedAt);
-
-    const streakBonusPoints = clonedUserEnrollment.getStreakBonusPoints();
-
-    // Calculate prediction score
-    clonedPrediction.calculateScore(match.awayScore!, match.homeScore!, streakBonusPoints);
-
-    // Save updated prediction
-    await this.editPredictionDirectlyUsecase.call({
-      predictionId: prediction.id,
-      ...clonedPrediction,
-    });
-
-    // Update user enrollment with points and streak
-    await this.updateUserEnrollmentUsecase.call({
-      userEnrollmentId: clonedPrediction.userEnrollmentId,
-      points: clonedPrediction.earnedPoints,
-      isExact: clonedPrediction.hasExactResult,
-    });
   }
 
   private async resetStreakForMissingPredictions(
@@ -164,10 +94,9 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
       await Promise.all(
         enrollments.map((enrollment) =>
-          this.updateUserEnrollmentUsecase.call({
-            userEnrollmentId: enrollment.id,
-            points: 0,
-            isExact: false,
+          this.resetStreakForMatchUsecase.call({
+            enrollmentId: enrollment.id,
+            matchId,
           }),
         ),
       );
