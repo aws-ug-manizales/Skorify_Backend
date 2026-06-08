@@ -1,12 +1,16 @@
 name: Build Server
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 "on":
   push:
     branches:
-      - feature/**
       - develop
 
   pull_request:
-    types: [closed, opened, edited]
+    types: [opened, synchronize, reopened, edited, closed]
     branches:
       - develop
       - main
@@ -52,6 +56,14 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm run mla
+
+      - name: Check OpenAPI in sync
+        working-directory: builders
+        run: pnpm run openapi:check
+
+      - name: Lint OpenAPI (Redocly)
+        working-directory: builders
+        run: pnpm run openapi:lint
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v3
