@@ -8,18 +8,24 @@
     "start": "pnpm ts-node src/index.ts",
     "sla": "pnpm ts-node src/index.ts single-lambda-aws",
     "mla": "pnpm ts-node src/index.ts module-lambda-aws",
+    "openapi": "pnpm ts-node src/openapi/generate-openapi.ts",
+    "openapi:check": "pnpm ts-node src/openapi/generate-openapi.ts --check",
+    "openapi:lint": "redocly lint ../openapi.yaml --config ../redocly.yaml",
+    "openapi:docs": "redocly build-docs ../openapi.yaml -o ../openapi-docs.html",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.33.1"
   },
   "devDependencies": {
+    "@redocly/cli": "^2.31.6",
     "@scifamek-open-source/iraca": "9.2.0",
     "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
     "@types/aws-lambda": "^8.10.161",
     "@types/node": "22.5.0",
     "ts-node": "10.9.2",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "yaml": "^2.9.0"
   },
   "keywords": [],
   "author": "",
