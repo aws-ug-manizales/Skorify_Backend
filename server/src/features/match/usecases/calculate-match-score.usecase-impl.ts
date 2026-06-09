@@ -68,6 +68,9 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
     await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
 
+    match.status = MatchStatus.Finished;
+    await this.matchContract.modify(match);
+
     return CalculatedMatchDomainEvent(match);
   }
 
