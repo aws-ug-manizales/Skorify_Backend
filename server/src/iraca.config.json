@@ -1,21 +1,21 @@
 {
-  "predictionEditingWindow": "${SKO_PREDICTION_EDITING_WINDOW}",
+  "predictionEditingWindow": "10",
   "database!": {
-    "host": "${SKO_DB_HOST}",
-    "port": "${SKO_DB_PORT}",
-    "username": "${SKO_DB_USER}",
-    "engine": "postgres",
-    "password": "${SKO_DB_PASSWORD}",
-    "name": "${SKO_DB_NAME}",
-    "logging": "${SKO_DB_LOGGING}",
+    "host": "localhost",
+    "port": "5432",
+    "username": "postgres",
+    "password": "your_password_here",
+    "name": "polla_mundial",
+    "logging": "false",
+    "engine": "memory",
     "enabled": false
   },
   "eventBus!": {
-    "eventBusName": "${SKO_EVENT_BUS_NAME}",
-    "source": "${SKO_EVENT_BUS_SOURCE}"
+    "eventBusName": "SkorifyDataBus",
+    "source": "SkorifyData"
   },
   "storage!": {
-    "bucketName": "${SKO_STORAGE_BUCKET_NAME}",
-    "region": "${SKO_STORAGE_REGION}"
+    "bucketName": "SkorifyBucket",
+    "region": "us-east-1"
   }
 }

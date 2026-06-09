@@ -9,7 +9,8 @@ async function main() {
   const loggerFolder = 'logs';
   const initServerLogger = new Logger(join(loggerFolder, 'init-server.log'));
   const runtimeLogger = new Logger(join(loggerFolder, 'runtime.log'));
-
+  let abc = null
+try {
   const { server } = await runIraca({
     dirname: __dirname,
     extraDependencies,
@@ -22,8 +23,13 @@ async function main() {
       logger: runtimeLogger,
     },
   });
+  abc = server
+} catch (error) {
+  console.log(error)
+}
+  
 
-  server.cors({
+  abc?.cors({
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Disposition',
