@@ -96,7 +96,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       awayScore: prediction.awayScore,
       earnedPoints: prediction.earnedPoints,
       hasExactResult: prediction.hasExactResult,
-      isCalculated: prediction.isCalculated,
+      isCalculated: true,
     });
 
     const clonedPrediction = clonedPredictionDE.payload as PredictionEntity;
