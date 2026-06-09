@@ -5,7 +5,7 @@ import {
   SimulatePredictionUsecase,
   SimulatedPredictionDomainEvent,
 } from '@skorify/domain/prediction';
-import { UserEnrollmentEntity } from '@skorify/domain/user-enrollment';
+/*import { UserEnrollmentEntity } from '@skorify/domain/user-enrollment';*/
 
 export class SimulatePredictionUsecaseImpl extends SimulatePredictionUsecase {
   constructor() {
@@ -13,12 +13,12 @@ export class SimulatePredictionUsecaseImpl extends SimulatePredictionUsecase {
   }
 
   async call(param: SimulatePredictionParam): Promise<DomainEvent> {
-    const { predictionHomeScore, predictionAwayScore, matchHomeScore, matchAwayScore, streak } =
+    const { predictionHomeScore, predictionAwayScore, matchHomeScore, matchAwayScore, /*streak */ } =
       param;
 
-    const enrollmentDE = UserEnrollmentEntity.forSimulation({ streak });
-    const mockEnrollment = enrollmentDE.payload as UserEnrollmentEntity;
-    const streakBonusPoints = mockEnrollment.getStreakBonusPoints();
+    // const enrollmentDE = UserEnrollmentEntity.forSimulation({ streak });
+    // const mockEnrollment = enrollmentDE.payload as UserEnrollmentEntity;
+    const streakBonusPoints = 0; //mockEnrollment.getStreakBonusPoints();
     const prediction = PredictionEntity.forSimulation({
       homeScore: predictionHomeScore,
       awayScore: predictionAwayScore,
