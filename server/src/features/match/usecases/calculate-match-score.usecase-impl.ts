@@ -122,14 +122,14 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     /** Esto es un machetazo */
     const clonedUserEnrollmentDE = UserEnrollmentEntity.build({
       id: userEnrollment.id,
-      maxStreak: userEnrollment.maxStreak,
+      maxStreak: 0, //userEnrollment.maxStreak,
       currentPosition: userEnrollment.currentPosition,
       currentScore: userEnrollment.currentScore,
       createdAt: userEnrollment.createdAt,
       joinedAt: userEnrollment.joinedAt,
       lastPosition: userEnrollment.lastPosition,
       tournamentId: userEnrollment.tournamentId,
-      streak: userEnrollment.streak,
+      streak: 0, //userEnrollment.streak,
       tournamentInstanceId: userEnrollment.tournamentInstanceId,
       userId: userEnrollment.userId,
     });
@@ -139,7 +139,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     clonedUserEnrollment.createdAt = new Date(userEnrollment.createdAt);
     clonedUserEnrollment.joinedAt = new Date(userEnrollment.joinedAt);
 
-    const streakBonusPoints = clonedUserEnrollment.getStreakBonusPoints();
+    const streakBonusPoints = 0; //clonedUserEnrollment.getStreakBonusPoints();
 
     // Calculate prediction score
     clonedPrediction.calculateScore(match.awayScore!, match.homeScore!, streakBonusPoints);
