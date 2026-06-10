@@ -90,8 +90,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
     for (const module in modulesConfig) {
       let samTemplate = samYMLTemplate;
       let replacedLambdaTemplate = sourceCodeTemplate;
-      const injections: string[] = []; // static: container.add() — runs once per Lambda lifecycle
-      const dynamicInjections: string[] = []; // dynamic: generate()    — runs every request (headers change)
+      const injections: string[] = [];
       let imports: string[] = [];
       const fullImports: string[] = [];
 
@@ -121,11 +120,10 @@ export class ModuleLambdaAWSBuilder extends Builder {
           fullGeneratedFolder,
           fullDistFolder,
           injections,
-          dynamicInjections,
           fullImports,
           config.serverFolder,
           eventSamTemplate,
-          env,
+          env
         );
         samTemplate += innerEventSamTemplate;
         // fullImports.push(...imports);
@@ -141,12 +139,8 @@ export class ModuleLambdaAWSBuilder extends Builder {
         fullImports.join('\n'),
       );
       replacedLambdaTemplate = replacedLambdaTemplate.replace(
-        toToken('STATIC_INJECTIONS'),
+        toToken('INJECTIONS'),
         injections.join('\n'),
-      );
-      replacedLambdaTemplate = replacedLambdaTemplate.replace(
-        toToken('DYNAMIC_INJECTIONS'),
-        dynamicInjections.join('\n'),
       );
       replacedLambdaTemplate = replacedLambdaTemplate.replace(
         new RegExp(toToken('MODULE_PASCAL'), 'g'),
@@ -353,7 +347,6 @@ ${Object.entries(envConfigs)
     fullGeneratedFolder: string,
     fullDistFolder: string,
     injections: string[],
-    dynamicInjections: string[],
     imports: string[],
     serverFolder: string,
     eventSamTemplate: string,
@@ -458,22 +451,25 @@ ${Object.entries(envConfigs)
       dependencies.push(type);
       if (kind == 'usecase') {
         if (module != klass.module) {
-          // Cross-module: registered via HTTP integrator (generate) — no class import needed
+          this.addImport(imports, allUsecases, type, source);
+
           const usecase = allUsecases.find((x) => x.usecaseName == type);
           if (usecase) {
             mm = usecase.module;
           }
 
-          dynamicInjections.push(`
+          injections.push(`
+
             generate(
                 '${env}',
-                cachedContainer, {
+                container, {
                   dependencyName: "${type}",
                   module: "${mm}",
                   methodMapper
                 },
                 headers
               );
+       
             `);
         } else {
           this.addImport(imports, allUsecases, type, source);
