@@ -26,7 +26,10 @@ export class GetAvailableTournamentsUsecaseImpl extends GetAvailableTournamentsU
 
   async call(_: GetAvailableTournamentsParam): Promise<DomainEvent> {
     const tournaments = await this.tournamentContract.getAll();
-    const activeTournaments = tournaments;
+    const now = new Date();                                                                                       
+    const activeTournaments = tournaments.filter(                                                                 
+      (tournament) => tournament.startDate <= now && tournament.endDate >= now,                                   
+    ); 
 
     const availableTournaments = await Promise.all(
       activeTournaments.map(async (tournament) => {
