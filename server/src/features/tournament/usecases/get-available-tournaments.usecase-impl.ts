@@ -11,7 +11,6 @@ import {
   GottenTournamentInstanceDomainEvent,
   TournamentInstanceEntity,
 } from '@skorify/domain/tournament-instance';
-import { logger, serializeError } from '../../../config/logger';
 
 type AvailableTournament = TournamentEntity & {
   globalInstanceId: string | null;
@@ -26,7 +25,6 @@ export class GetAvailableTournamentsUsecaseImpl extends GetAvailableTournamentsU
   }
 
   async call(_: GetAvailableTournamentsParam): Promise<DomainEvent> {
-    logger.info('Getting available tournaments');
     const tournaments = await this.tournamentContract.getAll();
     const activeTournaments = tournaments;
 
@@ -46,10 +44,8 @@ export class GetAvailableTournamentsUsecaseImpl extends GetAvailableTournamentsU
             globalInstanceId,
           } as AvailableTournament;
         } catch (error: unknown) {
-          logger.error('Error getting global tournament instance', {
-            tournamentId: tournament.id,
-            error: serializeError(error),
-          });
+          console.log("Error:", serializeError(error));
+
           return {
             ...tournament,
             globalInstanceId: null,
