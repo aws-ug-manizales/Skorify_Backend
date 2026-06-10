@@ -42,6 +42,10 @@ export class ModuleLambdaAWSBuilder extends Builder {
     );
     const globalTemplate = await readFile(join(templatesFolder, './global.template.yaml'), 'utf-8');
     const samYMLTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
+    const alarmsYMLTemplate = await readFile(
+      join(templatesFolder, './alarms.template.yaml'),
+      'utf-8',
+    );
     const eventSamTemplate = await readFile(
       join(templatesFolder, './event.template.yaml'),
       'utf-8',
@@ -126,6 +130,11 @@ export class ModuleLambdaAWSBuilder extends Builder {
         samTemplate += innerEventSamTemplate;
         // fullImports.push(...imports);
       }
+
+      samTemplate += alarmsYMLTemplate.replace(
+        new RegExp(toToken('MODULE_PASCAL'), 'g'),
+        moduleConfig.modulePascal,
+      );
 
       replacedLambdaTemplate = replacedLambdaTemplate.replace(
         toToken('IMPORTS'),
@@ -247,7 +256,7 @@ capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
-parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name"'`;
+parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name" OpsAlertsTopicArn="/skorify/${env}/ops-alerts-topic-arn"'`;
 
     const samconfig = `version = 0.1
 

@@ -35,6 +35,10 @@ Parameters:
   BusParameterArn:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/dev/data-bus-name'
+  OpsAlertsTopicArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/skorify/dev/ops-alerts-topic-arn'
+    Description: ARN del topico SNS de alertas operativas.
 
 Mappings:
   EnvironmentConfig:
@@ -302,6 +306,24 @@ Resources:
     Properties:
       Domain: !Ref CognitoUserPoolDomain
       UserPoolId: !Ref CognitoUserPool
+
+  Api5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Errores 5xx en el API Gateway
+      Namespace: AWS/ApiGateway
+      MetricName: 5XXError
+      Dimensions:
+        - Name: ApiName
+          Value: !Ref AWS::StackName
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref OpsAlertsTopicArn
 
   ApiGatewayCustomDomain:
     Type: AWS::ApiGateway::DomainName
