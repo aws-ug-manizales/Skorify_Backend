@@ -18,13 +18,15 @@
     "start:heroku": "node dist/src/index.js"
   },
   "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.33.1",
     "@scifamek-open-source/iraca": "9.2.0",
     "@scifamek-open-source/logger": "1.1.2",
-    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.4.1",
+    "@skorify/data": "github:aws-ug-manizales/Skorify_Data#v1.4.6",
     "@skorify/domain": "github:aws-ug-manizales/Skorify_Domain#main",
     "@skorify/shared": "github:aws-ug-manizales/Skorify_Shared#main"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.161",
     "@types/jest": "^30.0.0",
     "@types/node": "22.5.0",
     "copyfiles": "^2.4.1",

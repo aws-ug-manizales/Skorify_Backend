@@ -35,9 +35,10 @@ export class GetMatchesByTournamentIdUsecaseImpl extends GetMatchesByTournamentI
     const teamsDE = await this.getTeamByIdsUsecase.call({ teamIds: uniqueTeamIds });
 
     const teams: TeamEntity[] = teamsDE.payload;
+    const teamsMap = new Map<string, TeamEntity>(teams.map((team) => [team.id, team]));
     const response = matches.map((match) => {
-      const awayTeam = teams.find((team) => team.id === match.awayTeamId)!;
-      const homeTeam = teams.find((team) => team.id === match.homeTeamId)!;
+      const awayTeam = teamsMap.get(match.awayTeamId)!;
+      const homeTeam = teamsMap.get(match.homeTeamId)!;
       return { match, awayTeam, homeTeam };
     });
     return GottenMatchesByTournamentDomainEvent(response);

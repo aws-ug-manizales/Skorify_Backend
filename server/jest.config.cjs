@@ -4,6 +4,7 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['<rootDir>/test/**/*.spec.ts'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  setupFiles: ['<rootDir>/test/setup-crypto.ts'],
 
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.jest.json' }],

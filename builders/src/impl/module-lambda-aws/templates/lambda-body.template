@@ -1,19 +1,14 @@
 // handler.ts
-// import { APIGatewayProxyEvent } from "aws-lambda";
-// import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
-import { IracaServer } from "@scifamek-open-source/iraca/web-api";
+import type { Context } from 'aws-lambda';
 
 import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
 import { generate } from "./helpers";
-import { {{MODULE_PASCAL}}Controller } from "./controller";
 import { DBClient } from '@skorify/data';
 import { StorageContract, EventBusContract } from '@skorify/domain/core';
-import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
 
-import { EventBusImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
+import { EventBusImpl, StorageImpl } from '@skorify/shared';
 
-
-
+// Cross-module usecases are resolved by string name via generate() — no class import needed
 {{IMPORTS}}
 
 
@@ -22,11 +17,57 @@ import {
   GetSecretValueCommand
 } from '@aws-sdk/client-secrets-manager';
 
-import {
-  SSMClient,
-  GetParameterCommand,
-} from '@aws-sdk/client-ssm';
+import { Logger } from '@aws-lambda-powertools/logger';
 
+const logger = new Logger({
+  serviceName: process.env.POWERTOOLS_SERVICE_NAME || 'skorify-{{MODULE}}',
+});
+
+const serializeError = (error: unknown): unknown => {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return error;
+};
+
+const getBusinessContext = (payload: Record<string, unknown> | undefined) => {
+  const businessContext: Record<string, string | number> = {};
+  const keys = ['matchId', 'tournamentInstanceId', 'predictionId', 'userId'] as const;
+
+  for (const key of keys) {
+    const value = payload?.[key];
+
+    if (typeof value === 'string' || typeof value === 'number') {
+      businessContext[key] = value;
+    }
+  }
+
+  const nestedEntities = [
+    ['matchId', payload?.match],
+    ['tournamentInstanceId', payload?.tournamentInstance],
+    ['predictionId', payload?.prediction],
+    ['userId', payload?.user],
+  ] as const;
+
+  for (const [key, entity] of nestedEntities) {
+    if (businessContext[key] !== undefined || typeof entity !== 'object' || entity === null) {
+      continue;
+    }
+
+    const id = (entity as Record<string, unknown>).id;
+
+    if (typeof id === 'string' || typeof id === 'number') {
+      businessContext[key] = id;
+    }
+  }
+
+  return businessContext;
+};
 
 
 type LambdaEvent = {
@@ -47,63 +88,63 @@ function printDateDiff(title: string, initialTime: Date){
 
   const diferenciaMs = now.getTime() - initialTime.getTime();
 
-  console.log('** ',title,': ',diferenciaMs);
+  logger.debug('Timing checkpoint', { checkpoint: title, elapsedMs: diferenciaMs });
 
 }
 
 
-  const secretManagerClient = new SecretsManagerClient();
-  const ssmClient = new SSMClient();
+const secretManagerClient = new SecretsManagerClient();
 
-  const DbParameterARN = process.env.DbParameterArn!;
-  const BusParameterArn = process.env.BusParameterArn!;
+const DbParameterARN = process.env.DbParameterArn!;
+const BusParameterArn = process.env.BusParameterArn!;
 
+const globalConfig: any = {
+  DBConfigObject: null,
+  dbClient: null,
+};
 
-  const globalConfig: any = {
-    DBConfigObject: null,
-    dbClient: null,
-  }
-
-
+// Cached DI container — rebuilt only on cold start, reused on warm invocations
+let cachedContainer: IracaContainer | null = null;
 
 async function init(){
-    
-    if(!globalConfig['DBConfigObject']){
-      const DBConfigObject = await secretManagerClient.send(
-        new GetSecretValueCommand({
-          SecretId: DbParameterARN
-        })
-      );
+  if(!globalConfig['DBConfigObject']){
+    const DBConfigObject = await secretManagerClient.send(
+      new GetSecretValueCommand({
+        SecretId: DbParameterARN
+      })
+    );
 
-      const externalDBConfig = DBConfigObject.SecretString;
-      const parsedDBSecrets = JSON.parse(externalDBConfig!);    
-      
-      const dbClient = new DBClient({
-        type: 'postgres',
-        host: parsedDBSecrets.host,
-        port: parseInt(parsedDBSecrets.port),
-        username: parsedDBSecrets.username,
-        password: parsedDBSecrets.password,
-        database: parsedDBSecrets.dbname,
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      });
+    const externalDBConfig = DBConfigObject.SecretString;
+    const parsedDBSecrets = JSON.parse(externalDBConfig!);
 
-        try {
-          await dbClient.connect();
-          console.log('Database connected successfully');
-        } catch (error) {
-          console.error('Failed to connect to database:', error);
-          process.exit(1);
-        }
+    const dbClient = new DBClient({
+      type: 'postgres',
+      host: parsedDBSecrets.host,
+      port: parseInt(parsedDBSecrets.port),
+      username: parsedDBSecrets.username,
+      password: parsedDBSecrets.password,
+      database: parsedDBSecrets.dbname,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
 
-   
-
-      globalConfig['DBConfigObject'] = DBConfigObject;
-      globalConfig['dbClient'] = dbClient;
+    try {
+      await dbClient.connect();
+      logger.debug('Database connected successfully');
+    } catch (error) {
+      logger.error('Failed to connect to database', { error: serializeError(error) });
+      throw error;
     }
+
+    globalConfig['DBConfigObject'] = DBConfigObject;
+    globalConfig['dbClient'] = dbClient;
   }
+}
+
+const initPromise = init().catch((err) => {
+  logger.error('Eager init failed', { error: serializeError(err) });
+});
 
 const methodMapper = [
   { method: "DELETE", patterns: [/^Delete/] },
@@ -119,84 +160,103 @@ const methodMapper = [
 const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
 
 
-export const handler = async (event: any) => {
+export const handler = async (event: any, context: Context) => {
   const initialTime = new Date();
-
-  await init();
-
-  const container = new IracaContainer();
-
-
-
-  container.add({
-    abstraction: StorageContract,
-    implementation: StorageImpl,
-  });
-
-  const eventBusConfig = {
-    eventBusName: BusParameterArn,
-    source: 'SkorifyBackend'
-  }
-
-  container.addValue({
-    id: 'eventBusConfig',
-    value: eventBusConfig,
-  });
-
-  container.add({
-    abstraction: EventBusContract,
-    implementation: EventBusImpl,
-    dependencies: ['eventBusConfig'],
-  });
-
-
- 
-
-
-
-  const headers = event.headers;
-  const method = getMethod(event)
-  const path = getPath(event);
-
-  const {DBConfigObject, dbClient} = globalConfig;
-
-  container.addValue({
-    id: 'DBClient',
-    value: dbClient,
-  });
-
-  container.addValue({
-    id: '{{MODULE_PASCAL}}Contract',
-    value: dbClient.{{MODULE_SERVICE}},
-  });
-
-  printDateDiff('Después de ir a AWS secretos', initialTime);
-
-  const identifier = "{{IDENTIFIER}}";
-
-      {{INJECTIONS}}
-
 
   const baseHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': '*'
-  }
-  
+  };
+
+  let method = 'UNKNOWN';
+  let path = 'UNKNOWN';
+  let useCaseName: string | undefined;
+  let businessContext: Record<string, string | number> = {};
+
+  logger.addContext(context);
+  method = getMethod(event)
+  path = getPath(event);
+  const headers = event.headers ?? {};
+
   try {
+    await initPromise;
+    await init();
 
-    const useCaseName = `${toPascalCase(path)}Usecase`
-    console.log(useCaseName);
-    console.log('useCase');
-    console.log(container.configsTable);
-    const useCase = await container.getInstance<any>(useCaseName);
-    console.log(useCase);
+    // ── Build the DI container only once per Lambda container lifecycle ──
+    if (!cachedContainer) {
+      const container = new IracaContainer();
 
-    printDateDiff('Obtención del caso de uso', initialTime);
+      container.add({
+        abstraction: StorageContract,
+        implementation: StorageImpl,
+      });
+
+      container.addValue({
+        id: 'eventBusConfig',
+        value: { eventBusName: BusParameterArn, source: 'SkorifyBackend' },
+      });
+
+      container.add({
+        abstraction: EventBusContract,
+        implementation: EventBusImpl,
+        dependencies: ['eventBusConfig'],
+      });
+
+      const { dbClient } = globalConfig;
+
+      container.addValue({
+        id: 'DBClient',
+        value: dbClient,
+      });
+
+      container.addValue({
+        id: '{{MODULE_PASCAL}}Contract',
+        value: dbClient.{{MODULE_SERVICE}},
+      });
+
+      container.addValue({
+        id: 'Logger',
+        value: logger,
+      });
+
+      {{STATIC_INJECTIONS}}
+
+      cachedContainer = container;
+    }
+
+    {{DYNAMIC_INJECTIONS}}
+
+    printDateDiff('After container setup', initialTime);
+
+    useCaseName = `${toPascalCase(path)}Usecase`
+    logger.debug('Resolving usecase', { method, path, usecase: useCaseName });
+    const useCase = await cachedContainer.getInstance<any>(useCaseName);
+    logger.debug('Usecase resolved', {
+      usecase: useCaseName,
+      implementation: useCase?.constructor?.name,
+      found: Boolean(useCase),
+    });
+
+    printDateDiff('Usecase resolved', initialTime);
 
     if (!useCase) {
+      const durationMs = Date.now() - initialTime.getTime();
+      logger.warn('HTTP request completed', {
+        method,
+        path,
+        usecase: useCaseName,
+        statusCode: 404,
+        durationMs,
+        outcome: 'usecase_not_found',
+      });
+
       return {
         statusCode: 404,
+        headers: {
+          ...baseHeaders,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           message: `Use case ${useCaseName} not found`,
         }),
@@ -210,25 +270,53 @@ export const handler = async (event: any) => {
 
 
     const payload = getPayload(event, strategy)
+    businessContext = getBusinessContext(payload);
+    logger.debug('Payload built', {
+      usecase: useCaseName,
+      strategy,
+      payloadKeys: Object.keys(payload ?? {}),
+      ...businessContext,
+    });
 
     const result = await useCase.call(payload)
 
-    printDateDiff('Después de finalizar el caso de uso CALL', initialTime);
-    
+    printDateDiff('Usecase call completed', initialTime);
+    const durationMs = Date.now() - initialTime.getTime();
 
-    console.log('Usecase result');
-    console.log(result);
+    if (useCaseName === 'MakePredictionUsecase') {
+      logger.info('Prediction outcome', {
+        ...businessContext,
+        predictedHomeScore: payload.homeScore,
+        predictedAwayScore: payload.awayScore,
+        outcome: result.eventName,
+        durationMs,
+      });
+    }
+
     const parsed = {
         data: result.payload,
         meta: {
           code: '{{MODULE_PASCAL}}:'+result.eventName
         }
       };
-    console.log(parsed);
     const parsedSTR = JSON.stringify(parsed);
-    console.log(parsedSTR);
-    
-    printDateDiff('Respondiendo', initialTime);
+    logger.debug('Response serialized', {
+      usecase: useCaseName,
+      eventName: result.eventName,
+      responseBytes: parsedSTR.length,
+    });
+
+    logger.info('HTTP request completed', {
+      method,
+      path,
+      usecase: useCaseName,
+      ...businessContext,
+      statusCode: 200,
+      durationMs,
+      outcome: result.eventName,
+    });
+
+    printDateDiff('Responding', initialTime);
 
     return {
       statusCode: 200,
@@ -239,6 +327,17 @@ export const handler = async (event: any) => {
       body: parsedSTR,
     }
   } catch (error) {
+    logger.error('HTTP request failed', {
+      error: serializeError(error),
+      path,
+      method,
+      usecase: useCaseName,
+      ...businessContext,
+      statusCode: 500,
+      durationMs: Date.now() - initialTime.getTime(),
+      outcome: 'unhandled_error',
+    });
+
     return {
       statusCode: 500,
       headers: {
@@ -247,10 +346,7 @@ export const handler = async (event: any) => {
       },
       body: JSON.stringify({
         message: 'Internal server error',
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Unknown error',
+        requestId: context.awsRequestId,
       }),
     }
   }

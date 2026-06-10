@@ -1,4 +1,5 @@
 import {
+  CalculateMatchScoreUsecase,
   ClosedMatchDomainEvent,
   CloseMatchParam,
   CloseMatchUsecase,
@@ -9,10 +10,9 @@ import {
   MatchEntity,
   MatchStatus,
   NotEditedMatchDomainEvent,
-  ReactiveClosedMatchDomainEvent,
 } from '@skorify/domain/match';
 
-import { DomainEvent, EventBusContract } from '@skorify/domain/core';
+import { DomainEvent } from '@skorify/domain/core';
 import {
   GetTournamentInstancesByTournamentIdUsecase,
   GottenTournamentInstancesDomainEvent,
@@ -22,8 +22,8 @@ import {
 export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
   constructor(
     private getMatchByIdUsecase: GetMatchByIdUsecase,
-    private eventBusContract: EventBusContract,
     private matchContract: MatchContract,
+    private calculateMatchScoreUsecase: CalculateMatchScoreUsecase,
     private getTournamentInstancesByTournamentIdUsecase: GetTournamentInstancesByTournamentIdUsecase,
   ) {
     super();
@@ -40,7 +40,6 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
       return matchDE;
     }
     const match: MatchEntity = matchDE.payload;
-    console.log(match);
     const status = match.status ?? match['_status'];
 
     if (status == MatchStatus.Finished) {
@@ -66,12 +65,11 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
     const tournamentInstances: TournamentInstanceEntity[] = tournamentInstancesDE.payload;
 
     for (const tournamentInstance of tournamentInstances) {
-      this.eventBusContract.send({
-        domainEvent: ReactiveClosedMatchDomainEvent, // Estandar para nosotros
-        payload: { match, tournamentInstance },
+      this.calculateMatchScoreUsecase.call({
+        matchId,
+        tournamentInstanceId: tournamentInstance.id,
       });
     }
-
     return ClosedMatchDomainEvent(modified);
   }
 }

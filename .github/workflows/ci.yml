@@ -1,12 +1,16 @@
 name: Build Server
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 "on":
   push:
     branches:
-      - feature/**
       - develop
 
   pull_request:
-    types: [closed, opened, edited]
+    types: [opened, synchronize, reopened, edited, closed]
     branches:
       - develop
       - main
@@ -26,11 +30,8 @@ jobs:
   typecheck:
     uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--build-backend.yml@feature/ci-pr-validation-workflows
 
-  # TODO: reactivar cuando se arregle el setup de jest (falta @types/jest en los
-  # types y ts-jest fuerza commonjs, que no resuelve los exports subpath de
-  # @skorify/domain). El reusable shared--unit-tests-backend.yml ya está listo.
-  # unit-tests:
-  #   uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--unit-tests-backend.yml@feature/ci-pr-validation-workflows
+  unit-tests:
+    uses: aws-ug-manizales/Skorify_DevOps/.github/workflows/shared--unit-tests-backend.yml@feature/ci-pr-validation-workflows
 
   sam-validate:
     runs-on: ubuntu-latest
@@ -56,6 +57,14 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run mla
 
+      - name: Check OpenAPI in sync
+        working-directory: builders
+        run: pnpm run openapi:check
+
+      - name: Lint OpenAPI (Redocly)
+        working-directory: builders
+        run: pnpm run openapi:lint
+
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v3
         with:
@@ -68,14 +77,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: NAME
-        run: |
-          echo 'github.ref ${{ github.ref }}'
-          echo 'github.event ${{ toJson(github.event) }}'
-          echo 'github.event_name ${{ github.event_name }}'
-          echo 'github.event.pull_request ${{ github.event.pull_request }}'
-          echo 'github.event.pull_request.action ${{ github.event.pull_request.action }}'
-
       - name: CHECKOUT
         uses: actions/checkout@v6
         with:

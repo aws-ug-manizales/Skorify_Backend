@@ -5,6 +5,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Builder, BuilderConfiguration } from '../../general/builder';
 import { existsFile, toToken, UsecaseInfo, UsecasesInfo } from '../../general/helpers';
+import { logger } from '../../general/logger';
 import { Class } from '../../general/models';
 
 type Templates = {
@@ -41,6 +42,10 @@ export class ModuleLambdaAWSBuilder extends Builder {
     );
     const globalTemplate = await readFile(join(templatesFolder, './global.template.yaml'), 'utf-8');
     const samYMLTemplate = await readFile(join(templatesFolder, './sam.template.yaml'), 'utf-8');
+    const alarmsYMLTemplate = await readFile(
+      join(templatesFolder, './alarms.template.yaml'),
+      'utf-8',
+    );
     const eventSamTemplate = await readFile(
       join(templatesFolder, './event.template.yaml'),
       'utf-8',
@@ -74,12 +79,19 @@ export class ModuleLambdaAWSBuilder extends Builder {
       acc[curr.module].usecases.push(curr);
       return acc;
     }, {});
-    console.log(modulesConfig);
+    logger.debug('Module Lambda configuration created', {
+      moduleCount: Object.keys(modulesConfig).length,
+      modules: Object.entries(modulesConfig).map(([module, moduleConfig]: [string, any]) => ({
+        module,
+        usecaseCount: moduleConfig.usecases.length,
+      })),
+    });
 
     for (const module in modulesConfig) {
       let samTemplate = samYMLTemplate;
       let replacedLambdaTemplate = sourceCodeTemplate;
-      const injections: string[] = [];
+      const injections: string[] = []; // static: container.add() — runs once per Lambda lifecycle
+      const dynamicInjections: string[] = []; // dynamic: generate()    — runs every request (headers change)
       let imports: string[] = [];
       const fullImports: string[] = [];
 
@@ -109,22 +121,32 @@ export class ModuleLambdaAWSBuilder extends Builder {
           fullGeneratedFolder,
           fullDistFolder,
           injections,
+          dynamicInjections,
           fullImports,
           config.serverFolder,
           eventSamTemplate,
-          env
+          env,
         );
         samTemplate += innerEventSamTemplate;
         // fullImports.push(...imports);
       }
+
+      samTemplate += alarmsYMLTemplate.replace(
+        new RegExp(toToken('MODULE_PASCAL'), 'g'),
+        moduleConfig.modulePascal,
+      );
 
       replacedLambdaTemplate = replacedLambdaTemplate.replace(
         toToken('IMPORTS'),
         fullImports.join('\n'),
       );
       replacedLambdaTemplate = replacedLambdaTemplate.replace(
-        toToken('INJECTIONS'),
+        toToken('STATIC_INJECTIONS'),
         injections.join('\n'),
+      );
+      replacedLambdaTemplate = replacedLambdaTemplate.replace(
+        toToken('DYNAMIC_INJECTIONS'),
+        dynamicInjections.join('\n'),
       );
       replacedLambdaTemplate = replacedLambdaTemplate.replace(
         new RegExp(toToken('MODULE_PASCAL'), 'g'),
@@ -149,10 +171,20 @@ export class ModuleLambdaAWSBuilder extends Builder {
 
       samTemplates.push(samTemplate);
       await new Promise<void>((resolve, reject) => {
-        console.log(`cd ${moduleFolder} && pnpm i && pnpm run build`);
+        logger.info('Building generated Lambda module', { module, moduleFolder });
         exec(`cd ${moduleFolder} && pnpm i && pnpm run build`, (error, stdout, stderr) => {
-          if (stdout) console.log(`[${module}] stdout:`, stdout);
-          if (stderr) console.error(`[${module}] stderr:`, stderr);
+          if (stdout) {
+            logger.debug('Generated Lambda module build output', {
+              module,
+              output: stdout.trim(),
+            });
+          }
+          if (stderr) {
+            logger.warn('Generated Lambda module build stderr', {
+              module,
+              output: stderr.trim(),
+            });
+          }
           if (error) {
             reject(new Error(`Build failed for module "${module}": ${error.message}`));
           } else {
@@ -224,7 +256,7 @@ capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
-parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name"'`;
+parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name" OpsAlertsTopicArn="/skorify/${env}/ops-alerts-topic-arn"'`;
 
     const samconfig = `version = 0.1
 
@@ -289,8 +321,18 @@ ${Object.entries(envConfigs)
       const buildPath = join(this.generatedFolder, folder);
       await new Promise<void>((resolve, reject) => {
         exec(`cd ${buildPath} && pnpm i && pnpm run build`, (error, stdout, stderr) => {
-          if (stdout) console.log(`[${folder}] stdout:`, stdout);
-          if (stderr) console.error(`[${folder}] stderr:`, stderr);
+          if (stdout) {
+            logger.debug('Extra resource build output', {
+              resource: folder,
+              output: stdout.trim(),
+            });
+          }
+          if (stderr) {
+            logger.warn('Extra resource build stderr', {
+              resource: folder,
+              output: stderr.trim(),
+            });
+          }
           if (error) {
             reject(new Error(`Build failed for extra-resource "${folder}": ${error.message}`));
           } else {
@@ -311,6 +353,7 @@ ${Object.entries(envConfigs)
     fullGeneratedFolder: string,
     fullDistFolder: string,
     injections: string[],
+    dynamicInjections: string[],
     imports: string[],
     serverFolder: string,
     eventSamTemplate: string,
@@ -354,7 +397,10 @@ ${Object.entries(envConfigs)
 
     const existsControllerPath = await existsFile(originalControllerPath);
     if (existsControllerPath) {
-      console.log(originalControllerPath);
+      logger.debug('Copying module controller', {
+        module: usecaseConfig.module,
+        source: originalControllerPath,
+      });
 
       const controllerContent = await readFile(originalControllerPath, {
         encoding: 'utf-8',
@@ -412,25 +458,22 @@ ${Object.entries(envConfigs)
       dependencies.push(type);
       if (kind == 'usecase') {
         if (module != klass.module) {
-          this.addImport(imports, allUsecases, type, source);
-
+          // Cross-module: registered via HTTP integrator (generate) — no class import needed
           const usecase = allUsecases.find((x) => x.usecaseName == type);
           if (usecase) {
             mm = usecase.module;
           }
 
-          injections.push(`
-
+          dynamicInjections.push(`
             generate(
                 '${env}',
-                container, {
+                cachedContainer, {
                   dependencyName: "${type}",
                   module: "${mm}",
                   methodMapper
                 },
                 headers
               );
-       
             `);
         } else {
           this.addImport(imports, allUsecases, type, source);

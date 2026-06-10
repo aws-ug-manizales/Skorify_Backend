@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { exit } from 'node:process';
 import { BuilderConfiguration } from './general/builder';
+import { logger, serializeError } from './general/logger';
 import { BuilderNamesMapper, ValidBuilderNames } from './general/models';
 import { ModuleLambdaAWSBuilder } from './impl/module-lambda-aws';
 import { SingleLambdaAWSBuilder } from './impl/single-lambda-aws';
@@ -28,7 +29,11 @@ async function main() {
   try {
     await builder?.build(config, env);
   } catch (e) {
-    console.error(e);
+    logger.error('Builder failed', {
+      builder: way,
+      environment: env,
+      error: serializeError(e),
+    });
     exit(1);
   }
 }

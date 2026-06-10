@@ -9,12 +9,14 @@
 
   },
   "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.33.1",
     "@scifamek-open-source/iraca": "9.1.0",
     "@skorify/domain": "link:../../../../domain/dist",
     "@aws-sdk/client-lambda": "^3.600.0"
   },
   "devDependencies": {
     "copyfiles": "^2.4.1",
+    "@types/aws-lambda": "^8.10.161",
     "@types/node": "22.5.0",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
