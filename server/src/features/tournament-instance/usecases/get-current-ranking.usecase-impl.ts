@@ -7,13 +7,12 @@ import {
   GottenTournamentInstanceDomainEvent,
   RankingItem,
 } from '@skorify/domain/tournament-instance';
-import { GetUsersByIdsUsecase, UserEntity } from '@skorify/domain/user';
+import { GetUsersByIdsUsecase, GottenUsersDomainEvent, UserEntity } from '@skorify/domain/user';
 import {
   GetUserEnrollmentsByTournamentInstanceIdUsecase,
   GottenUserEnrollmentsDomainEvent,
   UserEnrollmentEntity,
 } from '@skorify/domain/user-enrollment';
-
 import { Logger } from '@aws-lambda-powertools/logger';
 
 export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
@@ -69,6 +68,14 @@ export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
     const allUsersDE = await this.getUsersByIdsUsecase.call({
       userIds,
     });
+    if (allUsersDE.isNot(GottenUsersDomainEvent)) {
+      this.logger.error('No se pudieron obtener los usuarios del ranking', {
+        tournamentInstanceId,
+        userIdsCount: userIds.length,
+        event: allUsersDE.eventName,
+      });
+      return allUsersDE;
+    }
     const allUsers: UserEntity[] = allUsersDE.payload;
 
     const usersMap = new Map<string, UserEntity>(allUsers.map((u) => [u.id, u]));
