@@ -205,6 +205,52 @@ Resources:
         email_verified: email_verified
         username: sub
 
+  CognitoResourceServer:
+    Type: AWS::Cognito::UserPoolResourceServer
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      Identifier: !Sub 'https://api.skorify-${Environment}.cloud-manizales.com'
+      Name: SkorifyAPI
+      Scopes:
+        - ScopeName: internal
+          ScopeDescription: Internal service-to-service access
+
+  CognitoM2MClient:
+    Type: AWS::Cognito::UserPoolClient
+    DependsOn: CognitoResourceServer
+    Properties:
+      ClientName: !Sub 'Skorify-m2m-client-${Environment}'
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: true
+      ExplicitAuthFlows: []
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - client_credentials
+      AllowedOAuthScopes:
+        - !Sub 'https://api.skorify-${Environment}.cloud-manizales.com/internal'
+      SupportedIdentityProviders: []
+      AccessTokenValidity: 1
+      TokenValidityUnits:
+        AccessToken: hours
+
+  M2MCredentialsSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub 'skorify/${Environment}/m2m-credentials'
+      Description: M2M client credentials for service-to-service authentication
+      SecretString: !Sub
+        - '{"clientId":"${ClientId}","clientSecret":"${ClientSecret}","tokenEndpoint":"https://${CognitoUserPoolDomain}.auth.${AWS::Region}.amazoncognito.com/oauth2/token","scope":"https://api.skorify-${Environment}.cloud-manizales.com/internal"}'
+        - ClientId: !Ref CognitoM2MClient
+          ClientSecret: !GetAtt CognitoM2MClient.ClientSecret
+
+  M2MCredentialsSecretArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/skorify/${Environment}/m2m-credentials-arn'
+      Type: String
+      Value: !Ref M2MCredentialsSecret
+      Description: Secrets Manager ARN containing M2M client credentials
+
   CognitoAdminsGroup:
     Type: AWS::Cognito::UserPoolGroup
     Properties:
@@ -278,3 +324,4 @@ Outputs:
   CognitoHostedUIDomain:
     Description: Cognito hosted UI base URL
     Value: !Sub https://${CognitoUserPoolDomain}.auth.${AWS::Region}.amazoncognito.com
+
