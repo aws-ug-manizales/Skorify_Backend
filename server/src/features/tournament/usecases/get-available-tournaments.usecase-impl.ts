@@ -11,7 +11,7 @@ import {
   GottenTournamentInstanceDomainEvent,
   TournamentInstanceEntity,
 } from '@skorify/domain/tournament-instance';
-import { logger, serializeError } from '../../../config/logger';
+import { logger, serializeError } from 'src/config/logger';
 
 type AvailableTournament = TournamentEntity & {
   globalInstanceId: string | null;
