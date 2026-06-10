@@ -74,10 +74,13 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     return CalculatedMatchDomainEvent(match);
   }
 
+  private readonly SCORE_BATCH_SIZE = 10;
+
   private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]) {
-    await Promise.all(
-      predictions.map((prediction) => this.calculatePredictionScore(match, prediction)),
-    );
+    for (let i = 0; i < predictions.length; i += this.SCORE_BATCH_SIZE) {
+      const batch = predictions.slice(i, i + this.SCORE_BATCH_SIZE);
+      await Promise.all(batch.map((prediction) => this.calculatePredictionScore(match, prediction)));
+    }
   }
 
   private async calculatePredictionScore(
