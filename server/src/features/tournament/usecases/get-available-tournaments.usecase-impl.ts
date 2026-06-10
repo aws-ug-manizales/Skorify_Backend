@@ -44,7 +44,7 @@ export class GetAvailableTournamentsUsecaseImpl extends GetAvailableTournamentsU
             globalInstanceId,
           } as AvailableTournament;
         } catch (error: unknown) {
-          console.log("Error:", serializeError(error));
+          console.log("Error:", error);
 
           return {
             ...tournament,
