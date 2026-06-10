@@ -153,3 +153,5 @@ shared/src/storage
 **/.idea
 
 openapi-docs.html
+
+test.sh
