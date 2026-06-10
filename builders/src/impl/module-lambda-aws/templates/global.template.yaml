@@ -36,9 +36,17 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/dev/data-bus-name'
 
+Mappings:
+  EnvironmentConfig:
+    dev:
+      LambdaMemorySize: 512
+    prod:
+      LambdaMemorySize: 1024
+
 Globals:
   Function:
     Runtime: nodejs22.x
+    MemorySize: !FindInMap [EnvironmentConfig, !Ref Environment, LambdaMemorySize]
     Tags:
       Project: skorify
       Environment: !Ref Environment
