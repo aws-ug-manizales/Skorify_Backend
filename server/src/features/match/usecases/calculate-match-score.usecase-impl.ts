@@ -8,17 +8,16 @@ import {
   MatchDoesNotExistDomainEvent,
   MatchEntity,
   MatchHasNotFinishedDomainEvent,
-  MatchStatus,
+  MatchStatus
 } from '@skorify/domain/match';
 import {
   EditPredictionDirectlyUsecase,
   GetPredictionsByMatchAndTournamentInstanceUsecase,
-  PredictionEntity,
+  PredictionEntity
 } from '@skorify/domain/prediction';
 import {
   GetEnrollmentsWithoutPredictionUsecase,
   GetUserEnrollmentByIdUsecase,
-  GetUserEnrollmentsByTournamentInstanceIdUsecase,
   GottenUserEnrollmentDomainEvent,
   GottenUserEnrollmentsDomainEvent,
   UpdateUserEnrollmentUsecase,
@@ -30,7 +29,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
     private matchContract: MatchContract,
     private editPredictionDirectlyUsecase: EditPredictionDirectlyUsecase,
-    private getUserEnrollmentsByTournamentInstanceIdUsecase: GetUserEnrollmentsByTournamentInstanceIdUsecase,
+    private getUserEnrollmentByIdUsecase: GetUserEnrollmentByIdUsecase,
     private getPredictionsByMatchAndTournamentInstanceUsecase: GetPredictionsByMatchAndTournamentInstanceUsecase,
     private updateUserEnrollmentUsecase: UpdateUserEnrollmentUsecase,
     private getEnrollmentsWithoutPredictionUsecase: GetEnrollmentsWithoutPredictionUsecase,
@@ -44,10 +43,6 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
     const match = await this.matchContract.getById(matchId);
 
-    this.logger.info('Calculando los score de un partido', {
-      matchId: matchId,
-    });
-
     if (!match) {
       return MatchDoesNotExistDomainEvent();
     }
@@ -56,12 +51,6 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       return MatchHasNotFinishedDomainEvent(match);
     }
 
-    const userEnrollmentsDE = await this.getUserEnrollmentsByTournamentInstanceIdUsecase.call({
-      tournamentInstanceId,
-    });
-
-    const userEnrollments: UserEnrollmentEntity[] = await userEnrollmentsDE.payload;
-
     const predictionsDE = await this.getPredictionsByMatchAndTournamentInstanceUsecase.call({
       matchId,
       tournamentInstanceId,
@@ -69,56 +58,34 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     const predictions: PredictionEntity[] = predictionsDE.payload as PredictionEntity[];
     const pendingPredictions = predictions.filter((prediction) => !prediction.isCalculated);
 
-    this.logger.info(`Predicciones por el partido ${matchId}`, {
-      matchId: matchId,
-      predictions: predictions.length,
-      pendingPredictions: pendingPredictions.length,
-    });
     if (predictions.length > 0 && pendingPredictions.length === 0) {
       return MatchAlreadyCalculatedDomainEvent(match);
     }
 
     if (pendingPredictions.length > 0) {
-      await this.calculateScores(match, pendingPredictions, userEnrollments);
+      await this.calculateScores(match, pendingPredictions);
     }
 
     await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
 
-    // match.status = MatchStatus.Finished;
-    // await this.matchContract.modify(match);
+    match.status = MatchStatus.Finished;
+    await this.matchContract.modify(match);
 
     return CalculatedMatchDomainEvent(match);
   }
 
   private readonly SCORE_BATCH_SIZE = 10;
 
-  private async calculateScores(
-    match: MatchEntity,
-    predictions: PredictionEntity[],
-    userEnrollments: UserEnrollmentEntity[],
-  ) {
-    let intent = 0;
+  private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]) {
     for (let i = 0; i < predictions.length; i += this.SCORE_BATCH_SIZE) {
       const batch = predictions.slice(i, i + this.SCORE_BATCH_SIZE);
-      try {
-        await Promise.all(
-          batch.map((prediction) =>
-            this.calculatePredictionScore(match, prediction, userEnrollments),
-          ),
-        );
-      } catch (error) {
-        this.logger.info(`Error en un grupo de cálculo ${intent}`, {
-          calculatedPredictions: batch.length,
-        });
-      }
-      intent++;
+      await Promise.all(batch.map((prediction) => this.calculatePredictionScore(match, prediction)));
     }
   }
 
   private async calculatePredictionScore(
     match: MatchEntity,
     prediction: PredictionEntity,
-    userEnrollments: UserEnrollmentEntity[],
   ): Promise<void> {
     /** Esto es un machetazo */
     const clonedPredictionDE = PredictionEntity.build({
@@ -139,9 +106,11 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
 
     clonedPrediction.createdAt = new Date(prediction.createdAt);
 
-    const userEnrollment = userEnrollments.find((x) => x.id == prediction.userEnrollmentId);
+    const userEnrollmentDE = await this.getUserEnrollmentByIdUsecase.call({
+      userEnrollmentId: prediction.userEnrollmentId,
+    });
 
-    if (!userEnrollment) {
+    if (userEnrollmentDE.isNot(GottenUserEnrollmentDomainEvent)) {
       this.logger.warn('Prediction score skipped', {
         matchId: match.id,
         predictionId: prediction.id,
@@ -150,6 +119,8 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       });
       return;
     }
+
+    const userEnrollment: UserEnrollmentEntity = userEnrollmentDE.payload as UserEnrollmentEntity;
 
     /** Esto es un machetazo */
     const clonedUserEnrollmentDE = UserEnrollmentEntity.build({
@@ -203,22 +174,15 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       const enrollments: UserEnrollmentEntity[] =
         missingEnrollmentsDE.payload as UserEnrollmentEntity[];
 
-      try {
-        await Promise.all(
-          enrollments.map((enrollment) =>
-            this.updateUserEnrollmentUsecase.call({
-              userEnrollmentId: enrollment.id,
-              points: 0,
-              isExact: false,
-            }),
-          ),
-        );
-      } catch (error) {
-        this.logger.warn('Error en resetStreakForMissingPredictions', {
-          matchId,
-          tournamentInstanceId,
-        });
-      }
+      await Promise.all(
+        enrollments.map((enrollment) =>
+          this.updateUserEnrollmentUsecase.call({
+            userEnrollmentId: enrollment.id,
+            points: 0,
+            isExact: false,
+          }),
+        ),
+      );
     }
   }
 }
