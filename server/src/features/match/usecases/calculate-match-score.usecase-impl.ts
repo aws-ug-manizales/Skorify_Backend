@@ -25,7 +25,6 @@ import {
   UserEnrollmentEntity,
 } from '@skorify/domain/user-enrollment';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { UserEnrollment } from '@skorify/data';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
   constructor(
@@ -68,7 +67,6 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       tournamentInstanceId,
     });
     const predictions: PredictionEntity[] = predictionsDE.payload as PredictionEntity[];
-
     const pendingPredictions = predictions.filter((prediction) => !prediction.isCalculated);
 
     this.logger.info(`Predicciones por el partido ${matchId}`, {

@@ -1,4 +1,4 @@
-import { DomainEvent } from '@skorify/domain/core';
+import { DomainEvent, Id } from '@skorify/domain/core';
 import {
   GetCurrentRankingParam,
   GetCurrentRankingUsecase,
@@ -15,7 +15,14 @@ import {
 } from '@skorify/domain/user-enrollment';
 import { Logger } from '@aws-lambda-powertools/logger';
 
+interface Record {
+  ranking: RankingItem[];
+  date: Date;
+}
 export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
+  static AVAILABILITY_TIME = 60000;
+  prevRecords: Map<Id, Record>;
+
   constructor(
     private getTournamentInstanceByIdUsecase: GetTournamentInstanceByIdUsecase,
     private getUserEnrollmentsByTournamentInstanceIdUsecase: GetUserEnrollmentsByTournamentInstanceIdUsecase,
@@ -23,10 +30,22 @@ export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
     private logger: Logger,
   ) {
     super();
+    this.prevRecords = new Map();
   }
 
   async call(param: GetCurrentRankingParam): Promise<DomainEvent> {
     const { tournamentInstanceId } = param;
+
+    const now = new Date();
+    const prevRecord = this.prevRecords.get(tournamentInstanceId);
+    if (prevRecord) {
+      const diff = now.getTime() - prevRecord.date.getTime();
+      if (diff >= GetCurrentRankingUsecaseImpl.AVAILABILITY_TIME) {
+        this.prevRecords.delete(tournamentInstanceId);
+      } else {
+        return GottenTournamentInstanceCurrentRankingDomainEvent(prevRecord.ranking);
+      }
+    }
 
     const [tournamentInstanceDE, userEnrollmentsDE] = await Promise.all([
       this.getTournamentInstanceByIdUsecase.call({ tournamentInstanceId }),
@@ -99,6 +118,10 @@ export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
       [],
     );
 
+    this.prevRecords.set(tournamentInstanceId, {
+      date: now,
+      ranking,
+    });
     return GottenTournamentInstanceCurrentRankingDomainEvent(ranking);
   }
 }
