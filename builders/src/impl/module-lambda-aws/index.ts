@@ -215,6 +215,7 @@ export class ModuleLambdaAWSBuilder extends Builder {
         callbackUrls: string;
         domainName: string;
         certificateArn: string;
+        routeAuthorization: string;
       }
     > = {
       dev: {
@@ -227,6 +228,10 @@ export class ModuleLambdaAWSBuilder extends Builder {
         domainName: 'api.skorify-dev.cloud-manizales.com',
         certificateArn:
           'arn:aws:acm:us-east-1:968306633562:certificate/44456e61-449b-40f8-874d-734f97e9230c',
+        routeAuthorization: JSON.stringify({
+          "/prediction/edit-prediction-directly": [{"methods":["PATCH"],"allowedGroups":["admins"]}],
+          "/match/close-match": [{"methods":["POST"],"allowedGroups":["admins"]}]
+        }),
       },
       prod: {
         account: '151646410766',
@@ -237,6 +242,10 @@ export class ModuleLambdaAWSBuilder extends Builder {
         domainName: 'api.skorify.cloud-manizales.com',
         certificateArn:
           'arn:aws:acm:us-east-1:151646410766:certificate/5a4624ab-b3ff-4703-9b8a-a792c7fa094f',
+        routeAuthorization: JSON.stringify({
+          "/prediction/edit-prediction-directly": [{"methods":["PATCH"],"allowedGroups":["admins"]}],
+          "/match/close-match": [{"methods":["POST"],"allowedGroups":["admins"]}]
+        }),
       },
     };
 
@@ -250,7 +259,7 @@ capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
-parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name" OpsAlertsTopicArn="/skorify/${env}/ops-alerts-topic-arn"'`;
+parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name" OpsAlertsTopicArn="/skorify/${env}/ops-alerts-topic-arn" RouteAuthorization="${c.routeAuthorization}"'`;
 
     const samconfig = `version = 0.1
 
