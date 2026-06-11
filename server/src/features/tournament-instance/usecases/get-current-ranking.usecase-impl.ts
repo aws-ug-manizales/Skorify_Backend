@@ -75,10 +75,7 @@ export class GetCurrentRankingUsecaseImpl extends GetCurrentRankingUsecase {
       }
     }
     rankedUserEnrollmentsSorted.sort((left, right) => {
-      if (left.currentPosition !== right.currentPosition) {
-        return (left.currentPosition ?? 0) - (right.currentPosition ?? 0);
-      }
-      return (right.currentScore ?? 0) - (left.currentScore ?? 0);
+      return (left.currentPosition ?? 0) - (right.currentPosition ?? 0);
     });
 
     const orderedUserEnrollments = [...rankedUserEnrollmentsSorted, ...pendingUserEnrollments];

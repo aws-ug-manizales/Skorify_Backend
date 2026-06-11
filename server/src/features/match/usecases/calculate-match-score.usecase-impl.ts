@@ -8,12 +8,12 @@ import {
   MatchDoesNotExistDomainEvent,
   MatchEntity,
   MatchHasNotFinishedDomainEvent,
-  MatchStatus
+  MatchStatus,
 } from '@skorify/domain/match';
 import {
   EditPredictionDirectlyUsecase,
   GetPredictionsByMatchAndTournamentInstanceUsecase,
-  PredictionEntity
+  PredictionEntity,
 } from '@skorify/domain/prediction';
 import {
   GetEnrollmentsWithoutPredictionUsecase,
@@ -22,10 +22,13 @@ import {
   GottenUserEnrollmentsDomainEvent,
   UpdateUserEnrollmentUsecase,
   UserEnrollmentEntity,
+  CalculateCurrentRankingUsecase
 } from '@skorify/domain/user-enrollment';
 import { Logger } from '@aws-lambda-powertools/logger';
 
 export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
+  static MAX_NUMBER_OF_GROUPS = 10;
+
   constructor(
     private matchContract: MatchContract,
     private editPredictionDirectlyUsecase: EditPredictionDirectlyUsecase,
@@ -33,6 +36,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     private getPredictionsByMatchAndTournamentInstanceUsecase: GetPredictionsByMatchAndTournamentInstanceUsecase,
     private updateUserEnrollmentUsecase: UpdateUserEnrollmentUsecase,
     private getEnrollmentsWithoutPredictionUsecase: GetEnrollmentsWithoutPredictionUsecase,
+    private calculateCurrentRankingUsecase: CalculateCurrentRankingUsecase,
     private logger: Logger,
   ) {
     super();
@@ -71,15 +75,20 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     match.status = MatchStatus.Finished;
     await this.matchContract.modify(match);
 
+
+    await this.calculateCurrentRankingUsecase.call({tournamentInstanceId})
+
+
     return CalculatedMatchDomainEvent(match);
   }
 
-  private readonly SCORE_BATCH_SIZE = 10;
-
   private async calculateScores(match: MatchEntity, predictions: PredictionEntity[]) {
-    for (let i = 0; i < predictions.length; i += this.SCORE_BATCH_SIZE) {
-      const batch = predictions.slice(i, i + this.SCORE_BATCH_SIZE);
-      await Promise.all(batch.map((prediction) => this.calculatePredictionScore(match, prediction)));
+    const batchSize = predictions.length / CalculateMatchScoreUsecaseImpl.MAX_NUMBER_OF_GROUPS;
+    for (let i = 0; i < predictions.length; i += batchSize) {
+      const batch = predictions.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map((prediction) => this.calculatePredictionScore(match, prediction)),
+      );
     }
   }
 
