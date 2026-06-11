@@ -259,7 +259,7 @@ capabilities = "CAPABILITY_NAMED_IAM"
 confirm_changeset = false
 disable_rollback = false
 image_repositories = []
-parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name" OpsAlertsTopicArn="/skorify/${env}/ops-alerts-topic-arn" RouteAuthorization="${c.routeAuthorization}"'`;
+parameter_overrides = 'Environment="${env}" VpcId="${c.vpcId}" PrivateSubnetIdsParameter="/skorify/${env}/private-subnet-ids" CognitoUserPoolDomain="${c.cognitoDomain}" GoogleClientId="${c.googleClientId}" CognitoCallbackURLs="${c.callbackUrls}" DomainName="${c.domainName}" CertificateArn="${c.certificateArn}" DbParameterArn="/skorify/${env}/db-secret-arn" BusParameterArn="/skorify/${env}/data-bus-name" OpsAlertsTopicArn="/skorify/${env}/ops-alerts-topic-arn" RouteAuthorization="${c.routeAuthorization.replace(/"/g, '\\"')}"'`;
 
     const samconfig = `version = 0.1
 

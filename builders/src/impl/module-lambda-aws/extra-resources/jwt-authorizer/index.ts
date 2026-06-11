@@ -107,7 +107,8 @@ export const handler = async (
     }
 
     return buildPolicy(payload.sub, "Allow", allMethodsArn, context);
-  } catch {
+  } catch(error) {
+    logger.error("Error occurred while processing authorization", { error });
     throw new Error("Unauthorized");
   }
 };
