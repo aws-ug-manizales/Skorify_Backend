@@ -1,0 +1,18 @@
+{
+  "name": "skorify-jwt-authorizer",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npx esbuild index.ts --bundle --keep-names --platform=node --target=node22 --outfile=../../dist/jwt-authorizer/index.js"
+  },
+  "dependencies": {
+    "aws-jwt-verify": "^4.0.1",
+    "aws-lambda": "1.0.7",
+    "@aws-lambda-powertools/logger": "^2.33.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.17.19"
+  }
+}
