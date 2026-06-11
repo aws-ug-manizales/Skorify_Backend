@@ -111,6 +111,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
           calculatedPredictions: batch.length,
         });
       }
+      intent++;
     }
   }
 
