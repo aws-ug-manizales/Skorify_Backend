@@ -379,7 +379,9 @@ ${Object.entries(envConfigs)
       Environment:
         Variables:
           USER_POOL_ID: !Ref CognitoUserPool
-          M2M_SCOPE: !Sub 'https://api.skorify-\${Environment}.cloud-manizales.com/internal'`;
+          M2M_CLIENT_ID: !Ref CognitoM2MClient
+          M2M_SCOPE: !Sub 'https://api.skorify-\${Environment}.cloud-manizales.com/internal'
+          ROUTE_AUTHORIZATION: !Ref RouteAuthorization`;
 
     response.push(jwtAuthorizerTemplate);
 

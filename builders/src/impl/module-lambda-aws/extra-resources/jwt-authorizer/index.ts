@@ -6,23 +6,24 @@ import type {
 
 const verifier = CognitoJwtVerifier.create({
   userPoolId: process.env.USER_POOL_ID!,
-  tokenUse: "access",
+  tokenUse: "access", // cambiar a id
   clientId: null,
 });
 
 const M2M_SCOPE = process.env.M2M_SCOPE!;
+const M2M_CLIENT_ID = process.env.M2M_CLIENT_ID!;
 
 type RouteRule = {
   methods: string[];       // HTTP verbs this rule covers, or ['*'] for all
   allowedGroups: string[]; // any match grants access
 };
 
-// Add entries here to restrict routes to specific Cognito groups.
-// M2M tokens bypass all rules (they are already scope-validated above).
+// JSON string from env — e.g. {"/tournaments":[{"methods":["POST"],"allowedGroups":["admins"]}]}
 // Unlisted routes are accessible to any authenticated principal.
-const ROUTE_AUTHORIZATION: Record<string, RouteRule[]> = {
-  // '/tournaments': [{ methods: ['POST', 'PUT', 'DELETE'], allowedGroups: ['admins', 'managers'] }],
-};
+// M2M tokens bypass all rules (they are already scope-validated above).
+const ROUTE_AUTHORIZATION: Record<string, RouteRule[]> = process.env.ROUTE_AUTHORIZATION
+  ? JSON.parse(process.env.ROUTE_AUTHORIZATION)
+  : {};
 
 // Parses method + resource path from the methodArn:
 // arn:aws:execute-api:{region}:{account}:{api-id}/{stage}/{METHOD}/{resource+}
@@ -72,11 +73,12 @@ export const handler = async (
   const token = event.authorizationToken.replace(/^Bearer\s+/i, "");
 
   try {
-    const payload = await verifier.verify(token);
+    const payload: any = await verifier.verify(token);
 
-    const scope: string = (payload as any).scope ?? "";
-    const groups: string[] = (payload as any)["cognito:groups"] ?? [];
-    const isM2M = !scope.includes("openid");
+    const client_id: string = payload.client_id ?? "";
+    const scope: string = payload.scope ?? "";
+    const groups: string[] = payload["cognito:groups"] ?? [];
+    const isM2M = client_id === M2M_CLIENT_ID;
 
     if (isM2M && !scope.includes(M2M_SCOPE)) {
       throw new Error("Unauthorized");
