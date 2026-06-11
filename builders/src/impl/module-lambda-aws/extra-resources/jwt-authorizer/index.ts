@@ -1,0 +1,102 @@
+import { CognitoJwtVerifier } from "aws-jwt-verify";
+import type {
+  APIGatewayTokenAuthorizerEvent,
+  APIGatewayAuthorizerResult,
+} from "aws-lambda";
+
+const verifier = CognitoJwtVerifier.create({
+  userPoolId: process.env.USER_POOL_ID!,
+  tokenUse: "access",
+  clientId: null,
+});
+
+const M2M_SCOPE = process.env.M2M_SCOPE!;
+
+type RouteRule = {
+  methods: string[];       // HTTP verbs this rule covers, or ['*'] for all
+  allowedGroups: string[]; // any match grants access
+};
+
+// Add entries here to restrict routes to specific Cognito groups.
+// M2M tokens bypass all rules (they are already scope-validated above).
+// Unlisted routes are accessible to any authenticated principal.
+const ROUTE_AUTHORIZATION: Record<string, RouteRule[]> = {
+  // '/tournaments': [{ methods: ['POST', 'PUT', 'DELETE'], allowedGroups: ['admins', 'managers'] }],
+};
+
+// Parses method + resource path from the methodArn:
+// arn:aws:execute-api:{region}:{account}:{api-id}/{stage}/{METHOD}/{resource+}
+function parseMethodArn(methodArn: string): { method: string; resource: string } {
+  const parts = methodArn.split("/");
+  return { method: parts[2], resource: "/" + parts.slice(3).join("/") };
+}
+
+function checkGroupAuthorization(
+  methodArn: string,
+  groups: string[],
+  isM2M: boolean
+): boolean {
+  if (isM2M) return true;
+
+  const { method, resource } = parseMethodArn(methodArn);
+  const rules = ROUTE_AUTHORIZATION[resource];
+  if (!rules || rules.length === 0) return true;
+
+  for (const rule of rules) {
+    if (rule.methods.includes("*") || rule.methods.includes(method)) {
+      return rule.allowedGroups.some((g) => groups.includes(g));
+    }
+  }
+  return true;
+}
+
+function buildPolicy(
+  principalId: string,
+  effect: "Allow" | "Deny",
+  resource: string,
+  context?: Record<string, string>
+): APIGatewayAuthorizerResult {
+  return {
+    principalId,
+    policyDocument: {
+      Version: "2012-10-17",
+      Statement: [{ Action: "execute-api:Invoke", Effect: effect, Resource: resource }],
+    },
+    ...(context && { context }),
+  };
+}
+
+export const handler = async (
+  event: APIGatewayTokenAuthorizerEvent
+): Promise<APIGatewayAuthorizerResult> => {
+  const token = event.authorizationToken.replace(/^Bearer\s+/i, "");
+
+  try {
+    const payload = await verifier.verify(token);
+
+    const scope: string = (payload as any).scope ?? "";
+    const groups: string[] = (payload as any)["cognito:groups"] ?? [];
+    const isM2M = !scope.includes("openid");
+
+    if (isM2M && !scope.includes(M2M_SCOPE)) {
+      throw new Error("Unauthorized");
+    }
+
+    const allMethodsArn = event.methodArn.split("/")[0] + "/*/*";
+    const context = {
+      sub: payload.sub,
+      is_m2m: isM2M ? "true" : "false",
+      groups: groups.join(","),
+      scope,
+    };
+
+    if (!checkGroupAuthorization(event.methodArn, groups, isM2M)) {
+      // Valid token but insufficient groups — returns 403 to the caller
+      return buildPolicy(payload.sub, "Deny", allMethodsArn, context);
+    }
+
+    return buildPolicy(payload.sub, "Allow", allMethodsArn, context);
+  } catch {
+    throw new Error("Unauthorized");
+  }
+};

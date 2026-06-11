@@ -292,14 +292,23 @@ Resources:
         AllowOrigin: "'*'"
       Auth:
         AddDefaultAuthorizerToCorsPreflight: false
-        DefaultAuthorizer: CognitoAuthorizer
+        DefaultAuthorizer: JwtAuthorizer
         Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn:
-              Fn::GetAtt:
-                - CognitoUserPool
-                - Arn
+          JwtAuthorizer:
+            FunctionArn: !GetAtt JwtAuthorizerLambda.Arn
+            FunctionPayloadType: TOKEN
+            Identity:
+              Header: Authorization
+              ReauthorizeEvery: 300
 
+
+  JwtAuthorizerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref JwtAuthorizerLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayApi}/authorizers/*'
 
   CognitoUserPoolDomainResource:
     Type: AWS::Cognito::UserPoolDomain
