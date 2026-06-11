@@ -39,13 +39,10 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: '/skorify/dev/ops-alerts-topic-arn'
     Description: ARN del topico SNS de alertas operativas.
-<<<<<<< HEAD
-=======
   RouteAuthorization:
     Type: String
     Default: '{}'
     Description: JSON mapping of API routes to allowed Cognito groups for the JWT authorizer.
->>>>>>> c0529b60e15a8e9b6b59fb6313b2250fbbb37ee3
 
 Mappings:
   EnvironmentConfig:
