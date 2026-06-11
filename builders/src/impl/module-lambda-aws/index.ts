@@ -336,6 +336,53 @@ ${Object.entries(envConfigs)
       });
     }
 
+    const jwtAuthorizerFolder = 'jwt-authorizer';
+    const jwtAuthorizerSrc = join(extraResources, jwtAuthorizerFolder);
+    const jwtAuthorizerDest = join(this.generatedFolder, jwtAuthorizerFolder);
+
+    const existsJwtFolder = await existsFile(jwtAuthorizerDest);
+    if (!existsJwtFolder) {
+      await mkdir(jwtAuthorizerDest);
+    }
+
+    const jwtFiles = await readdir(jwtAuthorizerSrc);
+    for (const file of jwtFiles) {
+      const src = join(jwtAuthorizerSrc, file);
+      const content = await readFile(src, 'utf-8');
+      await writeFile(join(jwtAuthorizerDest, file), content, { mode: 0o777 });
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      exec(`cd ${jwtAuthorizerDest} && pnpm i && pnpm run build`, (error: Error | null, stdout: string, stderr: string) => {
+        if (stdout) {
+          logger.debug('Extra resource build output', { resource: jwtAuthorizerFolder, output: stdout.trim() });
+        }
+        if (stderr) {
+          logger.warn('Extra resource build stderr', { resource: jwtAuthorizerFolder, output: stderr.trim() });
+        }
+        if (error) {
+          reject(new Error(`Build failed for extra-resource "${jwtAuthorizerFolder}": ${error.message}`));
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    const jwtAuthorizerTemplate = `JwtAuthorizerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: jwt-authorizer/index.handler
+      Timeout: 10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref CognitoUserPool
+          M2M_SCOPE: !Sub 'https://api.skorify-\${Environment}.cloud-manizales.com/internal'`;
+
+    response.push(jwtAuthorizerTemplate);
+
     return response.join('\n  ');
   }
   async constructUsecase(
