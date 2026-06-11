@@ -62,8 +62,8 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
         .fn()
         .mockResolvedValue(
           found
-            ? GottenUserEnrollmentDomainEvent(buildFakeEnrollment(enrollmentId))
-            : NotGottenUserEnrollmentDomainEvent(),
+            ? GottenUserEnrollmentsDomainEvent([buildFakeEnrollment(enrollmentId)])
+            : GottenUserEnrollmentsDomainEvent([]),
         ),
     } as unknown as GetUserEnrollmentByIdUsecase;
   }
