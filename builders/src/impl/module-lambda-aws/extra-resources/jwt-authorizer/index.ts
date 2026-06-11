@@ -4,6 +4,9 @@ import type {
   APIGatewayAuthorizerResult,
 } from "aws-lambda";
 
+import { Logger } from "@aws-lambda-powertools/logger";
+const logger = new Logger({ serviceName: "jwt-authorizer" }); 
+
 const verifier = CognitoJwtVerifier.create({
   userPoolId: process.env.USER_POOL_ID!,
   tokenUse: "access", // cambiar a id
@@ -40,11 +43,13 @@ function checkGroupAuthorization(
   if (isM2M) return true;
 
   const { method, resource } = parseMethodArn(methodArn);
+  logger.info("Checking group authorization", { method, resource });
   const rules = ROUTE_AUTHORIZATION[resource];
   if (!rules || rules.length === 0) return true;
 
   for (const rule of rules) {
     if (rule.methods.includes("*") || rule.methods.includes(method)) {
+      logger.info("Found matching rule", { rule });
       return rule.allowedGroups.some((g) => groups.includes(g));
     }
   }
@@ -71,14 +76,16 @@ export const handler = async (
   event: APIGatewayTokenAuthorizerEvent
 ): Promise<APIGatewayAuthorizerResult> => {
   const token = event.authorizationToken.replace(/^Bearer\s+/i, "");
+  logger.info("Received authorization request", { token });
 
   try {
     const payload: any = await verifier.verify(token);
-
+    logger.info("Token successfully verified", { payload });
     const client_id: string = payload.client_id ?? "";
     const scope: string = payload.scope ?? "";
     const groups: string[] = payload["cognito:groups"] ?? [];
     const isM2M = client_id === M2M_CLIENT_ID;
+    logger.info("Token verified", { client_id, scope, groups, isM2M });
 
     if (isM2M && !scope.includes(M2M_SCOPE)) {
       throw new Error("Unauthorized");
@@ -91,6 +98,8 @@ export const handler = async (
       groups: groups.join(","),
       scope,
     };
+
+    logger.info("Checking route authorization", { methodArn: event.methodArn, context });
 
     if (!checkGroupAuthorization(event.methodArn, groups, isM2M)) {
       // Valid token but insufficient groups — returns 403 to the caller
