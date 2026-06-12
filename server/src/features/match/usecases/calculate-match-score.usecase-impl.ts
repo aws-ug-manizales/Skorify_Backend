@@ -178,17 +178,38 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     clonedPrediction.calculateScore(match.awayScore!, match.homeScore!, streakBonusPoints);
 
     // Save updated prediction
-    await this.editPredictionDirectlyUsecase.call({
-      predictionId: prediction.id,
-      ...clonedPrediction,
-    });
+    try {
+      await this.editPredictionDirectlyUsecase.call({
+        predictionId: prediction.id,
+        ...clonedPrediction,
+      });
+    } catch (error) {
+      this.logger.error('Error saving updated prediction', {
+        predictionId: prediction.id,
+        matchId: match.id,
+        userEnrollmentId: prediction.userEnrollmentId,
+        error,
+      });
+      throw error;
+    }
 
     // Update user enrollment with points and streak
-    await this.updateUserEnrollmentUsecase.call({
-      userEnrollmentId: clonedPrediction.userEnrollmentId,
-      points: clonedPrediction.earnedPoints,
-      isExact: clonedPrediction.hasExactResult,
-    });
+    try {
+      await this.updateUserEnrollmentUsecase.call({
+        userEnrollmentId: clonedPrediction.userEnrollmentId,
+        points: clonedPrediction.earnedPoints,
+        isExact: clonedPrediction.hasExactResult,
+      });
+    } catch (error) {
+      this.logger.error('Error updating user enrollment', {
+        userEnrollmentId: clonedPrediction.userEnrollmentId,
+        predictionId: prediction.id,
+        matchId: match.id,
+        earnedPoints: clonedPrediction.earnedPoints,
+        error,
+      });
+      throw error;
+    }
   }
 
   private async resetStreakForMissingPredictions(
