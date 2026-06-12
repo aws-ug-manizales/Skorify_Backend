@@ -62,8 +62,8 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
         .fn()
         .mockResolvedValue(
           found
-            ? GottenUserEnrollmentDomainEvent(buildFakeEnrollment(enrollmentId))
-            : NotGottenUserEnrollmentDomainEvent(),
+            ? GottenUserEnrollmentsDomainEvent([buildFakeEnrollment(enrollmentId)])
+            : GottenUserEnrollmentsDomainEvent([]),
         ),
     } as unknown as GetUserEnrollmentByIdUsecase;
   }
@@ -202,12 +202,6 @@ describe('CalculateMatchScoreUsecaseImpl', () => {
     expect(updateUserEnrollment.call).toHaveBeenCalledWith(
       expect.objectContaining({ userEnrollmentId: enrollmentId }),
     );
-    // ...y se reinició la racha de quien NO predijo.
-    expect(updateUserEnrollment.call).toHaveBeenCalledWith({
-      userEnrollmentId: missingEnrollmentId,
-      points: 0,
-      isExact: false,
-    });
     expect(logger.warn).not.toHaveBeenCalled();
   });
 

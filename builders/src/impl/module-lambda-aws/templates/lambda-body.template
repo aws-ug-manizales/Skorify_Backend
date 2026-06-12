@@ -184,13 +184,13 @@ export const handler = async (event: any, context: Context) => {
   let path = 'UNKNOWN';
   let useCaseName: string | undefined;
   let businessContext: Record<string, string | number> = {};
+  try {
 
   logger.addContext(context);
   method = getMethod(event)
   path = getPath(event);
   const headers = event.headers ?? {};
 
-  try {
     await init();
 
     const container = new IracaContainer();
@@ -290,7 +290,7 @@ export const handler = async (event: any, context: Context) => {
 
     const payload = getPayload(event, strategy)
     businessContext = getBusinessContext(payload);
-    logger.debug('Payload built', {
+    logger.info('Payload built', {
       usecase: useCaseName,
       strategy,
       payloadKeys: Object.keys(payload ?? {}),
@@ -346,6 +346,7 @@ export const handler = async (event: any, context: Context) => {
       body: parsedSTR,
     }
   } catch (error) {
+    logger.error('Unhandled error', { error })
     logger.error('HTTP request failed', {
       error: serializeError(error),
       path,
@@ -365,6 +366,7 @@ export const handler = async (event: any, context: Context) => {
       },
       body: JSON.stringify({
         message: 'Internal server error',
+        details: error,
         requestId: context.awsRequestId,
       }),
     }
