@@ -22,7 +22,7 @@ importers:
         version: skorifydata@https://codeload.github.com/aws-ug-manizales/Skorify_Data/tar.gz/0fd11613eaeefeca1e872f02e552a5e193afacb7(ts-node@10.9.2(@types/node@22.5.0)(typescript@5.8.3))
       '@skorify/domain':
         specifier: github:aws-ug-manizales/Skorify_Domain#main
-        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/00190c9d12611a9048e6a8655cebf616f4329802
+        version: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/9d7bb7e489864d96acd98920a79502aeedf85941
       '@skorify/shared':
         specifier: github:aws-ug-manizales/Skorify_Shared#main
         version: https://codeload.github.com/aws-ug-manizales/Skorify_Shared/tar.gz/7025e3e9c11193bbe3f9a16b0c65316b719313c7
@@ -513,8 +513,8 @@ packages:
   '@sinonjs/fake-timers@15.4.0':
     resolution: {integrity: sha512-DsG+8/LscQIQg68J6Ef3dv10u6nVyetYn923s3/sus5eaGfTo1of5WMZSLf0UJc9KDuKPilPH0UDJCjvNbDNCA==}
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/00190c9d12611a9048e6a8655cebf616f4329802':
-    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/00190c9d12611a9048e6a8655cebf616f4329802}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/9d7bb7e489864d96acd98920a79502aeedf85941':
+    resolution: {tarball: https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/9d7bb7e489864d96acd98920a79502aeedf85941}
     version: 1.2.0
 
   '@skorify/shared@https://codeload.github.com/aws-ug-manizales/Skorify_Shared/tar.gz/7025e3e9c11193bbe3f9a16b0c65316b719313c7':
@@ -2908,7 +2908,7 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/00190c9d12611a9048e6a8655cebf616f4329802': {}
+  '@skorify/domain@https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/9d7bb7e489864d96acd98920a79502aeedf85941': {}
 
   '@skorify/shared@https://codeload.github.com/aws-ug-manizales/Skorify_Shared/tar.gz/7025e3e9c11193bbe3f9a16b0c65316b719313c7':
     dependencies:
@@ -2917,7 +2917,7 @@ snapshots:
       '@aws-sdk/client-s3': 3.1067.0
       '@aws-sdk/client-sns': 3.1067.0
       '@aws-sdk/s3-request-presigner': 3.1067.0
-      '@skorify/domain': https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/00190c9d12611a9048e6a8655cebf616f4329802
+      '@skorify/domain': https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/9d7bb7e489864d96acd98920a79502aeedf85941
 
   '@smithy/core@3.24.6':
     dependencies:
@@ -4302,7 +4302,7 @@ snapshots:
 
   skorifydata@https://codeload.github.com/aws-ug-manizales/Skorify_Data/tar.gz/0fd11613eaeefeca1e872f02e552a5e193afacb7(ts-node@10.9.2(@types/node@22.5.0)(typescript@5.8.3)):
     dependencies:
-      '@skorify/domain': https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/00190c9d12611a9048e6a8655cebf616f4329802
+      '@skorify/domain': https://codeload.github.com/aws-ug-manizales/Skorify_Domain/tar.gz/9d7bb7e489864d96acd98920a79502aeedf85941
       class-transformer: 0.5.1
       class-validator: 0.15.1
       knex: 3.2.10(pg@8.21.0)
