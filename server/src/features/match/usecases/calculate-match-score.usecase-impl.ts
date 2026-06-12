@@ -107,6 +107,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
           ),
         );
       } catch (error) {
+        this.logger.error('Error calculando los scores de un partido', { error });
         this.logger.info(`Error en un grupo de cálculo ${intent}`, {
           calculatedPredictions: batch.length,
         });
