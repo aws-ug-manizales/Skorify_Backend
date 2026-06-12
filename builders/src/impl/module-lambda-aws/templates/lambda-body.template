@@ -172,7 +172,6 @@ const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
 
 
 export const handler = async (event: any, context: Context) => {
-  try {
   const initialTime = new Date();
 
   const baseHeaders = {
@@ -185,6 +184,7 @@ export const handler = async (event: any, context: Context) => {
   let path = 'UNKNOWN';
   let useCaseName: string | undefined;
   let businessContext: Record<string, string | number> = {};
+  try {
 
   logger.addContext(context);
   method = getMethod(event)
@@ -366,7 +366,7 @@ export const handler = async (event: any, context: Context) => {
       },
       body: JSON.stringify({
         message: 'Internal server error',
-        details: error.message,
+        details: error,
         requestId: context.awsRequestId,
       }),
     }
