@@ -365,6 +365,7 @@ export const handler = async (event: any, context: Context) => {
       },
       body: JSON.stringify({
         message: 'Internal server error',
+        error: serializeError(error),
         requestId: context.awsRequestId,
       }),
     }
