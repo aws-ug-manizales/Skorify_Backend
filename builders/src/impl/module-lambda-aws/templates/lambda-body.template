@@ -346,6 +346,7 @@ export const handler = async (event: any, context: Context) => {
       body: parsedSTR,
     }
   } catch (error) {
+    logger.error('Unhandled error', { error })
     logger.error('HTTP request failed', {
       error: serializeError(error),
       path,
@@ -365,7 +366,7 @@ export const handler = async (event: any, context: Context) => {
       },
       body: JSON.stringify({
         message: 'Internal server error',
-        error: serializeError(error),
+        details: error.message,
         requestId: context.awsRequestId,
       }),
     }
