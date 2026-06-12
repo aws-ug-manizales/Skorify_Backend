@@ -2,25 +2,48 @@
 import type { Context } from 'aws-lambda';
 // import { APIGatewayProxyEvent } from "aws-lambda";
 // import { MethodMapper } from "@scifamek-open-source/iraca/web-api";
-import { IracaServer } from "@scifamek-open-source/iraca/web-api";
+import { IracaServer } from '@scifamek-open-source/iraca/web-api';
 
-import { IracaContainer } from "@scifamek-open-source/iraca/dependency-injection";
-import { generate } from "./helpers";
-import { {{MODULE_PASCAL}}Controller } from "./controller";
+import { IracaContainer } from '@scifamek-open-source/iraca/dependency-injection';
+import { generate } from './helpers';
+import {
+
+{
+  {
+    MODULE_PASCAL;
+  }
+}
+Controller;
+}
+from;
+'./controller';
 import { DBClient } from '@skorify/data';
 import { StorageContract, EventBusContract } from '@skorify/domain/core';
-import { {{MODULE_PASCAL}}Contract } from '@skorify/domain/{{MODULE}}';
+import {
+
+{
+  {
+    MODULE_PASCAL;
+  }
+}
+Contract;
+}
+from;
+'@skorify/domain/{{MODULE}}';
 
 import { EventBusImpl, JsonDataSource, Queue, StorageMemoryImpl, StorageImpl } from '@skorify/shared';
 
 
-
-{{IMPORTS}}
+{
+  {
+    IMPORTS;
+  }
+}
 
 
 import {
   SecretsManagerClient,
-  GetSecretValueCommand
+  GetSecretValueCommand,
 } from '@aws-sdk/client-secrets-manager';
 
 import {
@@ -94,7 +117,7 @@ type LambdaEvent = {
   httpMethod?: string
 }
 
-function printDateDiff(title: string, initialTime: Date){
+function printDateDiff(title: string, initialTime: Date) {
   const now = new Date();
 
   const diferenciaMs = now.getTime() - initialTime.getTime();
@@ -104,68 +127,66 @@ function printDateDiff(title: string, initialTime: Date){
 }
 
 
-  const secretManagerClient = new SecretsManagerClient();
-  const ssmClient = new SSMClient();
+const secretManagerClient = new SecretsManagerClient();
+const ssmClient = new SSMClient();
 
-  const DbParameterARN = process.env.DbParameterArn!;
-  const BusParameterArn = process.env.BusParameterArn!;
-
-
-  const globalConfig: any = {
-    DBConfigObject: null,
-    dbClient: null,
-  }
+const DbParameterARN = process.env.DbParameterArn!;
+const BusParameterArn = process.env.BusParameterArn!;
 
 
-
-async function init(){
-
-    if(!globalConfig['DBConfigObject']){
-      const DBConfigObject = await secretManagerClient.send(
-        new GetSecretValueCommand({
-          SecretId: DbParameterARN
-        })
-      );
-
-      const externalDBConfig = DBConfigObject.SecretString;
-      const parsedDBSecrets = JSON.parse(externalDBConfig!);
-
-      const dbClient = new DBClient({
-        type: 'postgres',
-        host: parsedDBSecrets.host,
-        port: parseInt(parsedDBSecrets.port),
-        username: parsedDBSecrets.username,
-        password: parsedDBSecrets.password,
-        database: parsedDBSecrets.dbname,
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      });
-
-        try {
-          await dbClient.connect();
-          logger.debug('Database connected successfully');
-        } catch (error) {
-          logger.error('Failed to connect to database', { error: serializeError(error) });
-          throw error;
-        }
+const globalConfig: any = {
+  DBConfigObject: null,
+  dbClient: null,
+};
 
 
+async function init() {
 
-      globalConfig['DBConfigObject'] = DBConfigObject;
-      globalConfig['dbClient'] = dbClient;
+  if (!globalConfig['DBConfigObject']) {
+    const DBConfigObject = await secretManagerClient.send(
+      new GetSecretValueCommand({
+        SecretId: DbParameterARN,
+      }),
+    );
+
+    const externalDBConfig = DBConfigObject.SecretString;
+    const parsedDBSecrets = JSON.parse(externalDBConfig!);
+
+    const dbClient = new DBClient({
+      type: 'postgres',
+      host: parsedDBSecrets.host,
+      port: parseInt(parsedDBSecrets.port),
+      username: parsedDBSecrets.username,
+      password: parsedDBSecrets.password,
+      database: parsedDBSecrets.dbname,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    try {
+      await dbClient.connect();
+      logger.debug('Database connected successfully');
+    } catch (error) {
+      logger.error('Failed to connect to database', { error: serializeError(error) });
+      throw error;
     }
+
+
+    globalConfig['DBConfigObject'] = DBConfigObject;
+    globalConfig['dbClient'] = dbClient;
   }
+}
 
 const methodMapper = [
-  { method: "DELETE", patterns: [/^Delete/] },
+  { method: 'DELETE', patterns: [/^Delete/] },
   {
-    method: "PATCH",
+    method: 'PATCH',
     patterns: [/^Edit/, /^Update/, /^Asign/, /^Modify/, /^Set/],
   },
-  { method: "GET", patterns: [/^Get/, /^Consult/, /^Enroll/,/^Filter/] },
-  { method: "PUT", patterns: [/^Add/, /^Create/, /^Save/, /^Register/] },
-  { method: "POST", patterns: [/.+/] },
+  { method: 'GET', patterns: [/^Get/, /^Consult/, /^Enroll/, /^Filter/] },
+  { method: 'PUT', patterns: [/^Add/, /^Create/, /^Save/, /^Register/] },
+  { method: 'POST', patterns: [/.+/] },
 ];
 
 const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
@@ -177,7 +198,7 @@ export const handler = async (event: any, context: Context) => {
   const baseHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-    'Access-Control-Allow-Headers': '*'
+    'Access-Control-Allow-Headers': '*',
   };
 
   let method = 'UNKNOWN';
@@ -186,7 +207,7 @@ export const handler = async (event: any, context: Context) => {
   let businessContext: Record<string, string | number> = {};
 
   logger.addContext(context);
-  method = getMethod(event)
+  method = getMethod(event);
   path = getPath(event);
   const headers = event.headers ?? {};
 
@@ -196,7 +217,6 @@ export const handler = async (event: any, context: Context) => {
     const container = new IracaContainer();
 
 
-
     container.add({
       abstraction: StorageContract,
       implementation: StorageImpl,
@@ -204,8 +224,8 @@ export const handler = async (event: any, context: Context) => {
 
     const eventBusConfig = {
       eventBusName: BusParameterArn,
-      source: 'SkorifyBackend'
-    }
+      source: 'SkorifyBackend',
+    };
 
     container.addValue({
       id: 'eventBusConfig',
@@ -219,10 +239,6 @@ export const handler = async (event: any, context: Context) => {
     });
 
 
-
-
-
-
     const { dbClient } = globalConfig;
 
     container.addValue({
@@ -232,8 +248,15 @@ export const handler = async (event: any, context: Context) => {
 
     container.addValue({
       id: '{{MODULE_PASCAL}}Contract',
-      value: dbClient.{{MODULE_SERVICE}},
-    });
+      value: dbClient.
+    {
+      {
+        MODULE_SERVICE;
+      }
+    }
+  ,
+  })
+    ;
 
     container.addValue({
       id: 'Logger',
@@ -242,13 +265,16 @@ export const handler = async (event: any, context: Context) => {
 
     printDateDiff('After AWS secrets', initialTime);
 
-    const identifier = "{{IDENTIFIER}}";
+    const identifier = '{{IDENTIFIER}}';
 
-        {{INJECTIONS}}
+    {
+      {
+        INJECTIONS;
+      }
+    }
 
 
-
-    useCaseName = `${toPascalCase(path)}Usecase`
+    useCaseName = `${ toPascalCase(path) }Usecase`;
     logger.debug('Resolving usecase', { method, path, usecase: useCaseName });
     const useCase = await container.getInstance<any>(useCaseName);
     logger.debug('Usecase resolved', {
@@ -277,18 +303,18 @@ export const handler = async (event: any, context: Context) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: `Use case ${useCaseName} not found`,
+          message: `Use case ${ useCaseName } not found`,
         }),
-      }
+      };
     }
 
 
-     const strategy =  multiValueQueryUsecases.includes(useCaseName)
-        ? 'multiValueQueryStringParameters'
-        : 'queryStringParameters';
+    const strategy = multiValueQueryUsecases.includes(useCaseName)
+      ? 'multiValueQueryStringParameters'
+      : 'queryStringParameters';
 
 
-    const payload = getPayload(event, strategy)
+    const payload = getPayload(event, strategy);
     businessContext = getBusinessContext(payload);
     logger.debug('Payload built', {
       usecase: useCaseName,
@@ -297,7 +323,7 @@ export const handler = async (event: any, context: Context) => {
       ...businessContext,
     });
 
-    const result = await useCase.call(payload)
+    const result = await useCase.call(payload);
 
     printDateDiff('Usecase call completed', initialTime);
     const durationMs = Date.now() - initialTime.getTime();
@@ -313,11 +339,11 @@ export const handler = async (event: any, context: Context) => {
     }
 
     const parsed = {
-        data: result.payload,
-        meta: {
-          code: '{{MODULE_PASCAL}}:'+result.eventName
-        }
-      };
+      data: result.payload,
+      meta: {
+        code: '{{MODULE_PASCAL}}:' + result.eventName,
+      },
+    };
     const parsedSTR = JSON.stringify(parsed);
     logger.debug('Response serialized', {
       usecase: useCaseName,
@@ -344,8 +370,9 @@ export const handler = async (event: any, context: Context) => {
         'Content-Type': 'application/json',
       },
       body: parsedSTR,
-    }
+    };
   } catch (error) {
+    logger.error('Unhandled error', { error });
     logger.error('HTTP request failed', {
       error: serializeError(error),
       path,
@@ -365,10 +392,10 @@ export const handler = async (event: any, context: Context) => {
       },
       body: JSON.stringify({
         message: 'Internal server error',
-        error: serializeError(error),
+        details: error.message,
         requestId: context.awsRequestId,
       }),
-    }
+    };
   }
 };
 
@@ -379,32 +406,32 @@ const toPascalCase = (value: string) => {
     .pop()!
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('')
-}
+    .join('');
+};
 
 const getPath = (event: LambdaEvent) => {
-  return event.rawPath || event.path || '/'
-}
+  return event.rawPath || event.path || '/';
+};
 
 const getMethod = (event: LambdaEvent) => {
-  const method =  (
+  const method = (
     event.requestContext?.http?.method ||
     event.httpMethod ||
     'GET'
   );
   return method.toUpperCase();
-}
+};
 
 const getPayload = (event: LambdaEvent, strategy: string) => {
-  const method = getMethod(event)
+  const method = getMethod(event);
 
   if (method === 'GET') {
-    return (event[strategy]) || {}
+    return (event[strategy]) || {};
   }
 
   if (!event.body) {
-    return {}
+    return {};
   }
 
-  return JSON.parse(event.body)
-}
+  return JSON.parse(event.body);
+};
