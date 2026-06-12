@@ -90,7 +90,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     return CalculatedMatchDomainEvent(match);
   }
 
-  private readonly SCORE_BATCH_SIZE = 10;
+  private readonly SCORE_BATCH_SIZE = 2;
 
   private async calculateScores(
     match: MatchEntity,

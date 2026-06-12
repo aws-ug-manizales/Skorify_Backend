@@ -172,6 +172,7 @@ const multiValueQueryUsecases = ['GetUsersByIdsUsecase', 'GetTeamByIdsUsecase'];
 
 
 export const handler = async (event: any, context: Context) => {
+  try {
   const initialTime = new Date();
 
   const baseHeaders = {
@@ -190,7 +191,6 @@ export const handler = async (event: any, context: Context) => {
   path = getPath(event);
   const headers = event.headers ?? {};
 
-  try {
     await init();
 
     const container = new IracaContainer();
@@ -290,7 +290,7 @@ export const handler = async (event: any, context: Context) => {
 
     const payload = getPayload(event, strategy)
     businessContext = getBusinessContext(payload);
-    logger.debug('Payload built', {
+    logger.info('Payload built', {
       usecase: useCaseName,
       strategy,
       payloadKeys: Object.keys(payload ?? {}),
