@@ -3,9 +3,8 @@
     Type: AWS::Serverless::Function
     Properties:
       Handler: {{MODULE}}/index.handler
-      Timeout: 60
+      Timeout: 120
       Policies:
         - AWSLambdaVPCAccessExecutionRole
         - !Ref LambdaSharedPolicy
       Events:
-        

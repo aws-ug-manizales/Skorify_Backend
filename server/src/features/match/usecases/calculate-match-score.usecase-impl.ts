@@ -82,7 +82,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
       await this.calculateScores(match, pendingPredictions, userEnrollments);
     }
 
-    await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
+    // await this.resetStreakForMissingPredictions(matchId, tournamentInstanceId);
 
     // match.status = MatchStatus.Finished;
     // await this.matchContract.modify(match);
@@ -90,7 +90,7 @@ export class CalculateMatchScoreUsecaseImpl extends CalculateMatchScoreUsecase {
     return CalculatedMatchDomainEvent(match);
   }
 
-  private readonly SCORE_BATCH_SIZE = 10;
+  private readonly SCORE_BATCH_SIZE = 2;
 
   private async calculateScores(
     match: MatchEntity,

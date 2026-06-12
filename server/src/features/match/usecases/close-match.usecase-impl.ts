@@ -12,6 +12,8 @@ import {
   NotEditedMatchDomainEvent,
 } from '@skorify/domain/match';
 
+import { Logger } from '@aws-lambda-powertools/logger';
+
 import { DomainEvent } from '@skorify/domain/core';
 import {
   GetTournamentInstancesByTournamentIdUsecase,
@@ -25,6 +27,7 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
     private matchContract: MatchContract,
     private calculateMatchScoreUsecase: CalculateMatchScoreUsecase,
     private getTournamentInstancesByTournamentIdUsecase: GetTournamentInstancesByTournamentIdUsecase,
+    private logger: Logger,
   ) {
     super();
   }
@@ -65,10 +68,14 @@ export class CloseMatchUsecaseImpl extends CloseMatchUsecase {
     const tournamentInstances: TournamentInstanceEntity[] = tournamentInstancesDE.payload;
 
     for (const tournamentInstance of tournamentInstances) {
-      this.calculateMatchScoreUsecase.call({
-        matchId,
-        tournamentInstanceId: tournamentInstance.id,
-      });
+      try {
+        await this.calculateMatchScoreUsecase.call({
+          matchId,
+          tournamentInstanceId: tournamentInstance.id,
+        });
+      } catch (err) {
+        this.logger.error('Error calculando el score del partido', { err });
+      }
     }
     return ClosedMatchDomainEvent(modified);
   }
